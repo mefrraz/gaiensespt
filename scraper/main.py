@@ -243,8 +243,6 @@ def fetch_and_parse(url: str, is_agenda: bool) -> List[Dict[str, Any]]:
                     "local": game_location,
                     "status": status
                 }
-                    "status": status
-                }
                 games_data.append(game_data)
 
             except Exception as e:
