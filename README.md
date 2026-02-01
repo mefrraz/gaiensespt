@@ -1,28 +1,28 @@
-# GaiensesPT 🏀
+# GaiensesPT
 
-**A app oficial dos adeptos do FC Gaia Basquetebol.**
+A app oficial dos adeptos do FC Gaia Basquetebol.
 
 Acompanha todos os jogos, resultados e agenda das equipas do FC Gaia em tempo real.
 
-🔗 **[gaiensespt.vercel.app](https://gaiensespt.vercel.app)**
+**[gaiensespt.vercel.app](https://gaiensespt.vercel.app)**
 
 ---
 
-## ✨ Funcionalidades
+## Funcionalidades
 
-- 📅 **Agenda** - Todos os próximos jogos com hora e local
-- 🏆 **Resultados** - Resultados atualizados automaticamente
-- 📍 **Localização** - Abre o GPS para os pavilhões
-- 📱 **PWA** - Instala como app no telemóvel
-- 🌙 **Modo Escuro** - Design premium adaptativo
-- 📤 **Partilha** - Partilha jogos com amigos
-- 📆 **Calendário** - Adiciona jogos ao Google Calendar
+- **Agenda** - Todos os próximos jogos com hora e local
+- **Resultados** - Resultados atualizados automaticamente
+- **Localização** - Abre o GPS para os pavilhões
+- **PWA** - Instala como app no telemóvel
+- **Modo Escuro** - Design premium adaptativo
+- **Partilha** - Partilha jogos com amigos
+- **Calendário** - Adiciona jogos ao Google Calendar
 
 ---
 
-## 🔄 Atualização Automática
+## Atualização Automática
 
-Os dados são obtidos automaticamente da **Federação Portuguesa de Basquetebol (FPB)**.
+Os dados são obtidos automaticamente da Federação Portuguesa de Basquetebol (FPB).
 
 | Dia | Frequência |
 |-----|------------|
@@ -31,7 +31,7 @@ Os dados são obtidos automaticamente da **Federação Portuguesa de Basquetebol
 
 ---
 
-## 🛠️ Tecnologias
+## Tecnologias
 
 - **Frontend**: React + Vite + TailwindCSS
 - **Backend**: Supabase (PostgreSQL + Realtime)
@@ -41,18 +41,18 @@ Os dados são obtidos automaticamente da **Federação Portuguesa de Basquetebol
 
 ---
 
-## 📁 Estrutura
+## Estrutura
 
 ```
-/scraper    → Script Python de extração de dados
-/web        → Aplicação React
-/supabase   → Scripts SQL para a base de dados
-/.github    → Workflows de automação
+/scraper    - Script Python de extração de dados
+/web        - Aplicação React
+/supabase   - Scripts SQL para a base de dados
+/.github    - Workflows de automação
 ```
 
 ---
 
-## 🚀 Configuração Local
+## Configuração Local
 
 ### Requisitos
 - Node.js 18+
@@ -60,7 +60,7 @@ Os dados são obtidos automaticamente da **Federação Portuguesa de Basquetebol
 - Conta Supabase
 
 ### 1. Base de Dados (Supabase)
-1. Cria um projeto em [supabase.com](https://supabase.com)
+1. Cria um projeto em supabase.com
 2. Corre o script `supabase/schema.sql` no SQL Editor
 3. Guarda as credenciais (URL, anon key, service role key)
 
@@ -80,20 +80,12 @@ python main.py
 ```
 
 ### 4. GitHub Actions
-Em **Settings > Secrets**, adiciona:
+Em Settings > Secrets, adiciona:
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
 ---
 
-## 👤 Criador
+## Licença
 
-**André Ferraz** - Atleta do FC Gaia & Criador dos Gaienses
-
-📸 [@gaiensespt](https://instagram.com/gaiensespt)
-
----
-
-## 📄 Licença
-
-Este projeto é não oficial e não está afiliado ao FC Gaia ou à FPB.
+Este projeto não está afiliado ao FC Gaia ou à FPB.
