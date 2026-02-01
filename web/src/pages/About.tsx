@@ -1,4 +1,4 @@
-import { ArrowLeft, Instagram, Globe, Code } from 'lucide-react'
+import { ArrowLeft, Instagram, Code } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 function About() {
