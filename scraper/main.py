@@ -218,6 +218,29 @@ def fetch_and_parse(url: str, is_agenda: bool) -> List[Dict[str, Any]]:
                     # Text is often "Venue , City"
                     game_location = loc_elem.get_text(strip=True)
 
+                # Logos (Extraction)
+                home_logo = None
+                away_logo = None
+                
+                # Attempt to find logos
+                images = game_link.select("img")
+                # Filter for valid logo URLs (sanity check)
+                logo_images = [img['src'] for img in images if 'src' in img.attrs and ('CLU' in img['src'] or 'clubes' in img['src'])]
+                
+                # Heuristic: If we found exactly 2 logos, assign in order (Home, Away)
+                # If we found only 1, check if we can match it to Home or Away by ALIAS or Order?
+                # Usually standard FPB layout is: Logo Home - Name Home - Time - Name Away - Logo Away
+                # But sometimes structure varies. Let's assume order for now.
+                if len(logo_images) >= 2:
+                    home_logo = logo_images[0]
+                    away_logo = logo_images[1]
+                elif len(logo_images) == 1:
+                    # If only 1, it's ambiguous. But maybe better than nothing. 
+                    # Often the "Club" page we are on (FC Gaia) might not show its own logo or vice versa?
+                    # Actually, inspecting the generic list often shows both.
+                    # Let's assign to Home if it appears early? No, risky.
+                    pass
+
                 # From inspection: .competition span
                 comp_span = game_link.select_one(".competition span")
                 if comp_span:
@@ -229,6 +252,8 @@ def fetch_and_parse(url: str, is_agenda: bool) -> List[Dict[str, Any]]:
                         competition = parts[1].strip()
                     else:
                         category = full_text
+                        competition = full_text
+
 
                 game_data = {
                     "slug": slug,
@@ -241,6 +266,8 @@ def fetch_and_parse(url: str, is_agenda: bool) -> List[Dict[str, Any]]:
                     "escalao": category,
                     "competicao": competition,
                     "local": game_location,
+                    "logotipo_casa": home_logo,
+                    "logotipo_fora": away_logo,
                     "status": status
                 }
                 games_data.append(game_data)

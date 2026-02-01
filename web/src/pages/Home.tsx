@@ -15,6 +15,8 @@ export type Match = {
     escalao: string
     competicao: string
     local: string | null
+    logotipo_casa: string | null
+    logotipo_fora: string | null
     status: 'AGENDADO' | 'A DECORRER' | 'FINALIZADO'
 }
 
@@ -179,11 +181,20 @@ function Home() {
                                             <div className="p-4 flex justify-between items-center gap-4">
                                                 {/* Home */}
                                                 <div className={`flex flex-col flex-1 ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa > match.resultado_fora ? 'opacity-100' : 'opacity-70'}`}>
-                                                    <span className="text-sm font-bold text-white leading-tight mb-1 truncate">
-                                                        {match.equipa_casa}
-                                                    </span>
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        {match.logotipo_casa ? (
+                                                            <img src={match.logotipo_casa} alt={match.equipa_casa} className="w-6 h-6 object-contain" />
+                                                        ) : (
+                                                            <div className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center">
+                                                                <span className="text-[10px] font-bold text-gray-400">{match.equipa_casa.substring(0, 1)}</span>
+                                                            </div>
+                                                        )}
+                                                        <span className="text-sm font-bold text-white leading-tight truncate">
+                                                            {match.equipa_casa}
+                                                        </span>
+                                                    </div>
                                                     {view === 'results' && (
-                                                        <span className="text-2xl font-mono font-bold text-white tracking-tighter">
+                                                        <span className="text-2xl font-mono font-bold text-white tracking-tighter pl-8">
                                                             {match.resultado_casa}
                                                         </span>
                                                     )}
@@ -196,11 +207,20 @@ function Home() {
 
                                                 {/* Away */}
                                                 <div className={`flex flex-col flex-1 items-end text-right ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora > match.resultado_casa ? 'opacity-100' : 'opacity-70'}`}>
-                                                    <span className="text-sm font-bold text-white leading-tight mb-1 truncate">
-                                                        {match.equipa_fora}
-                                                    </span>
+                                                    <div className="flex flex-row-reverse items-center gap-2 mb-1">
+                                                        {match.logotipo_fora ? (
+                                                            <img src={match.logotipo_fora} alt={match.equipa_fora} className="w-6 h-6 object-contain" />
+                                                        ) : (
+                                                            <div className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center">
+                                                                <span className="text-[10px] font-bold text-gray-400">{match.equipa_fora.substring(0, 1)}</span>
+                                                            </div>
+                                                        )}
+                                                        <span className="text-sm font-bold text-white leading-tight truncate">
+                                                            {match.equipa_fora}
+                                                        </span>
+                                                    </div>
                                                     {view === 'results' && (
-                                                        <span className="text-2xl font-mono font-bold text-white tracking-tighter">
+                                                        <span className="text-2xl font-mono font-bold text-white tracking-tighter pr-8">
                                                             {match.resultado_fora}
                                                         </span>
                                                     )}
