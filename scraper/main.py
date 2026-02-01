@@ -122,16 +122,26 @@ def fetch_and_parse(url: str, is_agenda: bool) -> List[Dict[str, Any]]:
                 # Extract details
                 # Time
                 # Time
+                # Time
                 time_elem = game_link.select_one(".hour h3")
+                if not time_elem:
+                    # Fallback selectors as seen in generic FPB markup
+                    time_elem = game_link.select_one(".time") or game_link.select_one(".schedule-time")
+                
                 game_time = None
                 raw_time_text = ""
+                
                 if time_elem:
                     raw_time_text = time_elem.get_text(strip=True).upper()
-                    # Validate HH:MM format (e.g. 12H15 -> 12:15)
+                    # Validate HH:MM format (e.g. 12H15 -> 12:15, 12:00)
                     normalized = raw_time_text.replace("H", ":")
-                    if re.match(r'^\d{1,2}:\d{2}$', normalized):
-                        game_time = normalized
-                    # else: remains None (handles "A DEFINIR", "ADIADO", etc.) OR it might be a score
+                    match_time = re.search(r'(\d{1,2}:\d{2})', normalized)
+                    if match_time:
+                         game_time = match_time.group(1).zfill(5) # Ensure 09:00 format
+                    
+                    # If game_time is still None, it might be because for Results they hide it sometimes?
+                    # Or maybe extracting from "12h30" text node directly if parsing failed.
+
 
                 # Teams
                 # Structure: .teams-wrapper contains two .team-container (one for home, one for away)

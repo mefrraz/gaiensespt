@@ -175,7 +175,22 @@ function Game() {
 
             {/* Footer Action */}
             <div className="mt-8 text-center">
-                <button className="text-gray-600 hover:text-white transition-colors flex items-center gap-2 mx-auto text-sm font-medium">
+                <button
+                    onClick={() => {
+                        if (navigator.share) {
+                            navigator.share({
+                                title: `FC Gaia vs ${match.equipa_fora}`,
+                                text: `Confira o jogo do FC Gaia: ${match.equipa_casa} vs ${match.equipa_fora} no dia ${dateFormatted}!`,
+                                url: window.location.href
+                            })
+                        } else {
+                            // Fallback for desktop? clipboard
+                            navigator.clipboard.writeText(window.location.href)
+                            alert('Link copiado!')
+                        }
+                    }}
+                    className="text-gray-600 hover:text-white transition-colors flex items-center gap-2 mx-auto text-sm font-medium"
+                >
                     <Share2 size={16} />
                     Partilhar Jogo
                 </button>
