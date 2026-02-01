@@ -7,7 +7,8 @@ export default {
     theme: {
         extend: {
             colors: {
-                // Custom branding for FC Gaia if needed, for now standard tailwind
+                'gaia-blue': '#0047AB',
+                'gaia-yellow': '#FFD700',
             },
             fontFamily: {
                 sans: ['Inter', 'sans-serif'], // Example
