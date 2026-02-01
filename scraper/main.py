@@ -45,19 +45,40 @@ def get_supabase_client() -> Optional[Client]:
 supabase = get_supabase_client()
 
 def parse_date(date_str: str) -> Optional[datetime.date]:
-    # format example: "Sábado, 01 Fev 2026" or similar portuguese format
-    # We need to robustly parse this.
-    # FPB usually uses: "Sábado, 31 Jan 2026"
+    # format on site: "1 FEV 2026" or "15 FEV 2026"
+    # Old format expected: "Sábado, 01 Fev 2026"
+    
     months = {
-        "Jan": 1, "Fev": 2, "Mar": 3, "Abr": 4, "Mai": 5, "Jun": 6,
-        "Jul": 7, "Ago": 8, "Set": 9, "Out": 10, "Nov": 11, "Dez": 12
+        "JAN": 1, "FEV": 2, "MAR": 3, "ABR": 4, "MAI": 5, "JUN": 6,
+        "JUL": 7, "AGO": 8, "SET": 9, "OUT": 10, "NOV": 11, "DEZ": 12
     }
     try:
-        parts = date_str.split(", ")[1].split(" ")
-        day = int(parts[0])
-        month = months[parts[1]]
-        year = int(parts[2])
-        return datetime.date(year, month, day)
+        # Clean up string first
+        clean_date = date_str.strip().upper()
+        
+        # Split by space
+        parts = clean_date.split(" ")
+        # Expecting [Day, Month, Year] e.g. ['1', 'FEV', '2026']
+        
+        if len(parts) >= 3:
+            day = int(parts[0])
+            month_str = parts[1]
+            year = int(parts[2])
+            
+            # Map month
+            # Handle potential casing issues if map is rigid, but we UPPERed it.
+            # Handle month abbreviation if site uses full names? observed is "FEV", "MAR", "JAN"
+            # Some sites might use "Janeiro", let's stick to observed 3 chars or full key map
+            
+            if month_str in months:
+                month = months[month_str]
+            else:
+                 # Try first 3 chars
+                 month = months.get(month_str[:3], 1) # Fallback to Jan? Better to fail or log.
+            
+            return datetime.date(year, month, day)
+            
+        return None
     except Exception as e:
         print(f"Error parsing date '{date_str}': {e}")
         return None
