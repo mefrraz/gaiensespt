@@ -140,7 +140,7 @@ function Home() {
             {/* Content */}
             {loading ? (
                 <div className="flex justify-center py-20">
-                    <Loader2 className="animate-spin text-gaia-blue" size={48} />
+                    <Loader2 className="animate-spin text-gaia-yellow" size={48} />
                 </div>
             ) : (
                 <div className="space-y-8">
@@ -200,9 +200,16 @@ function Home() {
                                                 </div>
                                             </div>
 
-                                            <div className="mt-3 pt-3 border-t border-white/5 text-xs text-center text-gray-500 truncate flex items-center justify-center gap-2">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-gaia-yellow"></span>
-                                                {match.competicao}
+                                            <div className="mt-3 pt-3 border-t border-white/5 flex flex-col gap-1 items-center justify-center text-center">
+                                                <div className="text-xs text-gray-400 capitalize flex items-center gap-1.5">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-gaia-yellow inline-block"></span>
+                                                    {match.competicao}
+                                                </div>
+                                                {match.local && (
+                                                    <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wide truncate w-full px-2">
+                                                        📍 {match.local}
+                                                    </div>
+                                                )}
                                             </div>
                                         </Link>
                                     ))}
