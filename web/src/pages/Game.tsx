@@ -57,35 +57,35 @@ function Game() {
                 <div className="w-10"></div> {/* Spacer */}
             </div>
 
-            {/* Match Card - Always Dark for Stadium Feel */}
-            <div className="glass-card p-0 overflow-hidden mb-6 !bg-[#111] !border-white/10">
+            {/* Match Card - Adaptive Light/Dark */}
+            <div className="glass-card p-0 overflow-hidden mb-6">
 
                 {/* Competition Header */}
-                <div className="bg-[#1a1a1a] border-b border-white/5 p-4 flex justify-between items-center">
+                <div className="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-white/5 p-4 flex justify-between items-center">
                     <span className="text-[10px] font-bold text-gaia-yellow uppercase tracking-widest border border-gaia-yellow/20 px-2 py-1 rounded">
                         {match.escalao}
                     </span>
-                    <span className="text-[10px] font-medium text-gray-400 uppercase">
+                    <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase">
                         {match.competicao}
                     </span>
                 </div>
 
                 {/* Scoreboard Area */}
-                <div className="p-8 py-10 flex flex-col items-center justify-center relative bg-gradient-to-b from-[#111] to-black">
+                <div className="p-8 py-10 flex flex-col items-center justify-center relative bg-gradient-to-b from-white to-gray-50 dark:from-[#111] dark:to-black">
 
                     {/* Teams Row */}
                     <div className="flex w-full justify-between items-start gap-4">
 
                         {/* Home */}
                         <div className="flex-1 flex flex-col items-center text-center gap-3">
-                            <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center p-2 overflow-hidden">
+                            <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center p-2 overflow-hidden">
                                 {match.logotipo_casa ? (
                                     <img src={match.logotipo_casa} alt={match.equipa_casa} className="w-full h-full object-contain" />
                                 ) : (
-                                    <Shield className="text-gray-600" size={32} />
+                                    <Shield className="text-gray-400 dark:text-gray-600" size={32} />
                                 )}
                             </div>
-                            <h2 className="text-lg font-bold text-white leading-tight">
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
                                 {match.equipa_casa}
                             </h2>
                         </div>
@@ -104,14 +104,14 @@ function Game() {
 
                         {/* Away */}
                         <div className="flex-1 flex flex-col items-center text-center gap-3">
-                            <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center p-2 overflow-hidden">
+                            <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center p-2 overflow-hidden">
                                 {match.logotipo_fora ? (
                                     <img src={match.logotipo_fora} alt={match.equipa_fora} className="w-full h-full object-contain" />
                                 ) : (
-                                    <Shield className="text-gray-600" size={32} />
+                                    <Shield className="text-gray-400 dark:text-gray-600" size={32} />
                                 )}
                             </div>
-                            <h2 className="text-lg font-bold text-white leading-tight">
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
                                 {match.equipa_fora}
                             </h2>
                         </div>
@@ -119,11 +119,11 @@ function Game() {
 
                     {/* Big Score */}
                     <div className="mt-8 flex items-center justify-center gap-8">
-                        <div className={`text-5xl font-mono font-bold tracking-tighter ${isFinished || match.status === 'A DECORRER' ? 'text-white' : 'text-gray-700'}`}>
+                        <div className={`text-5xl font-mono font-bold tracking-tighter ${isFinished || match.status === 'A DECORRER' ? 'text-gray-900 dark:text-white' : 'text-gray-300 dark:text-gray-700'}`}>
                             {match.resultado_casa ?? '-'}
                         </div>
-                        <div className="text-gray-700 text-2xl font-light">:</div>
-                        <div className={`text-5xl font-mono font-bold tracking-tighter ${isFinished || match.status === 'A DECORRER' ? 'text-white' : 'text-gray-700'}`}>
+                        <div className="text-gray-300 dark:text-gray-700 text-2xl font-light">:</div>
+                        <div className={`text-5xl font-mono font-bold tracking-tighter ${isFinished || match.status === 'A DECORRER' ? 'text-gray-900 dark:text-white' : 'text-gray-300 dark:text-gray-700'}`}>
                             {match.resultado_fora ?? '-'}
                         </div>
                     </div>
