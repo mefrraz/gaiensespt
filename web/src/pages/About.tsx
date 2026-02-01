@@ -39,7 +39,7 @@ function About() {
                     <div className="flex items-start gap-4">
                         <div className="flex-1">
                             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                                Frraz
+                                André Ferraz
                             </h2>
                             <p className="text-sm text-gaia-yellow font-medium mb-3">
                                 Atleta do FC Gaia & Criador dos Gaienses
@@ -160,7 +160,7 @@ function About() {
                 {/* Footer */}
                 <div className="text-center pt-8 pb-4">
                     <p className="text-xs text-gray-400">
-                        Não oficial • Feito com 💛 para o FC Gaia
+                        App não oficial
                     </p>
                 </div>
 
