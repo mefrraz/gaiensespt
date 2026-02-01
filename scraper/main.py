@@ -171,9 +171,10 @@ def fetch_and_parse(url: str, is_agenda: bool) -> List[Dict[str, Any]]:
                     # Based on standard logic:
                     results_wrapper = game_link.select_one(".results_wrapper")
                     
+                    
                     # Check if the time element actually contains the score (common pattern)
                     # "12H15" vs "80 - 70"
-                    if "-" in game_time and ":" not in game_time:
+                    if game_time and "-" in game_time and ":" not in game_time:
                          status = "FINALIZADO"
                          try:
                              parts = game_time.split("-")
