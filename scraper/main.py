@@ -24,8 +24,8 @@ FPB_RESULTADOS_URL = "https://www.fpb.pt/resultados/" # Replace with actual FC G
 # I will infer the team is FC Gaia. I'll search for FC Gaia ID if possible, but safer to stick to the logic requested.
 # I will use environment variables for URLs to be safe/flexible.
 
-AGENDA_URL = os.getenv("AGENDA_URL", "https://www.fpb.pt/equipa/fc-gaia/agenda") # Example URL
-RESULTADOS_URL = os.getenv("RESULTADOS_URL", "https://www.fpb.pt/equipa/fc-gaia/resultados") # Example URL
+AGENDA_URL = os.getenv("AGENDA_URL", "https://www.fpb.pt/calendario/clube_119/") # Correct FC Gaia URL
+RESULTADOS_URL = os.getenv("RESULTADOS_URL", "https://www.fpb.pt/resultados/clube_119/") # Correct FC Gaia URL
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
