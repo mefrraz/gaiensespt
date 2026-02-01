@@ -122,45 +122,26 @@ def fetch_and_parse(url: str, is_agenda: bool) -> List[Dict[str, Any]]:
                 # Extract details
                 # Time
                 time_elem = game_link.select_one(".hour h3")
-                game_time = "00:00" # Default
+                game_time = "00:00"
                 if time_elem:
-                    raw_time = time_elem.get_text(strip=True)
-                    # Handle "A definir" or similar
-                    if ":" in raw_time:
-                        game_time = raw_time
-                    else:
-                        game_time = "00:00" # Or null? Let's keep 00:00 for valid time format
+                    game_time = time_elem.get_text(strip=True).replace("H", ":") # Normalize to HH:MM
 
                 # Teams
-                # Usually .home-team .name and .away-team .name or similar. 
-                # Inspecting typical FPB structure based on class names provided indirectly or inferred.
-                # User didn't give team selectors, only wrapper. I'll infer standard ones or look at common FPB structure.
-                # Typically: .team-name inside .home and .visitor or similar.
-                # Let's try to be generic or look for known classes.
-                # Assuming: .team-left .name, .team-right .name OR .home-team, .guest-team
-                
-                # Let's inspect the HTML structure from a typical FPB page if we could, but we can't.
-                # I will try to select based on common sense naming in FPB:
-                # Often: .info-vis .team_name  or  .team_name
-                
-                # Let's try to grab team names.
-                teams = game_link.select(".team-name")
-                if len(teams) >= 2:
-                    home_team = teams[0].get_text(strip=True)
-                    away_team = teams[1].get_text(strip=True)
+                # Structure: .teams-wrapper contains two .team-container (one for home, one for away)
+                team_containers = game_link.select(".team-container")
+                if len(team_containers) >= 2:
+                    # Home team is usually the first one
+                    home_elem = team_containers[0].select_one(".sigla") or team_containers[0].select_one(".fullName")
+                    home_team = home_elem.get_text(strip=True) if home_elem else "Desconhecido"
+                    
+                    # Away team is usually the second one (often has .right class)
+                    away_elem = team_containers[1].select_one(".sigla") or team_containers[1].select_one(".fullName")
+                    away_team = away_elem.get_text(strip=True) if away_elem else "Desconhecido"
                 else:
-                    # Fallback or strict error?
-                    # Let's try another selector just in case
-                    info_vis = game_link.select(".info-vis .name") # hypothesis
-                    if len(info_vis) >= 2:
-                        home_team = info_vis[0].get_text(strip=True)
-                        away_team = info_vis[1].get_text(strip=True)
-                    else:
-                        print(f"Could not find teams for game on {game_date}")
-                        continue
+                    print(f"Could not find teams for game on {game_date}")
+                    continue
                 
                 # Slug generation: DATA-EQUIPACASA-EQUIPAFORA
-                # Normalize strings for slug
                 def slugify(s):
                     s = s.lower().strip()
                     s = re.sub(r'[^\w\s-]', '', s)
@@ -179,46 +160,50 @@ def fetch_and_parse(url: str, is_agenda: bool) -> List[Dict[str, Any]]:
                     status = "AGENDADO"
                 else:
                     # Results page
-                    # Look for scores. Usually in .score or .result
-                    # User mentioned: .results_wrapper
+                    # In results page, the score might be in .hour h3 (e.g. "80 - 70") or similar?
+                    # Let's inspect potential score containers if they differ from time.
+                    # Usually if finished, the time is replaced by score or there is a specific score element.
+                    # Based on standard logic:
                     results_wrapper = game_link.select_one(".results_wrapper")
-                    if results_wrapper:
-                        status = "FINALIZADO" # Or check if it says "Intervalo" etc? Assuming results page = finished or live.
-                        # Check specific scoreboard classes if available
-                        scores = results_wrapper.select(".score") # Hypothetical
-                        if not scores:
-                             scores = results_wrapper.select("span") # Fallback, might be risky
-                        
-                        if len(scores) >= 2:
-                            try:
-                                score_home = int(scores[0].get_text(strip=True))
-                                score_away = int(scores[1].get_text(strip=True))
-                            except:
-                                pass
-                        
-                        # Winner check via .victory_font?
-                        # User said: "Identificar vencedor via classe CSS .victory_font"
-                        # This might be on the team name or the score.
-                        # We just store the score for now. The winner is implicit.
-                        
-                    else:
-                        # Maybe it exists but no score yet?
-                        pass
+                    
+                    # Check if the time element actually contains the score (common pattern)
+                    # "12H15" vs "80 - 70"
+                    if "-" in game_time and ":" not in game_time:
+                         status = "FINALIZADO"
+                         try:
+                             parts = game_time.split("-")
+                             score_home = int(parts[0].strip())
+                             score_away = int(parts[1].strip())
+                         except:
+                             pass
+                    elif results_wrapper:
+                         status = "FINALIZADO"
+                         # Logic for results_wrapper if it exists
+                         scores = results_wrapper.select(".score")
+                         if len(scores) >= 2:
+                            score_home = int(scores[0].get_text(strip=True))
+                            score_away = int(scores[1].get_text(strip=True))
+
+                    # Fallback: check classes for winner/loser to imply finished
+                    if game_link.select(".victory_font"):
+                        status = "FINALIZADO"
 
                 # Escalão/Competição
-                # Often in .category or .championship
                 category = "Unknown"
-                cat_elem = game_link.select_one(".category")
-                if cat_elem:
-                    category = cat_elem.get_text(strip=True)
-                
-                competition = "Unknown"
-                comp_elem = game_link.select_one(".championship") 
-                if not comp_elem: # Try another
-                    comp_elem = game_link.select_one(".round")
-                
-                if comp_elem:
-                    competition = comp_elem.get_text(strip=True)
+                # From inspection: .competition span
+                comp_span = game_link.select_one(".competition span")
+                if comp_span:
+                    full_text = comp_span.get_text(strip=True)
+                    # "Sub 14 Masculino | CD 1.ª DIV. S14M"
+                    if "|" in full_text:
+                        parts = full_text.split("|")
+                        category = parts[0].strip()
+                        competition = parts[1].strip()
+                    else:
+                        category = full_text
+                        competition = full_text # or generic
+                else: 
+                     competition = "Unknown"
 
                 game_data = {
                     "slug": slug,
