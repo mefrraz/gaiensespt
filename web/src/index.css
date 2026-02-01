@@ -15,5 +15,21 @@
 }
 
 .glass-card {
-  @apply glass rounded-xl p-6 transition-all duration-300 hover:bg-white/10;
+  @apply relative overflow-hidden bg-[#111] border border-white/5 rounded-2xl transition-all duration-300;
 }
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.03), transparent);
+  pointer-events: none;
+}
+
+.match-gradient {
+  background: linear-gradient(135deg, #f5b417 0%, #f7c945 100%);
+}
+

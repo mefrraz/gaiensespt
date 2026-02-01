@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { Calendar, Trophy, Filter, Loader2 } from 'lucide-react'
+import { Calendar, Trophy, Filter, Loader2, MapPin, ChevronRight, Clock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 // Types
@@ -92,42 +92,44 @@ function Home() {
 
     // Format Date Helper
     const formatDate = (dateStr: string) => {
-        const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' }
-        return new Date(dateStr).toLocaleDateString('pt-PT', options)
+        const options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'long' }
+        const date = new Date(dateStr).toLocaleDateString('pt-PT', options)
+        return date.charAt(0).toUpperCase() + date.slice(1)
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="max-w-md mx-auto space-y-6 pb-20">
 
-            {/* View Toggles & Filters */}
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10 shadow-lg backdrop-blur-md">
-                <div className="flex bg-gray-900/50 p-1 rounded-lg">
-                    <button
-                        onClick={() => setView('agenda')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all font-medium ${view === 'agenda' ? 'bg-gaia-yellow text-black shadow-lg shadow-gaia-yellow/20' : 'text-gray-400 hover:text-white'
-                            }`}
-                    >
-                        <Calendar size={18} />
-                        Agenda
-                    </button>
-                    <button
-                        onClick={() => setView('results')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all font-medium ${view === 'results' ? 'bg-white text-black shadow-lg' : 'text-gray-400 hover:text-white'
-                            }`}
-                    >
-                        <Trophy size={18} />
-                        Resultados
-                    </button>
-                </div>
+            {/* Mobile-first Header / Segment Controller */}
+            <div className="sticky top-20 z-40 bg-black/80 backdrop-blur-xl p-1.5 rounded-2xl border border-white/10 flex gap-1 shadow-2xl mx-1">
+                <button
+                    onClick={() => setView('agenda')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'agenda' ? 'bg-gaia-yellow text-black shadow-lg shadow-yellow-500/20' : 'text-gray-500 hover:text-gray-300'
+                        }`}
+                >
+                    <Calendar size={16} strokeWidth={2.5} />
+                    AGENDA
+                </button>
+                <button
+                    onClick={() => setView('results')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'results' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'
+                        }`}
+                >
+                    <Trophy size={16} strokeWidth={2.5} />
+                    RESULTADOS
+                </button>
+            </div>
 
-                <div className="relative group w-full md:w-auto">
+            {/* Filter Toggle - simplified for mobile */}
+            <div className="px-2">
+                <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                        <Filter size={16} />
+                        <Filter size={14} />
                     </div>
                     <select
                         value={filterEscalao}
                         onChange={(e) => setFilterEscalao(e.target.value)}
-                        className="bg-gray-900/50 border border-white/10 text-white text-sm rounded-lg focus:ring-gaia-yellow focus:border-gaia-yellow block w-full md:w-64 pl-10 p-2.5 appearance-none cursor-pointer hover:bg-gray-800 transition-colors"
+                        className="bg-[#111] border border-white/10 text-gray-300 text-xs font-medium rounded-lg focus:ring-1 focus:ring-gaia-yellow focus:border-gaia-yellow block w-full pl-9 p-2.5 appearance-none"
                     >
                         <option value="Todos">Todos os Escalões</option>
                         {escaloes.map(e => (
@@ -137,80 +139,97 @@ function Home() {
                 </div>
             </div>
 
-            {/* Content */}
+            {/* Content List */}
             {loading ? (
-                <div className="flex justify-center py-20">
-                    <Loader2 className="animate-spin text-gaia-yellow" size={48} />
+                <div className="flex justify-center py-32">
+                    <Loader2 className="animate-spin text-gaia-yellow" size={32} />
                 </div>
             ) : (
-                <div className="space-y-8">
+                <div className="space-y-8 px-1">
                     {sortedDates.length === 0 ? (
-                        <div className="text-center py-20 text-gray-500">
+                        <div className="text-center py-20 text-gray-600 font-medium">
                             Nenhum jogo encontrado.
                         </div>
                     ) : (
                         sortedDates.map(date => (
-                            <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <h3 className="text-xl font-semibold text-white/90 mb-4 capitalize border-l-4 border-gaia-yellow pl-3">
+                            <div key={date} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+
+                                <h3 className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-widest pl-2">
                                     {formatDate(date)}
                                 </h3>
-                                <div className="grid gap-4 md:grid-cols-2">
+
+                                <div className="space-y-3">
                                     {groupedMatches[date].map(match => (
-                                        <Link to={`/game/${match.slug}`} key={match.slug} className="glass-card flex flex-col gap-3 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 hover:border-gaia-yellow/50 block bg-gray-900/40 border border-white/10 p-5 rounded-xl">
+                                        <Link to={`/game/${match.slug}`} key={match.slug} className="glass-card flex flex-col gap-0 group active:scale-[0.98]">
 
-                                            {/* Status Badge */}
-                                            <div className="absolute top-0 right-0 p-3 z-10">
-                                                {match.status === 'A DECORRER' && (
-                                                    <span className="bg-red-500/20 text-red-400 text-xs px-2 py-1 rounded-full animate-pulse border border-red-500/50 font-bold">
-                                                        LIVE
+                                            {/* Header: Time & Competition */}
+                                            <div className="flex justify-between items-center p-4 pb-2 border-b border-white/5">
+                                                <div className="flex items-center gap-2 text-gaia-yellow">
+                                                    <Clock size={12} strokeWidth={3} />
+                                                    <span className="text-xs font-mono font-bold tracking-wider">
+                                                        {(match.hora || '00:00').slice(0, 5)}
                                                     </span>
-                                                )}
-                                                {/* Removed FINAL status as requested */}
-                                            </div>
-
-                                            <div className="flex justify-between items-start">
-                                                <span className="text-xs font-mono text-gray-400 bg-black/30 px-2 py-1 rounded">
-                                                    {(match.hora || '00:00').slice(0, 5)}
-                                                </span>
-                                                <span className="text-xs text-gaia-yellow font-bold tracking-wider uppercase">
+                                                </div>
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                                                     {match.escalao}
                                                 </span>
                                             </div>
 
-                                            <div className="mt-2 flex justify-between items-center relative z-0">
-                                                {/* Home Team */}
-                                                <div className={`flex flex-col w-1/3 ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa > match.resultado_fora ? 'text-white font-bold' : 'text-gray-400'}`}>
-                                                    <span className="truncate text-sm" title={match.equipa_casa}>{match.equipa_casa}</span>
-                                                    {match.resultado_casa !== null && (
-                                                        <span className="text-3xl mt-1 font-mono">{match.resultado_casa}</span>
+                                            {/* Main: Teams & Scores */}
+                                            <div className="p-4 flex justify-between items-center gap-4">
+                                                {/* Home */}
+                                                <div className={`flex flex-col flex-1 ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa > match.resultado_fora ? 'opacity-100' : 'opacity-70'}`}>
+                                                    <span className="text-sm font-bold text-white leading-tight mb-1 truncate">
+                                                        {match.equipa_casa}
+                                                    </span>
+                                                    {view === 'results' && (
+                                                        <span className="text-2xl font-mono font-bold text-white tracking-tighter">
+                                                            {match.resultado_casa}
+                                                        </span>
                                                     )}
                                                 </div>
 
-                                                {/* VS / Dash */}
-                                                <div className="text-gray-600 text-sm font-light">
-                                                    VS
+                                                {/* Divider / VS */}
+                                                <div className="flex flex-col items-center justify-center opacity-20">
+                                                    <div className="h-8 w-[1px] bg-white"></div>
                                                 </div>
 
-                                                {/* Away Team */}
-                                                <div className={`flex flex-col w-1/3 items-end text-right ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora > match.resultado_casa ? 'text-white font-bold' : 'text-gray-400'}`}>
-                                                    <span className="truncate text-sm" title={match.equipa_fora}>{match.equipa_fora}</span>
-                                                    {match.resultado_fora !== null && (
-                                                        <span className="text-3xl mt-1 font-mono">{match.resultado_fora}</span>
+                                                {/* Away */}
+                                                <div className={`flex flex-col flex-1 items-end text-right ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora > match.resultado_casa ? 'opacity-100' : 'opacity-70'}`}>
+                                                    <span className="text-sm font-bold text-white leading-tight mb-1 truncate">
+                                                        {match.equipa_fora}
+                                                    </span>
+                                                    {view === 'results' && (
+                                                        <span className="text-2xl font-mono font-bold text-white tracking-tighter">
+                                                            {match.resultado_fora}
+                                                        </span>
                                                     )}
                                                 </div>
                                             </div>
 
-                                            <div className="mt-3 pt-3 border-t border-white/5 flex flex-col gap-1 items-center justify-center text-center">
-                                                <div className="text-xs text-gray-400 capitalize flex items-center gap-1.5">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-gaia-yellow inline-block"></span>
-                                                    {match.competicao}
+                                            {/* Footer: Status / Location */}
+                                            <div className="px-4 pb-4 pt-0 flex justify-between items-center text-[10px] font-medium text-gray-500 uppercase tracking-wide">
+                                                <div className="flex items-center gap-1.5 truncate max-w-[70%] text-gray-400">
+                                                    {match.local ? (
+                                                        <>
+                                                            <MapPin size={10} className="shrink-0 text-gaia-yellow" />
+                                                            <span className="truncate">{match.local}</span>
+                                                        </>
+                                                    ) : (
+                                                        <span>{match.competicao}</span>
+                                                    )}
                                                 </div>
-                                                {match.local && (
-                                                    <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wide truncate w-full px-2">
-                                                        📍 {match.local}
-                                                    </div>
+
+                                                {match.status === 'A DECORRER' && (
+                                                    <span className="text-red-500 font-bold flex items-center gap-1 animate-pulse">
+                                                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                                                        LIVE
+                                                    </span>
                                                 )}
+
+                                                <ChevronRight size={14} className="text-gray-700 group-hover:text-gaia-yellow transition-colors" />
                                             </div>
+
                                         </Link>
                                     ))}
                                 </div>

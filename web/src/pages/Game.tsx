@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, MapPin, Calendar, Clock, Loader2 } from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, Clock, Loader2, Share2, Shield } from 'lucide-react'
 import { Match } from './Home'
 
 function Game() {
@@ -25,117 +25,152 @@ function Game() {
         }
 
         fetchMatch()
-
-        // Realtime subscription for this specific match could be added here
     }, [slug])
 
     if (loading) return (
-        <div className="flex justify-center py-20">
-            <Loader2 className="animate-spin text-gaia-blue" size={48} />
+        <div className="flex justify-center py-32">
+            <Loader2 className="animate-spin text-gaia-yellow" size={32} />
         </div>
     )
 
     if (!match) return (
-        <div className="text-center py-20">
-            <p className="text-gray-500 mb-4">Jogo não encontrado.</p>
-            <Link to="/" className="text-gaia-blue hover:underline">Voltar</Link>
+        <div className="flex flex-col items-center justify-center py-32 text-center text-gray-500">
+            <p className="mb-4 text-lg">Jogo não encontrado</p>
+            <Link to="/" className="text-gaia-yellow font-bold hover:underline">Regressar</Link>
         </div>
     )
 
     const dateFormatted = new Date(match.data).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    const isFinished = match.status === 'FINALIZADO'
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6">
+        <div className="max-w-xl mx-auto pb-12">
 
-            {/* Back Button */}
-            <Link to="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-gaia-blue transition-colors mb-4">
-                <ArrowLeft size={18} />
-                Voltar à Agenda
-            </Link>
+            {/* Nav */}
+            <div className="flex items-center justify-between mb-6">
+                <Link to="/" className="p-2 -ml-2 text-gray-400 hover:text-white transition-colors">
+                    <ArrowLeft size={24} />
+                </Link>
+                <div className="text-xs font-bold tracking-widest uppercase text-gray-500">
+                    MATCH CENTER
+                </div>
+                <div className="w-10"></div> {/* Spacer */}
+            </div>
 
-            {/* Scoreboard Card */}
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden relative">
+            {/* Match Card */}
+            <div className="glass-card p-0 overflow-hidden mb-6">
 
-                {/* Header Strip */}
-                <div className="bg-gaia-blue text-white p-3 text-center text-sm font-semibold tracking-widest uppercase">
-                    {match.competicao} — {match.escalao}
+                {/* Competition Header */}
+                <div className="bg-[#1a1a1a] border-b border-white/5 p-4 flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-gaia-yellow uppercase tracking-widest border border-gaia-yellow/20 px-2 py-1 rounded">
+                        {match.escalao}
+                    </span>
+                    <span className="text-[10px] font-medium text-gray-500 uppercase">
+                        {match.competicao}
+                    </span>
                 </div>
 
-                <div className="p-6 md:p-10 flex flex-col gap-8">
+                {/* Scoreboard Area */}
+                <div className="p-8 py-10 flex flex-col items-center justify-center relative bg-gradient-to-b from-[#111] to-black">
 
-                    {/* Status */}
-                    <div className="text-center">
-                        {match.status === 'A DECORRER' ? (
-                            <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse">
-                                EM DIRETO
-                            </span>
-                        ) : (
-                            <span className="text-gray-400 text-sm font-medium uppercase tracking-wider">
-                                {match.status}
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Teams & Score */}
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+                    {/* Teams Row */}
+                    <div className="flex w-full justify-between items-start gap-4">
 
                         {/* Home */}
-                        <div className="flex-1 text-center md:text-right">
-                            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white leading-tight">
+                        <div className="flex-1 flex flex-col items-center text-center gap-3">
+                            <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                                <Shield className="text-gray-600" size={24} />
+                            </div>
+                            <h2 className="text-lg font-bold text-white leading-tight">
                                 {match.equipa_casa}
                             </h2>
                         </div>
 
-                        {/* Score Block */}
-                        <div className="bg-gray-100 dark:bg-black/40 px-6 py-4 rounded-xl border border-gray-200 dark:border-white/10 mx-auto min-w-[140px] text-center">
-                            {match.resultado_casa !== null && match.resultado_fora !== null ? (
-                                <div className="text-4xl md:text-5xl font-mono font-bold text-gaia-blue dark:text-blue-400">
-                                    {match.resultado_casa} <span className="text-gray-300/50 mx-1">-</span> {match.resultado_fora}
-                                </div>
-                            ) : (
-                                <div className="text-3xl font-mono text-gray-400">
-                                    VS
-                                </div>
+                        {/* Center Info */}
+                        <div className="flex flex-col items-center gap-2 pt-2">
+                            {match.status === 'A DECORRER' && (
+                                <span className="bg-red-500 text-white px-2 py-0.5 rounded text-[10px] font-bold animate-pulse">
+                                    LIVE
+                                </span>
                             )}
+                            <div className="text-xs font-mono text-gray-500">
+                                {isFinished ? 'FINAL' : 'VS'}
+                            </div>
                         </div>
 
                         {/* Away */}
-                        <div className="flex-1 text-center md:text-left">
-                            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white leading-tight">
+                        <div className="flex-1 flex flex-col items-center text-center gap-3">
+                            <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                                <Shield className="text-gray-600" size={24} />
+                            </div>
+                            <h2 className="text-lg font-bold text-white leading-tight">
                                 {match.equipa_fora}
                             </h2>
                         </div>
                     </div>
+
+                    {/* Big Score */}
+                    <div className="mt-8 flex items-center justify-center gap-8">
+                        <div className={`text-5xl font-mono font-bold tracking-tighter ${isFinished || match.status === 'A DECORRER' ? 'text-white' : 'text-gray-700'}`}>
+                            {match.resultado_casa ?? '-'}
+                        </div>
+                        <div className="text-gray-700 text-2xl font-light">:</div>
+                        <div className={`text-5xl font-mono font-bold tracking-tighter ${isFinished || match.status === 'A DECORRER' ? 'text-white' : 'text-gray-700'}`}>
+                            {match.resultado_fora ?? '-'}
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
-            {/* Details Grid */}
-            <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-white/5 flex items-center gap-4">
-                    <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full text-gaia-blue">
-                        <Calendar size={24} />
+            {/* Info Grid */}
+            <div className="grid grid-cols-1 gap-3">
+
+                {/* Location Tile */}
+                <div className="glass-card p-5 flex items-start gap-4 hover:bg-white/5 transition-colors group">
+                    <div className="p-3 rounded-full bg-white/5 text-gaia-yellow group-hover:scale-110 transition-transform">
+                        <MapPin size={20} />
                     </div>
-                    <div>
-                        <div className="text-xs text-gray-500 uppercase font-bold">Data</div>
-                        <div className="text-gray-800 dark:text-gray-200 font-medium capitalize">{dateFormatted}</div>
+                    <div className="flex-1">
+                        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Localização</h4>
+                        {match.local ? (
+                            <div>
+                                <p className="text-sm font-medium text-white mb-2">{match.local}</p>
+                                <a
+                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(match.local)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs font-bold text-gaia-yellow hover:text-white transition-colors border-b border-gaia-yellow/30 pb-0.5"
+                                >
+                                    Abrir no Mapa
+                                </a>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-gray-600 italic">Localização a definir</p>
+                        )}
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-white/5 flex items-center gap-4">
-                    <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full text-gaia-blue">
-                        <Clock size={24} />
+                {/* Date/Time Tile */}
+                <div className="glass-card p-5 flex items-center gap-4 hover:bg-white/5 transition-colors">
+                    <div className="p-3 rounded-full bg-white/5 text-gaia-yellow">
+                        <Calendar size={20} />
                     </div>
-                    <div>
-                        <div className="text-xs text-gray-500 uppercase font-bold">Hora</div>
-                        <div className="text-gray-800 dark:text-gray-200 font-medium">{match.hora || 'A definir'}</div>
+                    <div className="flex-1">
+                        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Data e Hora</h4>
+                        <p className="text-sm font-medium text-white capitalize">{dateFormatted}</p>
+                        <p className="text-sm text-gray-400 font-mono mt-0.5">{(match.hora || '00:00')}</p>
                     </div>
                 </div>
+
             </div>
 
-            {/* Location Placeholder */}
-            <div className="bg-white dark:bg-gray-800/50 p-6 rounded-xl border border-gray-200 dark:border-white/5 text-center space-y-3 opacity-75">
-                <MapPin className="mx-auto text-gray-400" size={32} />
-                <p className="text-gray-500">Localização do pavilhão em breve...</p>
+            {/* Footer Action */}
+            <div className="mt-8 text-center">
+                <button className="text-gray-600 hover:text-white transition-colors flex items-center gap-2 mx-auto text-sm font-medium">
+                    <Share2 size={16} />
+                    Partilhar Jogo
+                </button>
             </div>
 
         </div>
