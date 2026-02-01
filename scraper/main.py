@@ -174,10 +174,27 @@ def fetch_and_parse(url: str, is_agenda: bool) -> List[Dict[str, Any]]:
                     results_wrapper = game_link.select_one(".results_wrapper")
                     
                     
-                    # Check if the time element actually contains the score (common pattern)
-                    # "12H15" vs "80 - 70"
-                    # We check raw_time_text because game_time is likely None for "80 - 70"
-                    if raw_time_text and "-" in raw_time_text and ":" not in raw_time_text:
+                    # Results Logic
+                    # Structure found: .results_wrapper h3.results_text
+                    results_wrapper = game_link.select_one(".results_wrapper")
+                    
+                    if results_wrapper:
+                         # Try to find distinct score elements
+                         score_elems = results_wrapper.select("h3.results_text")
+                         if len(score_elems) >= 2:
+                             status = "FINALIZADO"
+                             try:
+                                 score_home = int(score_elems[0].get_text(strip=True))
+                                 score_away = int(score_elems[1].get_text(strip=True))
+                             except:
+                                 pass
+                         else:
+                             # Fallback to previous logic if wrapper exists but h3 structure differs?
+                             # Or maybe check the dash text
+                             pass
+                    
+                    # Fallback for "80 - 70" in raw_time_text (unlikely based on inspection but harmless to keep if different page)
+                    if score_home is None and raw_time_text and "-" in raw_time_text and ":" not in raw_time_text:
                          status = "FINALIZADO"
                          try:
                              parts = raw_time_text.split("-")
@@ -185,13 +202,6 @@ def fetch_and_parse(url: str, is_agenda: bool) -> List[Dict[str, Any]]:
                              score_away = int(parts[1].strip())
                          except:
                              pass
-                    elif results_wrapper:
-                         status = "FINALIZADO"
-                         # Logic for results_wrapper if it exists
-                         scores = results_wrapper.select(".score")
-                         if len(scores) >= 2:
-                            score_home = int(scores[0].get_text(strip=True))
-                            score_away = int(scores[1].get_text(strip=True))
 
                     # Fallback: check classes for winner/loser to imply finished
                     if game_link.select(".victory_font"):
