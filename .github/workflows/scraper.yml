@@ -1,0 +1,42 @@
+name: Update FC Gaia Data
+
+on:
+  schedule:
+    # Weekdays (Mon-Fri) at 15:00 and 21:00
+    - cron: '0 15,21 * * 1-5'
+    
+    # Weekends (Sat-Sun) at 11, 13, 15, 17, 18:30 (18:30 is 30 18), 20:00, 21:30 (30 21)
+    - cron: '0 11,13,15,17,20 * * 6,0'
+    - cron: '30 18,21 * * 6,0'
+    
+    # Note: Holidays are hard to hardcode in cron. 
+    # Best practice is to run more often or manually trigger on holidays, 
+    # or use a script to check if today is a holiday. 
+    # For now, we cover the weekend schedule which is usually similar to holidays.
+
+  workflow_dispatch:
+
+jobs:
+  scrape-and-update:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r scraper/requirements.txt
+
+    - name: Run Scraper
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        # AGENDA_URL and RESULTADOS_URL can be secrets too if needed, or defaults in script
+      run: python scraper/main.py
