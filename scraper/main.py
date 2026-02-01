@@ -2,7 +2,7 @@ import os
 import datetime
 from supabase import create_client, Client
 from dotenv import load_dotenv
-from parser import fetch_and_parse
+from fpb_parser import fetch_and_parse
 
 load_dotenv()
 
