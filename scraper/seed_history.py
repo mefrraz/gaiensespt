@@ -31,10 +31,18 @@ def upsert_to_supabase(data):
         print("No data to upsert.")
         return
 
-    print(f"Upserting {len(data)} records...")
+    # Deduplicate by slug to avoid "ON CONFLICT DO UPDATE command cannot affect row a second time"
+    # This keeps the last occurrence of a slug in the list.
+    unique_map = {item['slug']: item for item in data}
+    unique_data = list(unique_map.values())
+    
+    if len(unique_data) < len(data):
+        print(f"Removed {len(data) - len(unique_data)} duplicate records.")
+
+    print(f"Upserting {len(unique_data)} records...")
     try:
-        for i in range(0, len(data), 100):
-            chunk = data[i:i+100]
+        for i in range(0, len(unique_data), 100):
+            chunk = unique_data[i:i+100]
             # Use count argument properly or ignore return
             supabase.table("partidas").upsert(chunk).execute()
         print("Upsert complete.")
