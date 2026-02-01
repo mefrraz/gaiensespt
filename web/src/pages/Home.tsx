@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { Calendar, Trophy, Filter, Loader2, MapPin, ChevronRight, Clock, RefreshCw } from 'lucide-react'
+import { Calendar, Trophy, Filter, Loader2, MapPin, ChevronRight, Clock, RefreshCw, CalendarPlus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 // Types
@@ -280,120 +280,133 @@ function Home() {
                 </Link>
             </div>
 
+            {/* Subscribe to Calendar */}
+            <div className="px-2 max-w-md mx-auto mb-4">
+                <a
+                    href="/api/calendar"
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-zinc-900 dark:bg-zinc-800 text-white dark:text-zinc-200 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-zinc-800 dark:hover:bg-zinc-700 transition-colors shadow-lg"
+                >
+                    <CalendarPlus size={16} />
+                    Subscrever Calendário
+                </a>
+            </div>
+
             {/* Content List */}
-            {loading ? (
-                <div className="flex justify-center py-32">
-                    <Loader2 className="animate-spin text-gaia-yellow" size={32} />
-                </div>
-            ) : (
-                <div className="space-y-8 px-1">
-                    {sortedDates.length === 0 ? (
-                        <div className="text-center py-20 text-zinc-600 font-medium">
-                            Nenhum jogo encontrado.
-                        </div>
-                    ) : (
-                        sortedDates.map(date => (
-                            <div key={date} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-
-                                <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 mb-3 uppercase tracking-widest pl-2">
-                                    {formatDate(date)}
-                                </h3>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {groupedMatches[date].map(match => (
-                                        <Link to={`/game/${match.slug}`} key={match.slug} className="glass-card flex flex-col gap-0 group active:scale-[0.98] hover:border-gaia-yellow/30">
-
-                                            <div className="flex justify-between items-center p-4 pb-2 border-b border-zinc-100 dark:border-white/5">
-                                                <div className="flex items-center gap-2 text-gaia-yellow">
-                                                    {view === 'agenda' ? (
-                                                        <>
-                                                            <Clock size={12} strokeWidth={3} />
-                                                            <span className="text-xs font-mono font-bold tracking-wider">
-                                                                {(match.hora || '00:00').slice(0, 5)}
-                                                            </span>
-                                                        </>
-                                                    ) : (
-                                                        <span className="text-[10px] font-bold text-zinc-400">FIN</span>
-                                                    )}
-                                                </div>
-                                                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                                                    {match.escalao}
-                                                </span>
-                                            </div>
-
-                                            <div className="p-4 flex flex-col gap-3">
-                                                <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa < match.resultado_fora ? 'opacity-60 grayscale' : 'opacity-100'}`}>
-                                                    <div className="flex items-center gap-3">
-                                                        {match.logotipo_casa ? (
-                                                            <img src={match.logotipo_casa} alt={match.equipa_casa} className="w-8 h-8 object-contain" />
-                                                        ) : (
-                                                            <div className="w-8 h-8 bg-zinc-100 dark:bg-white/10 rounded-full flex items-center justify-center">
-                                                                <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{match.equipa_casa.substring(0, 1)}</span>
-                                                            </div>
-                                                        )}
-                                                        <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
-                                                            {match.equipa_casa}
-                                                        </span>
-                                                    </div>
-                                                    {view === 'results' && match.resultado_casa !== null && (
-                                                        <span className={`text-xl font-mono font-bold ${match.resultado_casa > (match.resultado_fora || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
-                                                            {match.resultado_casa}
-                                                        </span>
-                                                    )}
-                                                </div>
-
-                                                <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora < match.resultado_casa ? 'opacity-60 grayscale' : 'opacity-100'}`}>
-                                                    <div className="flex items-center gap-3">
-                                                        {match.logotipo_fora ? (
-                                                            <img src={match.logotipo_fora} alt={match.equipa_fora} className="w-8 h-8 object-contain" />
-                                                        ) : (
-                                                            <div className="w-8 h-8 bg-zinc-100 dark:bg-white/10 rounded-full flex items-center justify-center">
-                                                                <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{match.equipa_fora.substring(0, 1)}</span>
-                                                            </div>
-                                                        )}
-                                                        <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
-                                                            {match.equipa_fora}
-                                                        </span>
-                                                    </div>
-                                                    {view === 'results' && match.resultado_fora !== null && (
-                                                        <span className={`text-xl font-mono font-bold ${match.resultado_fora > (match.resultado_casa || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
-                                                            {match.resultado_fora}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <div className="px-4 pb-4 pt-0 flex justify-between items-center text-[10px] font-medium text-zinc-500 uppercase tracking-wide">
-                                                <div className="flex items-center gap-1.5 truncate max-w-[70%] text-zinc-400">
-                                                    {match.local ? (
-                                                        <>
-                                                            <MapPin size={10} className="shrink-0 text-gaia-yellow" />
-                                                            <span className="truncate">{match.local}</span>
-                                                        </>
-                                                    ) : (
-                                                        <span>{match.competicao}</span>
-                                                    )}
-                                                </div>
-
-                                                {match.status === 'A DECORRER' && (
-                                                    <span className="text-red-500 font-bold flex items-center gap-1 animate-pulse">
-                                                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-                                                        LIVE
-                                                    </span>
-                                                )}
-
-                                                <ChevronRight size={14} className="text-zinc-400 group-hover:text-gaia-yellow transition-colors" />
-                                            </div>
-
-                                        </Link>
-                                    ))}
-                                </div>
+            {
+                loading ? (
+                    <div className="flex justify-center py-32">
+                        <Loader2 className="animate-spin text-gaia-yellow" size={32} />
+                    </div>
+                ) : (
+                    <div className="space-y-8 px-1">
+                        {sortedDates.length === 0 ? (
+                            <div className="text-center py-20 text-zinc-600 font-medium">
+                                Nenhum jogo encontrado.
                             </div>
-                        ))
-                    )}
-                </div>
-            )}
-        </div>
+                        ) : (
+                            sortedDates.map(date => (
+                                <div key={date} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+
+                                    <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 mb-3 uppercase tracking-widest pl-2">
+                                        {formatDate(date)}
+                                    </h3>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {groupedMatches[date].map(match => (
+                                            <Link to={`/game/${match.slug}`} key={match.slug} className="glass-card flex flex-col gap-0 group active:scale-[0.98] hover:border-gaia-yellow/30">
+
+                                                <div className="flex justify-between items-center p-4 pb-2 border-b border-zinc-100 dark:border-white/5">
+                                                    <div className="flex items-center gap-2 text-gaia-yellow">
+                                                        {view === 'agenda' ? (
+                                                            <>
+                                                                <Clock size={12} strokeWidth={3} />
+                                                                <span className="text-xs font-mono font-bold tracking-wider">
+                                                                    {(match.hora || '00:00').slice(0, 5)}
+                                                                </span>
+                                                            </>
+                                                        ) : (
+                                                            <span className="text-[10px] font-bold text-zinc-400">FIN</span>
+                                                        )}
+                                                    </div>
+                                                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                                                        {match.escalao}
+                                                    </span>
+                                                </div>
+
+                                                <div className="p-4 flex flex-col gap-3">
+                                                    <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa < match.resultado_fora ? 'opacity-60 grayscale' : 'opacity-100'}`}>
+                                                        <div className="flex items-center gap-3">
+                                                            {match.logotipo_casa ? (
+                                                                <img src={match.logotipo_casa} alt={match.equipa_casa} className="w-8 h-8 object-contain" />
+                                                            ) : (
+                                                                <div className="w-8 h-8 bg-zinc-100 dark:bg-white/10 rounded-full flex items-center justify-center">
+                                                                    <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{match.equipa_casa.substring(0, 1)}</span>
+                                                                </div>
+                                                            )}
+                                                            <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
+                                                                {match.equipa_casa}
+                                                            </span>
+                                                        </div>
+                                                        {view === 'results' && match.resultado_casa !== null && (
+                                                            <span className={`text-xl font-mono font-bold ${match.resultado_casa > (match.resultado_fora || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
+                                                                {match.resultado_casa}
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora < match.resultado_casa ? 'opacity-60 grayscale' : 'opacity-100'}`}>
+                                                        <div className="flex items-center gap-3">
+                                                            {match.logotipo_fora ? (
+                                                                <img src={match.logotipo_fora} alt={match.equipa_fora} className="w-8 h-8 object-contain" />
+                                                            ) : (
+                                                                <div className="w-8 h-8 bg-zinc-100 dark:bg-white/10 rounded-full flex items-center justify-center">
+                                                                    <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{match.equipa_fora.substring(0, 1)}</span>
+                                                                </div>
+                                                            )}
+                                                            <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
+                                                                {match.equipa_fora}
+                                                            </span>
+                                                        </div>
+                                                        {view === 'results' && match.resultado_fora !== null && (
+                                                            <span className={`text-xl font-mono font-bold ${match.resultado_fora > (match.resultado_casa || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
+                                                                {match.resultado_fora}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="px-4 pb-4 pt-0 flex justify-between items-center text-[10px] font-medium text-zinc-500 uppercase tracking-wide">
+                                                    <div className="flex items-center gap-1.5 truncate max-w-[70%] text-zinc-400">
+                                                        {match.local ? (
+                                                            <>
+                                                                <MapPin size={10} className="shrink-0 text-gaia-yellow" />
+                                                                <span className="truncate">{match.local}</span>
+                                                            </>
+                                                        ) : (
+                                                            <span>{match.competicao}</span>
+                                                        )}
+                                                    </div>
+
+                                                    {match.status === 'A DECORRER' && (
+                                                        <span className="text-red-500 font-bold flex items-center gap-1 animate-pulse">
+                                                            <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                                                            LIVE
+                                                        </span>
+                                                    )}
+
+                                                    <ChevronRight size={14} className="text-zinc-400 group-hover:text-gaia-yellow transition-colors" />
+                                                </div>
+
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )
+            }
+        </div >
     )
 }
 

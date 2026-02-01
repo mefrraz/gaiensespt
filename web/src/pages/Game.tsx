@@ -154,27 +154,54 @@ function Game() {
             <div className="grid grid-cols-1 gap-3">
 
                 {/* Location Tile */}
-                <div className="glass-card p-5 flex items-start gap-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
-                    <div className="p-3 rounded-full bg-gray-100 dark:bg-white/5 text-gaia-yellow group-hover:scale-110 transition-transform">
-                        <MapPin size={20} />
-                    </div>
-                    <div className="flex-1">
-                        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Localização</h4>
-                        {match.local ? (
-                            <div>
-                                <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">{match.local}</p>
-                                <a
-                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(match.local)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xs font-bold text-gaia-yellow hover:text-black dark:hover:text-white transition-colors border-b border-gaia-yellow/30 pb-0.5"
-                                >
-                                    Abrir no Mapa
-                                </a>
-                            </div>
-                        ) : (
-                            <p className="text-sm text-gray-600 italic">Localização a definir</p>
-                        )}
+                {/* Location Tile */}
+                <div className="glass-card p-0 overflow-hidden hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group flex flex-col">
+                    {match.local ? (
+                        <div className="w-full h-48 relative">
+                            <iframe
+                                width="100%"
+                                height="100%"
+                                style={{ border: 0 }}
+                                loading="lazy"
+                                allowFullScreen
+                                src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(match.local)}`}
+                            ></iframe>
+                            {/* Overlay if no API key or just to make it clickable to open app? 
+                                Actually, embed requires API Key. If user doesn't have one, this breaks.
+                                Fallback: Use simple static link or basic map if possible without key?
+                                Google Maps Embed API requires key for 'place' mode.
+                                
+                                ALTERNATIVE for no-key: 
+                                Use <iframe src="https://maps.google.com/maps?q=...&t=&z=13&ie=UTF8&iwloc=&output=embed" ...>
+                                This is the old/hacky way but works without API key usually.
+                            */}
+                            <div className="absolute inset-0 pointer-events-none border-b border-gray-200 dark:border-white/10" />
+                        </div>
+                    ) : null}
+
+                    <div className="p-5 flex items-start gap-4">
+                        <div className="p-3 rounded-full bg-gray-100 dark:bg-white/5 text-gaia-yellow group-hover:scale-110 transition-transform">
+                            <MapPin size={20} />
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Localização</h4>
+                            {match.local ? (
+                                <div>
+                                    <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">{match.local}</p>
+                                    <a
+                                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(match.local)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 text-xs font-bold bg-zinc-100 dark:bg-white/10 px-3 py-1.5 rounded-full hover:bg-gaia-yellow hover:text-black transition-colors"
+                                    >
+                                        <MapPin size={12} />
+                                        Obter Direções
+                                    </a>
+                                </div>
+                            ) : (
+                                <p className="text-sm text-gray-600 italic">Localização a definir</p>
+                            )}
+                        </div>
                     </div>
                 </div>
 

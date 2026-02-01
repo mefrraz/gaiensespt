@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link } from 'react-router-dom'
-import { Sun, Moon, Instagram, Facebook, Info } from 'lucide-react'
+import { Sun, Moon, Instagram, Facebook, Info, TrendingUp } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 
 function Layout() {
@@ -51,6 +51,13 @@ function Layout() {
                             aria-label="Sobre"
                         >
                             <Info size={20} />
+                        </Link>
+                        <Link
+                            to="/stats"
+                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-300 transition-colors"
+                            aria-label="Estatísticas"
+                        >
+                            <TrendingUp size={20} />
                         </Link>
                         <button
                             onClick={toggleTheme}
