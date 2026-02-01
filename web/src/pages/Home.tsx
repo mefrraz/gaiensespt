@@ -14,6 +14,7 @@ export type Match = {
     resultado_fora: number | null
     escalao: string
     competicao: string
+    local: string | null
     status: 'AGENDADO' | 'A DECORRER' | 'FINALIZADO'
 }
 
@@ -103,7 +104,7 @@ function Home() {
                 <div className="flex bg-gray-900/50 p-1 rounded-lg">
                     <button
                         onClick={() => setView('agenda')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all font-medium ${view === 'agenda' ? 'bg-gaia-blue text-white shadow-lg' : 'text-gray-400 hover:text-white'
+                        className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all font-medium ${view === 'agenda' ? 'bg-gaia-yellow text-black shadow-lg shadow-gaia-yellow/20' : 'text-gray-400 hover:text-white'
                             }`}
                     >
                         <Calendar size={18} />
@@ -111,7 +112,7 @@ function Home() {
                     </button>
                     <button
                         onClick={() => setView('results')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all font-medium ${view === 'results' ? 'bg-gaia-yellow text-gray-900 shadow-lg' : 'text-gray-400 hover:text-white'
+                        className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all font-medium ${view === 'results' ? 'bg-white text-black shadow-lg' : 'text-gray-400 hover:text-white'
                             }`}
                     >
                         <Trophy size={18} />
@@ -126,7 +127,7 @@ function Home() {
                     <select
                         value={filterEscalao}
                         onChange={(e) => setFilterEscalao(e.target.value)}
-                        className="bg-gray-900/50 border border-white/10 text-white text-sm rounded-lg focus:ring-gaia-blue focus:border-gaia-blue block w-full md:w-64 pl-10 p-2.5 appearance-none cursor-pointer hover:bg-gray-800 transition-colors"
+                        className="bg-gray-900/50 border border-white/10 text-white text-sm rounded-lg focus:ring-gaia-yellow focus:border-gaia-yellow block w-full md:w-64 pl-10 p-2.5 appearance-none cursor-pointer hover:bg-gray-800 transition-colors"
                     >
                         <option value="Todos">Todos os Escalões</option>
                         {escaloes.map(e => (
@@ -150,12 +151,12 @@ function Home() {
                     ) : (
                         sortedDates.map(date => (
                             <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <h3 className="text-xl font-semibold text-gaia-blue mb-4 capitalize border-l-4 border-gaia-yellow pl-3">
+                                <h3 className="text-xl font-semibold text-white/90 mb-4 capitalize border-l-4 border-gaia-yellow pl-3">
                                     {formatDate(date)}
                                 </h3>
                                 <div className="grid gap-4 md:grid-cols-2">
                                     {groupedMatches[date].map(match => (
-                                        <Link to={`/game/${match.slug}`} key={match.slug} className="glass-card flex flex-col gap-3 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 hover:border-gaia-blue/30 block bg-gray-900/40 border border-white/10 p-5 rounded-xl">
+                                        <Link to={`/game/${match.slug}`} key={match.slug} className="glass-card flex flex-col gap-3 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 hover:border-gaia-yellow/50 block bg-gray-900/40 border border-white/10 p-5 rounded-xl">
 
                                             {/* Status Badge */}
                                             <div className="absolute top-0 right-0 p-3 z-10">
@@ -171,7 +172,7 @@ function Home() {
                                                 <span className="text-xs font-mono text-gray-400 bg-black/30 px-2 py-1 rounded">
                                                     {(match.hora || '00:00').slice(0, 5)}
                                                 </span>
-                                                <span className="text-xs text-gaia-blue font-bold tracking-wider uppercase">
+                                                <span className="text-xs text-gaia-yellow font-bold tracking-wider uppercase">
                                                     {match.escalao}
                                                 </span>
                                             </div>

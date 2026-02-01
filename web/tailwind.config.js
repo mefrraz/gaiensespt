@@ -7,8 +7,9 @@ export default {
     theme: {
         extend: {
             colors: {
-                'gaia-blue': '#0047AB',
-                'gaia-yellow': '#FFD700',
+                'gaia-yellow': '#f5b417',
+                'gaia-sand': '#fcfbfa',
+                'gaia-black': '#000000',
             },
             fontFamily: {
                 sans: ['Inter', 'sans-serif'], // Example

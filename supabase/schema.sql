@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS partidas (
     resultado_fora INTEGER,
     escalao TEXT,
     competicao TEXT,
+    local TEXT,
     status TEXT CHECK (status IN ('AGENDADO', 'A DECORRER', 'FINALIZADO')) DEFAULT 'AGENDADO',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL

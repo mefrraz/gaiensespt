@@ -33,7 +33,7 @@ function Layout() {
                             className="h-10 w-auto group-hover:scale-110 transition-transform duration-300 drop-shadow-md"
                         />
                         <div className="flex flex-col">
-                            <span className="font-bold text-lg leading-tight tracking-tight text-gaia-blue dark:text-blue-400">
+                            <span className="font-bold text-lg leading-tight tracking-tight text-gaia-black dark:text-white">
                                 FC GAIA
                             </span>
                             <span className="text-[10px] uppercase tracking-widest text-gray-500 font-medium group-hover:text-gaia-yellow transition-colors">
