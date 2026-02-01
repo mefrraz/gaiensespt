@@ -176,6 +176,7 @@ def fetch_and_parse(url: str, is_agenda: bool) -> List[Dict[str, Any]]:
                     
                     # Check if the time element actually contains the score (common pattern)
                     # "12H15" vs "80 - 70"
+                    # We check raw_time_text because game_time is likely None for "80 - 70"
                     if raw_time_text and "-" in raw_time_text and ":" not in raw_time_text:
                          status = "FINALIZADO"
                          try:
