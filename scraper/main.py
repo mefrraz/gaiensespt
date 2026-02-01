@@ -242,22 +242,7 @@ def fetch_and_parse(url: str, is_agenda: bool) -> List[Dict[str, Any]]:
                     "competicao": competition,
                     "local": game_location,
                     "status": status
-                }                    else:
-                        category = full_text
-                        competition = full_text # or generic
-                else: 
-                     competition = "Unknown"
-
-                game_data = {
-                    "slug": slug,
-                    "data": game_date.isoformat(),
-                    "hora": game_time,
-                    "equipa_casa": home_team,
-                    "equipa_fora": away_team,
-                    "resultado_casa": score_home,
-                    "resultado_fora": score_away,
-                    "escalao": category,
-                    "competicao": competition,
+                }
                     "status": status
                 }
                 games_data.append(game_data)
