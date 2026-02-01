@@ -107,7 +107,7 @@ function About() {
                                     <div className="w-2 h-2 bg-gray-400 rounded-full mt-1.5 shrink-0"></div>
                                     <div>
                                         <p className="text-sm font-bold text-gray-900 dark:text-white">Segunda a Sexta</p>
-                                        <p className="text-xs text-gray-500">15:00 e 21:00</p>
+                                        <p className="text-xs text-gray-500">11:00, 16:00 e 21:00</p>
                                     </div>
                                 </div>
 
@@ -115,14 +115,14 @@ function About() {
                                     <div className="w-2 h-2 bg-gaia-yellow rounded-full mt-1.5 shrink-0"></div>
                                     <div>
                                         <p className="text-sm font-bold text-gray-900 dark:text-white">Sábado e Domingo</p>
-                                        <p className="text-xs text-gray-500">11:00, 13:00, 15:00, 17:00, 18:30, 20:00, 21:30</p>
-                                        <p className="text-[10px] text-gaia-yellow font-medium mt-1">Mais frequente nos dias de jogo!</p>
+                                        <p className="text-xs text-gray-500">Das 09:00 às 22:00, a cada 20 minutos</p>
+                                        <p className="text-[10px] text-gaia-yellow font-medium mt-1">Resultados quase em tempo real!</p>
                                     </div>
                                 </div>
                             </div>
 
                             <p className="text-xs text-gray-500 mt-4 italic">
-                                * Horários em hora de Portugal Continental (UTC durante inverno)
+                                * Horários em hora de Portugal Continental
                             </p>
                         </div>
                     </div>

@@ -21,9 +21,10 @@ export type Match = {
 }
 
 // Update schedule (in UTC hours)
-const WEEKDAY_UPDATES = [15, 21]
-const WEEKEND_UPDATES_START = 10
-const WEEKEND_UPDATES_END = 21
+const WEEKDAY_UPDATES = [11, 16, 21]
+const WEEKEND_UPDATES_START = 9
+const WEEKEND_UPDATES_END = 22
+const WEEKEND_INTERVAL_MINS = 20
 
 function getNextUpdateTime(): Date {
     const now = new Date()
@@ -33,7 +34,7 @@ function getNextUpdateTime(): Date {
     const currentHour = now.getUTCHours() + now.getUTCMinutes() / 60
 
     if (isWeekend) {
-        // Find next 30-min slot
+        // Find next 20-min slot
         if (currentHour < WEEKEND_UPDATES_START) {
             const next = new Date(now)
             next.setUTCHours(WEEKEND_UPDATES_START, 0, 0, 0)
@@ -48,10 +49,11 @@ function getNextUpdateTime(): Date {
             tomorrow.setUTCHours(tomIsWeekend ? WEEKEND_UPDATES_START : WEEKDAY_UPDATES[0], 0, 0, 0)
             return tomorrow
         }
-        // Current hour is within range, find next 30-min slot
-        const nextSlot = Math.ceil(currentHour * 2) / 2
+        // Current hour is within range, find next 20-min slot
+        const totalMins = now.getUTCHours() * 60 + now.getUTCMinutes()
+        const nextSlotMins = Math.ceil(totalMins / WEEKEND_INTERVAL_MINS) * WEEKEND_INTERVAL_MINS
         const next = new Date(now)
-        next.setUTCHours(Math.floor(nextSlot), (nextSlot % 1) * 60, 0, 0)
+        next.setUTCHours(Math.floor(nextSlotMins / 60), nextSlotMins % 60, 0, 0)
         return next
     } else {
         // Weekday logic
