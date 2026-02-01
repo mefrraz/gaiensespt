@@ -24,7 +24,6 @@ export type Match = {
 const WEEKDAY_UPDATES = [15, 21]
 const WEEKEND_UPDATES_START = 10
 const WEEKEND_UPDATES_END = 21
-const WEEKEND_INTERVAL = 0.5 // 30 minutes
 
 function getNextUpdateTime(): Date {
     const now = new Date()
