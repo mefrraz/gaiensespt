@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-    PieChart, Pie, Cell
+    PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer
 } from 'recharts'
-import { Loader2, TrendingUp, Trophy, Calendar } from 'lucide-react'
+import { Loader2, TrendingUp, Trophy } from 'lucide-react'
 
 // Types
 type Match = {
