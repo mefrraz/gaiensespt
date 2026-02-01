@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, MapPin, Calendar, Clock, Loader2, Share2, Shield } from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, Loader2, Share2, Shield } from 'lucide-react'
 import { Match } from './Home'
 
 function Game() {
