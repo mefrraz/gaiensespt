@@ -2,11 +2,14 @@ name: Update FC Gaia Data
 
 on:
   schedule:
-    # Weekdays (Mon-Fri) at 11:00, 16:00, and 21:00 UTC
-    - cron: '0 11,16,21 * * 1-5'
+    # Mon-Thu: 12:00, 18:00, 22:00 UTC
+    - cron: '0 12,18,22 * * 1-4'
     
-    # Weekends (Sat-Sun) every 20 minutes from 09:00 to 22:00 UTC
-    - cron: '0,20,40 9-22 * * 6,0'
+    # Friday: every 30 min from 16:00 to 23:30 UTC
+    - cron: '0,30 16-23 * * 5'
+    
+    # Sat-Sun: every 15 min from 10:00 to 23:45 UTC
+    - cron: '0,15,30,45 10-23 * * 6,0'
 
   workflow_dispatch:
 

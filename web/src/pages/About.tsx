@@ -106,8 +106,16 @@ function About() {
                                 <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-white/5 rounded-lg">
                                     <div className="w-2 h-2 bg-gray-400 rounded-full mt-1.5 shrink-0"></div>
                                     <div>
-                                        <p className="text-sm font-bold text-gray-900 dark:text-white">Segunda a Sexta</p>
-                                        <p className="text-xs text-gray-500">11:00, 16:00 e 21:00</p>
+                                        <p className="text-sm font-bold text-gray-900 dark:text-white">Segunda a Quinta</p>
+                                        <p className="text-xs text-gray-500">12:00, 18:00 e 22:00</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-white/5 rounded-lg">
+                                    <div className="w-2 h-2 bg-gray-400 rounded-full mt-1.5 shrink-0"></div>
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-900 dark:text-white">Sexta-feira</p>
+                                        <p className="text-xs text-gray-500">Das 16:00 à meia-noite, a cada 30 minutos</p>
                                     </div>
                                 </div>
 
@@ -115,7 +123,7 @@ function About() {
                                     <div className="w-2 h-2 bg-gaia-yellow rounded-full mt-1.5 shrink-0"></div>
                                     <div>
                                         <p className="text-sm font-bold text-gray-900 dark:text-white">Sábado e Domingo</p>
-                                        <p className="text-xs text-gray-500">Das 09:00 às 22:00, a cada 20 minutos</p>
+                                        <p className="text-xs text-gray-500">Das 10:00 à meia-noite, a cada 15 minutos</p>
                                         <p className="text-[10px] text-gaia-yellow font-medium mt-1">Resultados quase em tempo real!</p>
                                     </div>
                                 </div>

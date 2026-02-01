@@ -21,42 +21,68 @@ export type Match = {
 }
 
 // Update schedule (in UTC hours)
-const WEEKDAY_UPDATES = [11, 16, 21]
-const WEEKEND_UPDATES_START = 9
-const WEEKEND_UPDATES_END = 22
-const WEEKEND_INTERVAL_MINS = 20
+const WEEKDAY_UPDATES = [12, 18, 22] // Mon-Thu
+const FRIDAY_START = 16
+const FRIDAY_END = 24
+const FRIDAY_INTERVAL_MINS = 30
+const WEEKEND_UPDATES_START = 10
+const WEEKEND_UPDATES_END = 24
+const WEEKEND_INTERVAL_MINS = 15
 
 function getNextUpdateTime(): Date {
     const now = new Date()
-    const dayOfWeek = now.getUTCDay()
+    const dayOfWeek = now.getUTCDay() // 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+    const isFriday = dayOfWeek === 5
 
     const currentHour = now.getUTCHours() + now.getUTCMinutes() / 60
+    const totalMins = now.getUTCHours() * 60 + now.getUTCMinutes()
 
     if (isWeekend) {
-        // Find next 20-min slot
+        // Sat-Sun: 10:00-24:00 every 15 min
         if (currentHour < WEEKEND_UPDATES_START) {
             const next = new Date(now)
             next.setUTCHours(WEEKEND_UPDATES_START, 0, 0, 0)
             return next
         }
         if (currentHour >= WEEKEND_UPDATES_END) {
-            // Next update is tomorrow
+            // Next day
             const tomorrow = new Date(now)
             tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
             const tomorrowDow = tomorrow.getUTCDay()
-            const tomIsWeekend = tomorrowDow === 0 || tomorrowDow === 6
-            tomorrow.setUTCHours(tomIsWeekend ? WEEKEND_UPDATES_START : WEEKDAY_UPDATES[0], 0, 0, 0)
+            if (tomorrowDow === 0 || tomorrowDow === 6) {
+                tomorrow.setUTCHours(WEEKEND_UPDATES_START, 0, 0, 0)
+            } else {
+                tomorrow.setUTCHours(WEEKDAY_UPDATES[0], 0, 0, 0)
+            }
             return tomorrow
         }
-        // Current hour is within range, find next 20-min slot
-        const totalMins = now.getUTCHours() * 60 + now.getUTCMinutes()
+        // Find next 15-min slot
         const nextSlotMins = Math.ceil(totalMins / WEEKEND_INTERVAL_MINS) * WEEKEND_INTERVAL_MINS
         const next = new Date(now)
-        next.setUTCHours(Math.floor(nextSlotMins / 60), nextSlotMins % 60, 0, 0)
+        next.setUTCHours(Math.floor(nextSlotMins / 60) % 24, nextSlotMins % 60, 0, 0)
+        return next
+    } else if (isFriday) {
+        // Friday: 16:00-24:00 every 30 min
+        if (currentHour < FRIDAY_START) {
+            const next = new Date(now)
+            next.setUTCHours(FRIDAY_START, 0, 0, 0)
+            return next
+        }
+        if (currentHour >= FRIDAY_END) {
+            // Saturday
+            const tomorrow = new Date(now)
+            tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
+            tomorrow.setUTCHours(WEEKEND_UPDATES_START, 0, 0, 0)
+            return tomorrow
+        }
+        // Find next 30-min slot
+        const nextSlotMins = Math.ceil(totalMins / FRIDAY_INTERVAL_MINS) * FRIDAY_INTERVAL_MINS
+        const next = new Date(now)
+        next.setUTCHours(Math.floor(nextSlotMins / 60) % 24, nextSlotMins % 60, 0, 0)
         return next
     } else {
-        // Weekday logic
+        // Mon-Thu: 12:00, 18:00, 22:00
         for (const hour of WEEKDAY_UPDATES) {
             if (hour > currentHour) {
                 const next = new Date(now)
@@ -68,8 +94,13 @@ function getNextUpdateTime(): Date {
         const tomorrow = new Date(now)
         tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
         const tomorrowDow = tomorrow.getUTCDay()
-        const tomIsWeekend = tomorrowDow === 0 || tomorrowDow === 6
-        tomorrow.setUTCHours(tomIsWeekend ? WEEKEND_UPDATES_START : WEEKDAY_UPDATES[0], 0, 0, 0)
+        if (tomorrowDow === 5) {
+            tomorrow.setUTCHours(FRIDAY_START, 0, 0, 0)
+        } else if (tomorrowDow === 0 || tomorrowDow === 6) {
+            tomorrow.setUTCHours(WEEKEND_UPDATES_START, 0, 0, 0)
+        } else {
+            tomorrow.setUTCHours(WEEKDAY_UPDATES[0], 0, 0, 0)
+        }
         return tomorrow
     }
 }
