@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link } from 'react-router-dom'
-import { Sun, Moon, Instagram, Facebook } from 'lucide-react'
+import { Sun, Moon, Instagram, Facebook, Info } from 'lucide-react'
 
 function Layout() {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
@@ -43,7 +43,14 @@ function Layout() {
                     </Link>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                        <Link
+                            to="/about"
+                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors"
+                            aria-label="Sobre"
+                        >
+                            <Info size={20} />
+                        </Link>
                         <button
                             onClick={toggleTheme}
                             className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors"
