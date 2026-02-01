@@ -78,8 +78,12 @@ function Game() {
 
                         {/* Home */}
                         <div className="flex-1 flex flex-col items-center text-center gap-3">
-                            <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                                <Shield className="text-gray-600" size={24} />
+                            <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center p-2 overflow-hidden">
+                                {match.logotipo_casa ? (
+                                    <img src={match.logotipo_casa} alt={match.equipa_casa} className="w-full h-full object-contain" />
+                                ) : (
+                                    <Shield className="text-gray-600" size={32} />
+                                )}
                             </div>
                             <h2 className="text-lg font-bold text-white leading-tight">
                                 {match.equipa_casa}
@@ -87,7 +91,7 @@ function Game() {
                         </div>
 
                         {/* Center Info */}
-                        <div className="flex flex-col items-center gap-2 pt-2">
+                        <div className="flex flex-col items-center gap-2 pt-4">
                             {match.status === 'A DECORRER' && (
                                 <span className="bg-red-500 text-white px-2 py-0.5 rounded text-[10px] font-bold animate-pulse">
                                     LIVE
@@ -100,8 +104,12 @@ function Game() {
 
                         {/* Away */}
                         <div className="flex-1 flex flex-col items-center text-center gap-3">
-                            <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                                <Shield className="text-gray-600" size={24} />
+                            <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center p-2 overflow-hidden">
+                                {match.logotipo_fora ? (
+                                    <img src={match.logotipo_fora} alt={match.equipa_fora} className="w-full h-full object-contain" />
+                                ) : (
+                                    <Shield className="text-gray-600" size={32} />
+                                )}
                             </div>
                             <h2 className="text-lg font-bold text-white leading-tight">
                                 {match.equipa_fora}

@@ -100,10 +100,10 @@ function Home() {
     }
 
     return (
-        <div className="max-w-md mx-auto space-y-6 pb-20">
+        <div className="max-w-6xl mx-auto space-y-6 pb-20">
 
             {/* Mobile-first Header / Segment Controller */}
-            <div className="sticky top-20 z-40 bg-black/80 backdrop-blur-xl p-1.5 rounded-2xl border border-white/10 flex gap-1 shadow-2xl mx-1">
+            <div className="sticky top-20 z-40 bg-black/80 backdrop-blur-xl p-1.5 rounded-2xl border border-white/10 flex gap-1 shadow-2xl mx-1 max-w-md mx-auto">
                 <button
                     onClick={() => setView('agenda')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'agenda' ? 'bg-gaia-yellow text-black shadow-lg shadow-yellow-500/20' : 'text-gray-500 hover:text-gray-300'
@@ -123,7 +123,7 @@ function Home() {
             </div>
 
             {/* Filter Toggle - simplified for mobile */}
-            <div className="px-2">
+            <div className="px-2 max-w-md mx-auto">
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <Filter size={14} />
@@ -160,7 +160,7 @@ function Home() {
                                     {formatDate(date)}
                                 </h3>
 
-                                <div className="space-y-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {groupedMatches[date].map(match => (
                                         <Link to={`/game/${match.slug}`} key={match.slug} className="glass-card flex flex-col gap-0 group active:scale-[0.98]">
 
@@ -181,12 +181,12 @@ function Home() {
                                             <div className="p-4 flex justify-between items-center gap-4">
                                                 {/* Home */}
                                                 <div className={`flex flex-col flex-1 ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa > match.resultado_fora ? 'opacity-100' : 'opacity-70'}`}>
-                                                    <div className="flex items-center gap-2 mb-1">
+                                                    <div className="flex items-center gap-3 mb-1">
                                                         {match.logotipo_casa ? (
-                                                            <img src={match.logotipo_casa} alt={match.equipa_casa} className="w-6 h-6 object-contain" />
+                                                            <img src={match.logotipo_casa} alt={match.equipa_casa} className="w-10 h-10 object-contain" />
                                                         ) : (
-                                                            <div className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center">
-                                                                <span className="text-[10px] font-bold text-gray-400">{match.equipa_casa.substring(0, 1)}</span>
+                                                            <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
+                                                                <span className="text-xs font-bold text-gray-400">{match.equipa_casa.substring(0, 1)}</span>
                                                             </div>
                                                         )}
                                                         <span className="text-sm font-bold text-white leading-tight truncate">
@@ -207,12 +207,12 @@ function Home() {
 
                                                 {/* Away */}
                                                 <div className={`flex flex-col flex-1 items-end text-right ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora > match.resultado_casa ? 'opacity-100' : 'opacity-70'}`}>
-                                                    <div className="flex flex-row-reverse items-center gap-2 mb-1">
+                                                    <div className="flex flex-row-reverse items-center gap-3 mb-1">
                                                         {match.logotipo_fora ? (
-                                                            <img src={match.logotipo_fora} alt={match.equipa_fora} className="w-6 h-6 object-contain" />
+                                                            <img src={match.logotipo_fora} alt={match.equipa_fora} className="w-10 h-10 object-contain" />
                                                         ) : (
-                                                            <div className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center">
-                                                                <span className="text-[10px] font-bold text-gray-400">{match.equipa_fora.substring(0, 1)}</span>
+                                                            <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
+                                                                <span className="text-xs font-bold text-gray-400">{match.equipa_fora.substring(0, 1)}</span>
                                                             </div>
                                                         )}
                                                         <span className="text-sm font-bold text-white leading-tight truncate">
