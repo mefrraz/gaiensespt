@@ -28,20 +28,27 @@ def parse_date(date_str: str) -> Optional[datetime.date]:
     except Exception:
         return None
 
-def fetch_and_parse(url: str, is_agenda: bool, season: str = '2025/2026') -> List[Dict[str, Any]]:
+def fetch_and_parse(url: str, is_agenda: bool, season: str = '2025/2026', html_content: Optional[str] = None) -> List[Dict[str, Any]]:
     print(f"Fetching {url} for season {season}...")
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    }
     
-    try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-    except Exception as e:
-        print(f"Failed to fetch {url}: {e}")
-        return []
+    if html_content:
+        # Use provided HTML directly
+        response_content = html_content
+    else:
+        # Fetch via requests
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            response_content = response.content
+        except Exception as e:
+            print(f"Failed to fetch {url}: {e}")
+            return []
 
-    soup = BeautifulSoup(response.content, "html.parser")
+    soup = BeautifulSoup(response_content, "html.parser")
     games_data = []
 
     day_wrappers = soup.select("div.day-wrapper")

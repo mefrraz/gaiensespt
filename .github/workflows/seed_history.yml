@@ -17,7 +17,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests beautifulsoup4 supabase python-dotenv
+          pip install requests beautifulsoup4 supabase python-dotenv playwright
+          playwright install chromium --with-deps
 
       - name: Run Seed Script
         env:
