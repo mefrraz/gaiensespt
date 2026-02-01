@@ -20,6 +20,54 @@ export type Match = {
     status: 'AGENDADO' | 'A DECORRER' | 'FINALIZADO'
 }
 
+// Update schedule (in UTC hours)
+const WEEKDAY_UPDATES = [15, 21] // 15:00 and 21:00 UTC
+const WEEKEND_UPDATES = [11, 13, 15, 17, 18.5, 20, 21.5] // 11:00, 13:00, 15:00, 17:00, 18:30, 20:00, 21:30 UTC
+
+function getNextUpdateTime(): Date {
+    const now = new Date()
+    const dayOfWeek = now.getUTCDay() // 0 = Sunday, 6 = Saturday
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+    const schedule = isWeekend ? WEEKEND_UPDATES : WEEKDAY_UPDATES
+
+    const currentHour = now.getUTCHours() + now.getUTCMinutes() / 60
+
+    // Find next update today
+    for (const hour of schedule) {
+        if (hour > currentHour) {
+            const nextUpdate = new Date(now)
+            nextUpdate.setUTCHours(Math.floor(hour), (hour % 1) * 60, 0, 0)
+            return nextUpdate
+        }
+    }
+
+    // No more updates today, get first update tomorrow
+    const tomorrow = new Date(now)
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
+    const tomorrowDayOfWeek = tomorrow.getUTCDay()
+    const tomorrowIsWeekend = tomorrowDayOfWeek === 0 || tomorrowDayOfWeek === 6
+    const tomorrowSchedule = tomorrowIsWeekend ? WEEKEND_UPDATES : WEEKDAY_UPDATES
+    const firstHour = tomorrowSchedule[0]
+    tomorrow.setUTCHours(Math.floor(firstHour), (firstHour % 1) * 60, 0, 0)
+    return tomorrow
+}
+
+function formatTimeUntil(target: Date): string {
+    const now = new Date()
+    const diffMs = target.getTime() - now.getTime()
+
+    if (diffMs <= 0) return 'agora'
+
+    const diffMins = Math.floor(diffMs / 60000)
+    const hours = Math.floor(diffMins / 60)
+    const mins = diffMins % 60
+
+    if (hours > 0) {
+        return `${hours}h ${mins}min`
+    }
+    return `${mins}min`
+}
+
 function Home() {
     const [matches, setMatches] = useState<Match[]>([])
     const [loading, setLoading] = useState(true)
@@ -27,6 +75,20 @@ function Home() {
     const [filterEscalao, setFilterEscalao] = useState<string>('Todos')
     const [escaloes, setEscaloes] = useState<string[]>([])
     const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
+    const [timeUntilUpdate, setTimeUntilUpdate] = useState<string>('')
+
+    // Update countdown every minute
+    useEffect(() => {
+        const updateCountdown = () => {
+            const nextUpdate = getNextUpdateTime()
+            setTimeUntilUpdate(formatTimeUntil(nextUpdate))
+        }
+
+        updateCountdown()
+        const interval = setInterval(updateCountdown, 60000) // Update every minute
+
+        return () => clearInterval(interval)
+    }, [])
 
     // Fetch data
     const fetchMatches = async () => {
@@ -43,7 +105,7 @@ function Home() {
                 sorted = sorted.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
             }
             setMatches(sorted)
-            setLastUpdate(new Date()) // Record when data was fetched
+            setLastUpdate(new Date())
 
             const uniqueEscaloes = Array.from(new Set(sorted.map(m => m.escalao))).filter(Boolean).sort()
             setEscaloes(uniqueEscaloes)
@@ -58,7 +120,7 @@ function Home() {
         const channel = supabase
             .channel('public:partidas')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'partidas' }, () => {
-                fetchMatches() // Re-fetch on any change
+                fetchMatches()
             })
             .subscribe()
 
@@ -79,7 +141,7 @@ function Home() {
         return true
     })
 
-    // Group by Date for cleaner UI
+    // Group by Date
     const groupedMatches = filteredMatches.reduce((groups, match) => {
         const date = match.data
         if (!groups[date]) groups[date] = []
@@ -87,21 +149,18 @@ function Home() {
         return groups
     }, {} as Record<string, Match[]>)
 
-    // Sort dates
     const sortedDates = Object.keys(groupedMatches).sort((a, b) => {
         return view === 'agenda'
             ? new Date(a).getTime() - new Date(b).getTime()
             : new Date(b).getTime() - new Date(a).getTime()
     })
 
-    // Format Date Helper
     const formatDate = (dateStr: string) => {
         const options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'long' }
         const date = new Date(dateStr).toLocaleDateString('pt-PT', options)
         return date.charAt(0).toUpperCase() + date.slice(1)
     }
 
-    // Format Last Update
     const formatLastUpdate = () => {
         if (!lastUpdate) return ''
         return lastUpdate.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
@@ -110,27 +169,25 @@ function Home() {
     return (
         <div className="max-w-6xl mx-auto space-y-6 pb-20">
 
-            {/* Mobile-first Header / Segment Controller */}
+            {/* Segment Controller */}
             <div className="sticky top-20 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-xl p-1.5 rounded-2xl border border-gray-200 dark:border-white/10 flex gap-1 shadow-xl mx-1 max-w-md mx-auto">
                 <button
                     onClick={() => setView('agenda')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'agenda' ? 'bg-gaia-yellow text-black shadow-lg shadow-yellow-500/20' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
-                        }`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'agenda' ? 'bg-gaia-yellow text-black shadow-lg shadow-yellow-500/20' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}
                 >
                     <Calendar size={16} strokeWidth={2.5} />
                     AGENDA
                 </button>
                 <button
                     onClick={() => setView('results')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'results' ? 'bg-gray-100 dark:bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
-                        }`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'results' ? 'bg-gray-100 dark:bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}
                 >
                     <Trophy size={16} strokeWidth={2.5} />
                     RESULTADOS
                 </button>
             </div>
 
-            {/* Filter Toggle - simplified for mobile */}
+            {/* Filter */}
             <div className="px-2 max-w-md mx-auto">
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
@@ -149,15 +206,15 @@ function Home() {
                 </div>
             </div>
 
-            {/* Last Update Info */}
+            {/* Update Info with Countdown */}
             <div className="px-2 max-w-md mx-auto">
-                <div className="flex items-center justify-between text-[10px] text-gray-400 uppercase tracking-wide">
+                <Link to="/about" className="flex items-center justify-between text-[10px] text-gray-400 uppercase tracking-wide hover:text-gaia-yellow transition-colors group">
                     <div className="flex items-center gap-1.5">
-                        <RefreshCw size={10} />
-                        <span>Última atualização: {formatLastUpdate()}</span>
+                        <RefreshCw size={10} className="group-hover:animate-spin" />
+                        <span>Atualizado: {formatLastUpdate()}</span>
                     </div>
-                    <span className="text-gray-500">Atualiza a cada 2h</span>
-                </div>
+                    <span className="text-gray-500 group-hover:text-gaia-yellow">Próxima: {timeUntilUpdate}</span>
+                </Link>
             </div>
 
             {/* Content List */}
@@ -183,7 +240,6 @@ function Home() {
                                     {groupedMatches[date].map(match => (
                                         <Link to={`/game/${match.slug}`} key={match.slug} className="glass-card flex flex-col gap-0 group active:scale-[0.98] hover:border-gaia-yellow/30">
 
-                                            {/* Header: Time & Competition */}
                                             <div className="flex justify-between items-center p-4 pb-2 border-b border-gray-100 dark:border-white/5">
                                                 <div className="flex items-center gap-2 text-gaia-yellow">
                                                     {view === 'agenda' ? (
@@ -194,7 +250,6 @@ function Home() {
                                                             </span>
                                                         </>
                                                     ) : (
-                                                        // Show date instead of time for results if time is missing or not relevant
                                                         <span className="text-[10px] font-bold text-gray-400">FIN</span>
                                                     )}
                                                 </div>
@@ -203,10 +258,7 @@ function Home() {
                                                 </span>
                                             </div>
 
-                                            {/* Main: Teams & Scores - REDESIGNED FOR BETTER ALIGNMENT */}
                                             <div className="p-4 flex flex-col gap-3">
-
-                                                {/* Home Row */}
                                                 <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa < match.resultado_fora ? 'opacity-60 grayscale' : 'opacity-100'}`}>
                                                     <div className="flex items-center gap-3">
                                                         {match.logotipo_casa ? (
@@ -227,7 +279,6 @@ function Home() {
                                                     )}
                                                 </div>
 
-                                                {/* Away Row */}
                                                 <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora < match.resultado_casa ? 'opacity-60 grayscale' : 'opacity-100'}`}>
                                                     <div className="flex items-center gap-3">
                                                         {match.logotipo_fora ? (
@@ -247,10 +298,8 @@ function Home() {
                                                         </span>
                                                     )}
                                                 </div>
-
                                             </div>
 
-                                            {/* Footer: Status / Location */}
                                             <div className="px-4 pb-4 pt-0 flex justify-between items-center text-[10px] font-medium text-gray-500 uppercase tracking-wide">
                                                 <div className="flex items-center gap-1.5 truncate max-w-[70%] text-gray-400">
                                                     {match.local ? (

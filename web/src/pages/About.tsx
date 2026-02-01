@@ -1,4 +1,4 @@
-import { ArrowLeft, Instagram, Code } from 'lucide-react'
+import { ArrowLeft, Instagram, Code, Database, Clock, ExternalLink } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 function About() {
@@ -59,7 +59,76 @@ function About() {
                     </div>
                 </div>
 
-                {/* Features / PWA Note */}
+                {/* Data Source Info - NEW */}
+                <div className="glass-card p-6">
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <Database size={12} />
+                        Fonte dos Dados
+                    </h3>
+                    <div className="space-y-4">
+                        <div>
+                            <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-2">
+                                De onde vêm os resultados?
+                            </h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-3">
+                                Os dados são obtidos automaticamente do site oficial da <strong>Federação Portuguesa de Basquetebol (FPB)</strong>.
+                                Incluem jogos, resultados, horários e localizações de todas as equipas do FC Gaia.
+                            </p>
+                            <a
+                                href="https://www.fpb.pt"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-xs font-bold text-gaia-yellow hover:text-black dark:hover:text-white transition-colors"
+                            >
+                                <ExternalLink size={12} />
+                                Visitar FPB.pt
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Update Schedule - NEW */}
+                <div className="glass-card p-6">
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <Clock size={12} />
+                        Quando Atualiza?
+                    </h3>
+                    <div className="space-y-4">
+                        <div>
+                            <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-2">
+                                Horário de Atualização Automática
+                            </h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+                                O sistema verifica novos resultados automaticamente várias vezes ao dia:
+                            </p>
+
+                            <div className="space-y-3">
+                                <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-white/5 rounded-lg">
+                                    <div className="w-2 h-2 bg-gray-400 rounded-full mt-1.5 shrink-0"></div>
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-900 dark:text-white">Segunda a Sexta</p>
+                                        <p className="text-xs text-gray-500">15:00 e 21:00</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-3 p-3 bg-gaia-yellow/10 border border-gaia-yellow/20 rounded-lg">
+                                    <div className="w-2 h-2 bg-gaia-yellow rounded-full mt-1.5 shrink-0"></div>
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-900 dark:text-white">Sábado e Domingo</p>
+                                        <p className="text-xs text-gray-500">11:00, 13:00, 15:00, 17:00, 18:30, 20:00, 21:30</p>
+                                        <p className="text-[10px] text-gaia-yellow font-medium mt-1">Mais frequente nos dias de jogo!</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p className="text-xs text-gray-500 mt-4 italic">
+                                * Horários em hora de Portugal Continental (UTC durante inverno)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Features */}
                 <div className="glass-card p-6">
                     <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
                         Funcionalidades
@@ -67,7 +136,7 @@ function About() {
                     <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
                         <li className="flex items-center gap-2">
                             <span className="w-1.5 h-1.5 bg-gaia-yellow rounded-full"></span>
-                            Resultados em tempo real (LIVE)
+                            Resultados atualizados automaticamente
                         </li>
                         <li className="flex items-center gap-2">
                             <span className="w-1.5 h-1.5 bg-gaia-yellow rounded-full"></span>
@@ -79,7 +148,11 @@ function About() {
                         </li>
                         <li className="flex items-center gap-2">
                             <span className="w-1.5 h-1.5 bg-gaia-yellow rounded-full"></span>
-                            Instalável como App (PWA)
+                            Adicionar jogos ao calendário
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-gaia-yellow rounded-full"></span>
+                            Funciona offline (PWA)
                         </li>
                     </ul>
                 </div>
