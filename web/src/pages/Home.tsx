@@ -103,10 +103,10 @@ function Home() {
         <div className="max-w-6xl mx-auto space-y-6 pb-20">
 
             {/* Mobile-first Header / Segment Controller */}
-            <div className="sticky top-20 z-40 bg-black/80 backdrop-blur-xl p-1.5 rounded-2xl border border-white/10 flex gap-1 shadow-2xl mx-1 max-w-md mx-auto">
+            <div className="sticky top-20 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-xl p-1.5 rounded-2xl border border-gray-200 dark:border-white/10 flex gap-1 shadow-xl mx-1 max-w-md mx-auto">
                 <button
                     onClick={() => setView('agenda')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'agenda' ? 'bg-gaia-yellow text-black shadow-lg shadow-yellow-500/20' : 'text-gray-500 hover:text-gray-300'
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'agenda' ? 'bg-gaia-yellow text-black shadow-lg shadow-yellow-500/20' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
                         }`}
                 >
                     <Calendar size={16} strokeWidth={2.5} />
@@ -114,7 +114,7 @@ function Home() {
                 </button>
                 <button
                     onClick={() => setView('results')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'results' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'results' ? 'bg-gray-100 dark:bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
                         }`}
                 >
                     <Trophy size={16} strokeWidth={2.5} />
@@ -131,7 +131,7 @@ function Home() {
                     <select
                         value={filterEscalao}
                         onChange={(e) => setFilterEscalao(e.target.value)}
-                        className="bg-[#111] border border-white/10 text-gray-300 text-xs font-medium rounded-lg focus:ring-1 focus:ring-gaia-yellow focus:border-gaia-yellow block w-full pl-9 p-2.5 appearance-none"
+                        className="bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-300 text-xs font-medium rounded-lg focus:ring-1 focus:ring-gaia-yellow focus:border-gaia-yellow block w-full pl-9 p-2.5 appearance-none shadow-sm"
                     >
                         <option value="Todos">Todos os Escalões</option>
                         {escaloes.map(e => (
@@ -156,75 +156,79 @@ function Home() {
                         sortedDates.map(date => (
                             <div key={date} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
 
-                                <h3 className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-widest pl-2">
+                                <h3 className="text-xs font-bold text-gray-500 dark:text-gray-500 mb-3 uppercase tracking-widest pl-2">
                                     {formatDate(date)}
                                 </h3>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {groupedMatches[date].map(match => (
-                                        <Link to={`/game/${match.slug}`} key={match.slug} className="glass-card flex flex-col gap-0 group active:scale-[0.98]">
+                                        <Link to={`/game/${match.slug}`} key={match.slug} className="glass-card flex flex-col gap-0 group active:scale-[0.98] hover:border-gaia-yellow/30">
 
                                             {/* Header: Time & Competition */}
-                                            <div className="flex justify-between items-center p-4 pb-2 border-b border-white/5">
+                                            <div className="flex justify-between items-center p-4 pb-2 border-b border-gray-100 dark:border-white/5">
                                                 <div className="flex items-center gap-2 text-gaia-yellow">
-                                                    <Clock size={12} strokeWidth={3} />
-                                                    <span className="text-xs font-mono font-bold tracking-wider">
-                                                        {(match.hora || '00:00').slice(0, 5)}
-                                                    </span>
+                                                    {view === 'agenda' ? (
+                                                        <>
+                                                            <Clock size={12} strokeWidth={3} />
+                                                            <span className="text-xs font-mono font-bold tracking-wider">
+                                                                {(match.hora || '00:00').slice(0, 5)}
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        // Show date instead of time for results if time is missing or not relevant
+                                                        <span className="text-[10px] font-bold text-gray-400">FIN</span>
+                                                    )}
                                                 </div>
                                                 <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                                                     {match.escalao}
                                                 </span>
                                             </div>
 
-                                            {/* Main: Teams & Scores */}
-                                            <div className="p-4 flex justify-between items-center gap-4">
-                                                {/* Home */}
-                                                <div className={`flex flex-col flex-1 ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa > match.resultado_fora ? 'opacity-100' : 'opacity-70'}`}>
-                                                    <div className="flex items-center gap-3 mb-1">
+                                            {/* Main: Teams & Scores - REDESIGNED FOR BETTER ALIGNMENT */}
+                                            <div className="p-4 flex flex-col gap-3">
+
+                                                {/* Home Row */}
+                                                <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa < match.resultado_fora ? 'opacity-60 grayscale' : 'opacity-100'}`}>
+                                                    <div className="flex items-center gap-3">
                                                         {match.logotipo_casa ? (
-                                                            <img src={match.logotipo_casa} alt={match.equipa_casa} className="w-10 h-10 object-contain" />
+                                                            <img src={match.logotipo_casa} alt={match.equipa_casa} className="w-8 h-8 object-contain" />
                                                         ) : (
-                                                            <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
-                                                                <span className="text-xs font-bold text-gray-400">{match.equipa_casa.substring(0, 1)}</span>
+                                                            <div className="w-8 h-8 bg-gray-100 dark:bg-white/10 rounded-full flex items-center justify-center">
+                                                                <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{match.equipa_casa.substring(0, 1)}</span>
                                                             </div>
                                                         )}
-                                                        <span className="text-sm font-bold text-white leading-tight truncate">
+                                                        <span className="text-sm font-bold text-gray-900 dark:text-white leading-tight truncate max-w-[120px]">
                                                             {match.equipa_casa}
                                                         </span>
                                                     </div>
-                                                    {view === 'results' && (
-                                                        <span className="text-2xl font-mono font-bold text-white tracking-tighter pl-8">
+                                                    {view === 'results' && match.resultado_casa !== null && (
+                                                        <span className={`text-xl font-mono font-bold ${match.resultado_casa > (match.resultado_fora || 0) ? 'text-gray-900 dark:text-white' : 'text-gray-500'}`}>
                                                             {match.resultado_casa}
                                                         </span>
                                                     )}
                                                 </div>
 
-                                                {/* Divider / VS */}
-                                                <div className="flex flex-col items-center justify-center opacity-20">
-                                                    <div className="h-8 w-[1px] bg-white"></div>
-                                                </div>
-
-                                                {/* Away */}
-                                                <div className={`flex flex-col flex-1 items-end text-right ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora > match.resultado_casa ? 'opacity-100' : 'opacity-70'}`}>
-                                                    <div className="flex flex-row-reverse items-center gap-3 mb-1">
+                                                {/* Away Row */}
+                                                <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora < match.resultado_casa ? 'opacity-60 grayscale' : 'opacity-100'}`}>
+                                                    <div className="flex items-center gap-3">
                                                         {match.logotipo_fora ? (
-                                                            <img src={match.logotipo_fora} alt={match.equipa_fora} className="w-10 h-10 object-contain" />
+                                                            <img src={match.logotipo_fora} alt={match.equipa_fora} className="w-8 h-8 object-contain" />
                                                         ) : (
-                                                            <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
-                                                                <span className="text-xs font-bold text-gray-400">{match.equipa_fora.substring(0, 1)}</span>
+                                                            <div className="w-8 h-8 bg-gray-100 dark:bg-white/10 rounded-full flex items-center justify-center">
+                                                                <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{match.equipa_fora.substring(0, 1)}</span>
                                                             </div>
                                                         )}
-                                                        <span className="text-sm font-bold text-white leading-tight truncate">
+                                                        <span className="text-sm font-bold text-gray-900 dark:text-white leading-tight truncate max-w-[120px]">
                                                             {match.equipa_fora}
                                                         </span>
                                                     </div>
-                                                    {view === 'results' && (
-                                                        <span className="text-2xl font-mono font-bold text-white tracking-tighter pr-8">
+                                                    {view === 'results' && match.resultado_fora !== null && (
+                                                        <span className={`text-xl font-mono font-bold ${match.resultado_fora > (match.resultado_casa || 0) ? 'text-gray-900 dark:text-white' : 'text-gray-500'}`}>
                                                             {match.resultado_fora}
                                                         </span>
                                                     )}
                                                 </div>
+
                                             </div>
 
                                             {/* Footer: Status / Location */}
@@ -247,7 +251,7 @@ function Home() {
                                                     </span>
                                                 )}
 
-                                                <ChevronRight size={14} className="text-gray-700 group-hover:text-gaia-yellow transition-colors" />
+                                                <ChevronRight size={14} className="text-gray-400 group-hover:text-gaia-yellow transition-colors" />
                                             </div>
 
                                         </Link>

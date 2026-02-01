@@ -48,7 +48,7 @@ function Game() {
 
             {/* Nav */}
             <div className="flex items-center justify-between mb-6">
-                <Link to="/" className="p-2 -ml-2 text-gray-400 hover:text-white transition-colors">
+                <Link to="/" className="p-2 -ml-2 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                     <ArrowLeft size={24} />
                 </Link>
                 <div className="text-xs font-bold tracking-widest uppercase text-gray-500">
@@ -57,15 +57,15 @@ function Game() {
                 <div className="w-10"></div> {/* Spacer */}
             </div>
 
-            {/* Match Card */}
-            <div className="glass-card p-0 overflow-hidden mb-6">
+            {/* Match Card - Always Dark for Stadium Feel */}
+            <div className="glass-card p-0 overflow-hidden mb-6 !bg-[#111] !border-white/10">
 
                 {/* Competition Header */}
                 <div className="bg-[#1a1a1a] border-b border-white/5 p-4 flex justify-between items-center">
                     <span className="text-[10px] font-bold text-gaia-yellow uppercase tracking-widest border border-gaia-yellow/20 px-2 py-1 rounded">
                         {match.escalao}
                     </span>
-                    <span className="text-[10px] font-medium text-gray-500 uppercase">
+                    <span className="text-[10px] font-medium text-gray-400 uppercase">
                         {match.competicao}
                     </span>
                 </div>
@@ -131,24 +131,24 @@ function Game() {
                 </div>
             </div>
 
-            {/* Info Grid */}
+            {/* Info Grid - Adaptive Light/Dark */}
             <div className="grid grid-cols-1 gap-3">
 
                 {/* Location Tile */}
-                <div className="glass-card p-5 flex items-start gap-4 hover:bg-white/5 transition-colors group">
-                    <div className="p-3 rounded-full bg-white/5 text-gaia-yellow group-hover:scale-110 transition-transform">
+                <div className="glass-card p-5 flex items-start gap-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                    <div className="p-3 rounded-full bg-gray-100 dark:bg-white/5 text-gaia-yellow group-hover:scale-110 transition-transform">
                         <MapPin size={20} />
                     </div>
                     <div className="flex-1">
                         <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Localização</h4>
                         {match.local ? (
                             <div>
-                                <p className="text-sm font-medium text-white mb-2">{match.local}</p>
+                                <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">{match.local}</p>
                                 <a
                                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(match.local)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-xs font-bold text-gaia-yellow hover:text-white transition-colors border-b border-gaia-yellow/30 pb-0.5"
+                                    className="text-xs font-bold text-gaia-yellow hover:text-black dark:hover:text-white transition-colors border-b border-gaia-yellow/30 pb-0.5"
                                 >
                                     Abrir no Mapa
                                 </a>
@@ -160,14 +160,14 @@ function Game() {
                 </div>
 
                 {/* Date/Time Tile */}
-                <div className="glass-card p-5 flex items-center gap-4 hover:bg-white/5 transition-colors">
-                    <div className="p-3 rounded-full bg-white/5 text-gaia-yellow">
+                <div className="glass-card p-5 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                    <div className="p-3 rounded-full bg-gray-100 dark:bg-white/5 text-gaia-yellow">
                         <Calendar size={20} />
                     </div>
                     <div className="flex-1">
                         <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Data e Hora</h4>
-                        <p className="text-sm font-medium text-white capitalize">{dateFormatted}</p>
-                        <p className="text-sm text-gray-400 font-mono mt-0.5">{(match.hora || '00:00')}</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white capitalize">{dateFormatted}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 font-mono mt-0.5">{(match.hora || '00:00')}</p>
                     </div>
                 </div>
 
@@ -189,7 +189,7 @@ function Game() {
                             alert('Link copiado!')
                         }
                     }}
-                    className="text-gray-600 hover:text-white transition-colors flex items-center gap-2 mx-auto text-sm font-medium"
+                    className="text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-2 mx-auto text-sm font-medium"
                 >
                     <Share2 size={16} />
                     Partilhar Jogo

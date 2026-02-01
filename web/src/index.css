@@ -15,7 +15,7 @@
 }
 
 .glass-card {
-  @apply relative overflow-hidden bg-[#111] border border-white/5 rounded-2xl transition-all duration-300;
+  @apply relative overflow-hidden bg-white dark:bg-[#111] border border-gray-200 dark:border-white/5 rounded-2xl transition-all duration-300 shadow-sm dark:shadow-none;
 }
 
 .glass-card::before {
@@ -25,11 +25,14 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.03), transparent);
+  background: linear-gradient(to bottom right, rgba(0, 0, 0, 0.02), transparent);
   pointer-events: none;
+}
+
+:is(.dark .glass-card)::before {
+  background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.03), transparent);
 }
 
 .match-gradient {
   background: linear-gradient(135deg, #f5b417 0%, #f7c945 100%);
 }
-
