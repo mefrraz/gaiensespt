@@ -157,13 +157,6 @@ function About() {
                     </ul>
                 </div>
 
-                {/* Footer */}
-                <div className="text-center pt-8 pb-4">
-                    <p className="text-xs text-gray-400">
-                        App não oficial
-                    </p>
-                </div>
-
             </div>
         </div>
     )

@@ -21,35 +21,56 @@ export type Match = {
 }
 
 // Update schedule (in UTC hours)
-const WEEKDAY_UPDATES = [15, 21] // 15:00 and 21:00 UTC
-const WEEKEND_UPDATES = [11, 13, 15, 17, 18.5, 20, 21.5] // 11:00, 13:00, 15:00, 17:00, 18:30, 20:00, 21:30 UTC
+const WEEKDAY_UPDATES = [15, 21]
+const WEEKEND_UPDATES_START = 10
+const WEEKEND_UPDATES_END = 21
+const WEEKEND_INTERVAL = 0.5 // 30 minutes
 
 function getNextUpdateTime(): Date {
     const now = new Date()
-    const dayOfWeek = now.getUTCDay() // 0 = Sunday, 6 = Saturday
+    const dayOfWeek = now.getUTCDay()
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
-    const schedule = isWeekend ? WEEKEND_UPDATES : WEEKDAY_UPDATES
 
     const currentHour = now.getUTCHours() + now.getUTCMinutes() / 60
 
-    // Find next update today
-    for (const hour of schedule) {
-        if (hour > currentHour) {
-            const nextUpdate = new Date(now)
-            nextUpdate.setUTCHours(Math.floor(hour), (hour % 1) * 60, 0, 0)
-            return nextUpdate
+    if (isWeekend) {
+        // Find next 30-min slot
+        if (currentHour < WEEKEND_UPDATES_START) {
+            const next = new Date(now)
+            next.setUTCHours(WEEKEND_UPDATES_START, 0, 0, 0)
+            return next
         }
+        if (currentHour >= WEEKEND_UPDATES_END) {
+            // Next update is tomorrow
+            const tomorrow = new Date(now)
+            tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
+            const tomorrowDow = tomorrow.getUTCDay()
+            const tomIsWeekend = tomorrowDow === 0 || tomorrowDow === 6
+            tomorrow.setUTCHours(tomIsWeekend ? WEEKEND_UPDATES_START : WEEKDAY_UPDATES[0], 0, 0, 0)
+            return tomorrow
+        }
+        // Current hour is within range, find next 30-min slot
+        const nextSlot = Math.ceil(currentHour * 2) / 2
+        const next = new Date(now)
+        next.setUTCHours(Math.floor(nextSlot), (nextSlot % 1) * 60, 0, 0)
+        return next
+    } else {
+        // Weekday logic
+        for (const hour of WEEKDAY_UPDATES) {
+            if (hour > currentHour) {
+                const next = new Date(now)
+                next.setUTCHours(hour, 0, 0, 0)
+                return next
+            }
+        }
+        // Tomorrow
+        const tomorrow = new Date(now)
+        tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
+        const tomorrowDow = tomorrow.getUTCDay()
+        const tomIsWeekend = tomorrowDow === 0 || tomorrowDow === 6
+        tomorrow.setUTCHours(tomIsWeekend ? WEEKEND_UPDATES_START : WEEKDAY_UPDATES[0], 0, 0, 0)
+        return tomorrow
     }
-
-    // No more updates today, get first update tomorrow
-    const tomorrow = new Date(now)
-    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
-    const tomorrowDayOfWeek = tomorrow.getUTCDay()
-    const tomorrowIsWeekend = tomorrowDayOfWeek === 0 || tomorrowDayOfWeek === 6
-    const tomorrowSchedule = tomorrowIsWeekend ? WEEKEND_UPDATES : WEEKDAY_UPDATES
-    const firstHour = tomorrowSchedule[0]
-    tomorrow.setUTCHours(Math.floor(firstHour), (firstHour % 1) * 60, 0, 0)
-    return tomorrow
 }
 
 function formatTimeUntil(target: Date): string {
@@ -74,8 +95,22 @@ function Home() {
     const [view, setView] = useState<'agenda' | 'results'>('agenda')
     const [filterEscalao, setFilterEscalao] = useState<string>('Todos')
     const [escaloes, setEscaloes] = useState<string[]>([])
-    const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
+    const [lastScrape, setLastScrape] = useState<string>('')
     const [timeUntilUpdate, setTimeUntilUpdate] = useState<string>('')
+
+    // Fetch last scrape time from metadata
+    const fetchLastScrape = async () => {
+        const { data, error } = await supabase
+            .from('metadata')
+            .select('value')
+            .eq('key', 'last_scrape')
+            .single()
+
+        if (!error && data) {
+            const scrapeDate = new Date(data.value)
+            setLastScrape(scrapeDate.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }))
+        }
+    }
 
     // Update countdown every minute
     useEffect(() => {
@@ -85,7 +120,7 @@ function Home() {
         }
 
         updateCountdown()
-        const interval = setInterval(updateCountdown, 60000) // Update every minute
+        const interval = setInterval(updateCountdown, 60000)
 
         return () => clearInterval(interval)
     }, [])
@@ -105,7 +140,6 @@ function Home() {
                 sorted = sorted.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
             }
             setMatches(sorted)
-            setLastUpdate(new Date())
 
             const uniqueEscaloes = Array.from(new Set(sorted.map(m => m.escalao))).filter(Boolean).sort()
             setEscaloes(uniqueEscaloes)
@@ -116,11 +150,13 @@ function Home() {
     // Initial fetch and Realtime subscription
     useEffect(() => {
         fetchMatches()
+        fetchLastScrape()
 
         const channel = supabase
             .channel('public:partidas')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'partidas' }, () => {
                 fetchMatches()
+                fetchLastScrape()
             })
             .subscribe()
 
@@ -161,26 +197,21 @@ function Home() {
         return date.charAt(0).toUpperCase() + date.slice(1)
     }
 
-    const formatLastUpdate = () => {
-        if (!lastUpdate) return ''
-        return lastUpdate.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
-    }
-
     return (
         <div className="max-w-6xl mx-auto space-y-6 pb-20">
 
             {/* Segment Controller */}
-            <div className="sticky top-20 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-xl p-1.5 rounded-2xl border border-gray-200 dark:border-white/10 flex gap-1 shadow-xl mx-1 max-w-md mx-auto">
+            <div className="sticky top-20 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-xl p-1.5 rounded-2xl border border-zinc-200 dark:border-white/10 flex gap-1 shadow-xl mx-1 max-w-md mx-auto">
                 <button
                     onClick={() => setView('agenda')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'agenda' ? 'bg-gaia-yellow text-black shadow-lg shadow-yellow-500/20' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'agenda' ? 'bg-gaia-yellow text-black shadow-lg shadow-yellow-500/20' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'}`}
                 >
                     <Calendar size={16} strokeWidth={2.5} />
                     AGENDA
                 </button>
                 <button
                     onClick={() => setView('results')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'results' ? 'bg-gray-100 dark:bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'results' ? 'bg-zinc-100 dark:bg-white text-black shadow-lg' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'}`}
                 >
                     <Trophy size={16} strokeWidth={2.5} />
                     RESULTADOS
@@ -190,13 +221,13 @@ function Home() {
             {/* Filter */}
             <div className="px-2 max-w-md mx-auto">
                 <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
                         <Filter size={14} />
                     </div>
                     <select
                         value={filterEscalao}
                         onChange={(e) => setFilterEscalao(e.target.value)}
-                        className="bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-300 text-xs font-medium rounded-lg focus:ring-1 focus:ring-gaia-yellow focus:border-gaia-yellow block w-full pl-9 p-2.5 appearance-none shadow-sm"
+                        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-300 text-xs font-medium rounded-lg focus:ring-1 focus:ring-gaia-yellow focus:border-gaia-yellow block w-full pl-9 p-2.5 appearance-none shadow-sm"
                     >
                         <option value="Todos">Todos os Escalões</option>
                         {escaloes.map(e => (
@@ -208,12 +239,12 @@ function Home() {
 
             {/* Update Info with Countdown */}
             <div className="px-2 max-w-md mx-auto">
-                <Link to="/about" className="flex items-center justify-between text-[10px] text-gray-400 uppercase tracking-wide hover:text-gaia-yellow transition-colors group">
+                <Link to="/about" className="flex items-center justify-between text-[10px] text-zinc-400 uppercase tracking-wide hover:text-gaia-yellow transition-colors group">
                     <div className="flex items-center gap-1.5">
                         <RefreshCw size={10} className="group-hover:animate-spin" />
-                        <span>Atualizado: {formatLastUpdate()}</span>
+                        <span>Atualizado: {lastScrape || '--:--'}</span>
                     </div>
-                    <span className="text-gray-500 group-hover:text-gaia-yellow">Próxima: {timeUntilUpdate}</span>
+                    <span className="text-zinc-500 group-hover:text-gaia-yellow">Próxima: {timeUntilUpdate}</span>
                 </Link>
             </div>
 
@@ -225,14 +256,14 @@ function Home() {
             ) : (
                 <div className="space-y-8 px-1">
                     {sortedDates.length === 0 ? (
-                        <div className="text-center py-20 text-gray-600 font-medium">
+                        <div className="text-center py-20 text-zinc-600 font-medium">
                             Nenhum jogo encontrado.
                         </div>
                     ) : (
                         sortedDates.map(date => (
                             <div key={date} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
 
-                                <h3 className="text-xs font-bold text-gray-500 dark:text-gray-500 mb-3 uppercase tracking-widest pl-2">
+                                <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 mb-3 uppercase tracking-widest pl-2">
                                     {formatDate(date)}
                                 </h3>
 
@@ -240,7 +271,7 @@ function Home() {
                                     {groupedMatches[date].map(match => (
                                         <Link to={`/game/${match.slug}`} key={match.slug} className="glass-card flex flex-col gap-0 group active:scale-[0.98] hover:border-gaia-yellow/30">
 
-                                            <div className="flex justify-between items-center p-4 pb-2 border-b border-gray-100 dark:border-white/5">
+                                            <div className="flex justify-between items-center p-4 pb-2 border-b border-zinc-100 dark:border-white/5">
                                                 <div className="flex items-center gap-2 text-gaia-yellow">
                                                     {view === 'agenda' ? (
                                                         <>
@@ -250,10 +281,10 @@ function Home() {
                                                             </span>
                                                         </>
                                                     ) : (
-                                                        <span className="text-[10px] font-bold text-gray-400">FIN</span>
+                                                        <span className="text-[10px] font-bold text-zinc-400">FIN</span>
                                                     )}
                                                 </div>
-                                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                                                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
                                                     {match.escalao}
                                                 </span>
                                             </div>
@@ -264,16 +295,16 @@ function Home() {
                                                         {match.logotipo_casa ? (
                                                             <img src={match.logotipo_casa} alt={match.equipa_casa} className="w-8 h-8 object-contain" />
                                                         ) : (
-                                                            <div className="w-8 h-8 bg-gray-100 dark:bg-white/10 rounded-full flex items-center justify-center">
-                                                                <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{match.equipa_casa.substring(0, 1)}</span>
+                                                            <div className="w-8 h-8 bg-zinc-100 dark:bg-white/10 rounded-full flex items-center justify-center">
+                                                                <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{match.equipa_casa.substring(0, 1)}</span>
                                                             </div>
                                                         )}
-                                                        <span className="text-sm font-bold text-gray-900 dark:text-white leading-tight truncate max-w-[120px]">
+                                                        <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
                                                             {match.equipa_casa}
                                                         </span>
                                                     </div>
                                                     {view === 'results' && match.resultado_casa !== null && (
-                                                        <span className={`text-xl font-mono font-bold ${match.resultado_casa > (match.resultado_fora || 0) ? 'text-gray-900 dark:text-white' : 'text-gray-500'}`}>
+                                                        <span className={`text-xl font-mono font-bold ${match.resultado_casa > (match.resultado_fora || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
                                                             {match.resultado_casa}
                                                         </span>
                                                     )}
@@ -284,24 +315,24 @@ function Home() {
                                                         {match.logotipo_fora ? (
                                                             <img src={match.logotipo_fora} alt={match.equipa_fora} className="w-8 h-8 object-contain" />
                                                         ) : (
-                                                            <div className="w-8 h-8 bg-gray-100 dark:bg-white/10 rounded-full flex items-center justify-center">
-                                                                <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{match.equipa_fora.substring(0, 1)}</span>
+                                                            <div className="w-8 h-8 bg-zinc-100 dark:bg-white/10 rounded-full flex items-center justify-center">
+                                                                <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{match.equipa_fora.substring(0, 1)}</span>
                                                             </div>
                                                         )}
-                                                        <span className="text-sm font-bold text-gray-900 dark:text-white leading-tight truncate max-w-[120px]">
+                                                        <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
                                                             {match.equipa_fora}
                                                         </span>
                                                     </div>
                                                     {view === 'results' && match.resultado_fora !== null && (
-                                                        <span className={`text-xl font-mono font-bold ${match.resultado_fora > (match.resultado_casa || 0) ? 'text-gray-900 dark:text-white' : 'text-gray-500'}`}>
+                                                        <span className={`text-xl font-mono font-bold ${match.resultado_fora > (match.resultado_casa || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
                                                             {match.resultado_fora}
                                                         </span>
                                                     )}
                                                 </div>
                                             </div>
 
-                                            <div className="px-4 pb-4 pt-0 flex justify-between items-center text-[10px] font-medium text-gray-500 uppercase tracking-wide">
-                                                <div className="flex items-center gap-1.5 truncate max-w-[70%] text-gray-400">
+                                            <div className="px-4 pb-4 pt-0 flex justify-between items-center text-[10px] font-medium text-zinc-500 uppercase tracking-wide">
+                                                <div className="flex items-center gap-1.5 truncate max-w-[70%] text-zinc-400">
                                                     {match.local ? (
                                                         <>
                                                             <MapPin size={10} className="shrink-0 text-gaia-yellow" />
@@ -319,7 +350,7 @@ function Home() {
                                                     </span>
                                                 )}
 
-                                                <ChevronRight size={14} className="text-gray-400 group-hover:text-gaia-yellow transition-colors" />
+                                                <ChevronRight size={14} className="text-zinc-400 group-hover:text-gaia-yellow transition-colors" />
                                             </div>
 
                                         </Link>

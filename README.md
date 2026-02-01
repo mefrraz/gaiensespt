@@ -1,55 +1,99 @@
-# FC Gaia Basquetebol - Ecossistema de Dados
+# GaiensesPT 🏀
 
-Este projeto automatiza a recolha de dados (agenda e resultados) do FC Gaia Basquetebol e apresenta-os num website moderno.
+**A app oficial dos adeptos do FC Gaia Basquetebol.**
 
-## Componentes
+Acompanha todos os jogos, resultados e agenda das equipas do FC Gaia em tempo real.
 
-1.  **Scraper (Python)**: Recolhe dados da FPB e atualiza a base de dados.
-2.  **Base de Dados (Supabase)**: Armazena os jogos.
-3.  **Website (React/Vite)**: Apresenta os dados em tempo real.
-4.  **Automação (GitHub Actions)**: Executa o scraper periodicamente.
+🔗 **[gaiensespt.vercel.app](https://gaiensespt.vercel.app)**
 
-## Configuração
+---
 
-### 1. Supabase
+## ✨ Funcionalidades
 
-1.  Crie um projeto no [Supabase](https://supabase.com/).
-2.  Vá ao **SQL Editor** e corra o script em `supabase/schema.sql` para criar a tabela e índices.
-3.  Obtenha as credenciais em **Project Settings > API**:
-    *   `Project URL`
-    *   `anon` public key (para o Frontend)
-    *   `service_role` secret key (para o Scraper - **MANTENHA SECRETO**)
+- 📅 **Agenda** - Todos os próximos jogos com hora e local
+- 🏆 **Resultados** - Resultados atualizados automaticamente
+- 📍 **Localização** - Abre o GPS para os pavilhões
+- 📱 **PWA** - Instala como app no telemóvel
+- 🌙 **Modo Escuro** - Design premium adaptativo
+- 📤 **Partilha** - Partilha jogos com amigos
+- 📆 **Calendário** - Adiciona jogos ao Google Calendar
 
-### 2. GitHub Actions (Automação)
+---
 
-No repositório GitHub, vá a **Settings > Secrets and variables > Actions** e adicione:
+## 🔄 Atualização Automática
 
-*   `SUPABASE_URL`: O URL do seu projeto.
-*   `SUPABASE_SERVICE_ROLE_KEY`: A chave `service_role`.
+Os dados são obtidos automaticamente da **Federação Portuguesa de Basquetebol (FPB)**.
 
-O scraper irá rodar automaticamente nos horários definidos:
-*   Dias úteis: 15:00, 21:00
-*   Fins de semana: 11:00, 13:00, 15:00, 17:00, 18:30, 20:00, 21:30
+| Dia | Frequência |
+|-----|------------|
+| Segunda a Sexta | 15:00 e 21:00 |
+| Sábado e Domingo | A cada 30 min (10:00 - 21:00) |
 
-### 3. Website (Frontend)
+---
 
-Localmente (necessita Node.js):
+## 🛠️ Tecnologias
 
-1.  Entre na pasta `web`: `cd web`
-2.  Crie um ficheiro `.env` baseado nas chaves:
-    ```env
-    VITE_SUPABASE_URL=seu_url_aqui
-    VITE_SUPABASE_ANON_KEY=sua_chave_anon_aqui
-    ```
-3.  Instale e corra:
-    ```bash
-    npm install
-    npm run dev
-    ```
+- **Frontend**: React + Vite + TailwindCSS
+- **Backend**: Supabase (PostgreSQL + Realtime)
+- **Scraper**: Python (BeautifulSoup)
+- **Automação**: GitHub Actions
+- **Deploy**: Vercel
 
-## Estrutura do Projeto
+---
 
-*   `/scraper`: Código Python para extração de dados.
-*   `/web`: Código React da aplicação web.
-*   `/supabase`: Scripts SQL.
-*   `/.github`: Workflows de automação.
+## 📁 Estrutura
+
+```
+/scraper    → Script Python de extração de dados
+/web        → Aplicação React
+/supabase   → Scripts SQL para a base de dados
+/.github    → Workflows de automação
+```
+
+---
+
+## 🚀 Configuração Local
+
+### Requisitos
+- Node.js 18+
+- Python 3.10+
+- Conta Supabase
+
+### 1. Base de Dados (Supabase)
+1. Cria um projeto em [supabase.com](https://supabase.com)
+2. Corre o script `supabase/schema.sql` no SQL Editor
+3. Guarda as credenciais (URL, anon key, service role key)
+
+### 2. Frontend
+```bash
+cd web
+cp .env.example .env  # Adiciona as credenciais Supabase
+npm install
+npm run dev
+```
+
+### 3. Scraper
+```bash
+cd scraper
+pip install -r requirements.txt
+python main.py
+```
+
+### 4. GitHub Actions
+Em **Settings > Secrets**, adiciona:
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+---
+
+## 👤 Criador
+
+**André Ferraz** - Atleta do FC Gaia & Criador dos Gaienses
+
+📸 [@gaiensespt](https://instagram.com/gaiensespt)
+
+---
+
+## 📄 Licença
+
+Este projeto é não oficial e não está afiliado ao FC Gaia ou à FPB.

@@ -34,3 +34,20 @@ CREATE INDEX idx_partidas_data ON partidas(data);
 
 -- Create an index on escalao for filtering
 CREATE INDEX idx_partidas_escalao ON partidas(escalao);
+
+-- Metadata table for app settings (e.g., last scrape time)
+CREATE TABLE IF NOT EXISTS metadata (
+    key TEXT PRIMARY KEY,
+    value TEXT,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Allow public read access to metadata
+ALTER TABLE metadata ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read access metadata"
+ON metadata FOR SELECT
+USING (true);
+
+-- Insert initial last_scrape record
+INSERT INTO metadata (key, value) VALUES ('last_scrape', timezone('utc'::text, now())::text)
+ON CONFLICT (key) DO NOTHING;

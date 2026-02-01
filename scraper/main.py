@@ -308,6 +308,21 @@ def upsert_to_supabase(data: List[Dict[str, Any]]):
     except Exception as e:
         print(f"Error upserting to Supabase: {e}")
 
+def update_last_scrape():
+    """Update the last_scrape timestamp in metadata table."""
+    if not supabase:
+        return
+    try:
+        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        supabase.table("metadata").upsert({
+            "key": "last_scrape",
+            "value": now,
+            "updated_at": now
+        }).execute()
+        print(f"Updated last_scrape to {now}")
+    except Exception as e:
+        print(f"Error updating last_scrape: {e}")
+
 def main():
     print(f"Assuming Agenda URL: {AGENDA_URL}")
     print(f"Assuming Resultados URL: {RESULTADOS_URL}")
@@ -318,8 +333,10 @@ def main():
 
     # Process Resultados
     results_games = fetch_and_parse(RESULTADOS_URL, is_agenda=False)
-    # The results page might overwrite agenda items for the same slug, which is correct (updating scores/status)
     upsert_to_supabase(results_games)
+    
+    # Update last scrape timestamp
+    update_last_scrape()
 
 if __name__ == "__main__":
     main()
