@@ -121,15 +121,17 @@ def fetch_and_parse(url: str, is_agenda: bool) -> List[Dict[str, Any]]:
             try:
                 # Extract details
                 # Time
+                # Time
                 time_elem = game_link.select_one(".hour h3")
                 game_time = None
+                raw_time_text = ""
                 if time_elem:
-                    raw_time = time_elem.get_text(strip=True).upper()
+                    raw_time_text = time_elem.get_text(strip=True).upper()
                     # Validate HH:MM format (e.g. 12H15 -> 12:15)
-                    normalized = raw_time.replace("H", ":")
+                    normalized = raw_time_text.replace("H", ":")
                     if re.match(r'^\d{1,2}:\d{2}$', normalized):
                         game_time = normalized
-                    # else: remains None (handles "A DEFINIR", "ADIADO", etc.)
+                    # else: remains None (handles "A DEFINIR", "ADIADO", etc.) OR it might be a score
 
                 # Teams
                 # Structure: .teams-wrapper contains two .team-container (one for home, one for away)
@@ -174,10 +176,10 @@ def fetch_and_parse(url: str, is_agenda: bool) -> List[Dict[str, Any]]:
                     
                     # Check if the time element actually contains the score (common pattern)
                     # "12H15" vs "80 - 70"
-                    if game_time and "-" in game_time and ":" not in game_time:
+                    if raw_time_text and "-" in raw_time_text and ":" not in raw_time_text:
                          status = "FINALIZADO"
                          try:
-                             parts = game_time.split("-")
+                             parts = raw_time_text.split("-")
                              score_home = int(parts[0].strip())
                              score_away = int(parts[1].strip())
                          except:
