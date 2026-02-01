@@ -26,8 +26,9 @@ Os dados são obtidos automaticamente da Federação Portuguesa de Basquetebol (
 
 | Dia | Frequência |
 |-----|------------|
-| Segunda a Sexta | 15:00 e 21:00 |
-| Sábado e Domingo | A cada 30 min (10:00 - 21:00) |
+| Segunda a Quinta | 12:00, 18:00, 22:00 |
+| Sexta-feira | 16:00 - 00:00 (cada 30 min) |
+| Sábado e Domingo | 10:00 - 00:00 (cada 15 min) |
 
 ---
 

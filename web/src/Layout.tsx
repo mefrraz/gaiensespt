@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link } from 'react-router-dom'
 import { Sun, Moon, Instagram, Facebook, Info } from 'lucide-react'
+import PWAInstallBanner from './components/PWAInstallBanner'
 
 function Layout() {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
@@ -63,7 +64,7 @@ function Layout() {
             </nav>
 
             {/* Main Content */}
-            <main className="flex-grow p-4 md:p-8">
+            <main className="flex-grow p-4 md:p-8 pb-24">
                 <Outlet />
             </main>
 
@@ -85,6 +86,9 @@ function Layout() {
                     </div>
                 </div>
             </footer>
+
+            {/* PWA Install Banner - Mobile Only */}
+            <PWAInstallBanner />
 
         </div>
     )
