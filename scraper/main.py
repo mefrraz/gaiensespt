@@ -122,9 +122,14 @@ def fetch_and_parse(url: str, is_agenda: bool) -> List[Dict[str, Any]]:
                 # Extract details
                 # Time
                 time_elem = game_link.select_one(".hour h3")
-                game_time = "00:00"
+                game_time = None
                 if time_elem:
-                    game_time = time_elem.get_text(strip=True).replace("H", ":") # Normalize to HH:MM
+                    raw_time = time_elem.get_text(strip=True).upper()
+                    # Validate HH:MM format (e.g. 12H15 -> 12:15)
+                    normalized = raw_time.replace("H", ":")
+                    if re.match(r'^\d{1,2}:\d{2}$', normalized):
+                        game_time = normalized
+                    # else: remains None (handles "A DEFINIR", "ADIADO", etc.)
 
                 # Teams
                 # Structure: .teams-wrapper contains two .team-container (one for home, one for away)
