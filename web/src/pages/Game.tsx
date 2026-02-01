@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, MapPin, Calendar, Loader2, Share2, Shield } from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, Loader2, Share2, Shield, CalendarPlus } from 'lucide-react'
 import { Match } from './Home'
 
 function Game() {
@@ -42,6 +42,25 @@ function Game() {
 
     const dateFormatted = new Date(match.data).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
     const isFinished = match.status === 'FINALIZADO'
+
+    // Google Calendar Link Generator
+    const generateGoogleCalendarLink = () => {
+        if (!match.data || !match.hora) return '#'
+
+        const [hours, minutes] = match.hora.split(':')
+        const startDate = new Date(match.data)
+        startDate.setHours(parseInt(hours), parseInt(minutes))
+
+        const endDate = new Date(startDate.getTime() + 90 * 60000) // Assumes 1h30m duration
+
+        const formatDate = (date: Date) => date.toISOString().replace(/-|:|\.\d\d\d/g, "")
+
+        const title = `Jogo: ${match.equipa_casa} vs ${match.equipa_fora}`
+        const details = `Competição: ${match.competicao}\nEscalão: ${match.escalao}\n\nAcompanha em Gaienses App.`
+        const location = match.local || 'Local a definir'
+
+        return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${formatDate(startDate)}/${formatDate(endDate)}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(location)}&sf=true&output=xml`
+    }
 
     return (
         <div className="max-w-xl mx-auto pb-12">
@@ -173,8 +192,22 @@ function Game() {
 
             </div>
 
-            {/* Footer Action */}
-            <div className="mt-8 text-center">
+            {/* Footer Actions: Share + Calendar */}
+            <div className="mt-8 flex flex-col gap-3 items-center">
+
+                {/* Add to Calendar (Only for AGENDADO) */}
+                {match.status === 'AGENDADO' && match.hora && (
+                    <a
+                        href={generateGoogleCalendarLink()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full max-w-xs bg-gaia-yellow hover:bg-yellow-400 text-black font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg shadow-yellow-500/20"
+                    >
+                        <CalendarPlus size={18} />
+                        Adicionar ao Calendário
+                    </a>
+                )}
+
                 <button
                     onClick={() => {
                         if (navigator.share) {
@@ -189,7 +222,7 @@ function Game() {
                             alert('Link copiado!')
                         }
                     }}
-                    className="text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-2 mx-auto text-sm font-medium"
+                    className="text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-2 mx-auto text-sm font-medium py-2"
                 >
                     <Share2 size={16} />
                     Partilhar Jogo
