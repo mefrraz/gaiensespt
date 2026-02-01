@@ -96,18 +96,18 @@ function Game() {
                     <div className="flex w-full justify-between items-start gap-4">
 
                         {/* Home */}
-                        <div className="flex-1 flex flex-col items-center text-center gap-3">
-                            <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center p-2 overflow-hidden">
+                        <Link to={`/team/${match.equipa_casa}`} className="flex-1 flex flex-col items-center text-center gap-3 group">
+                            <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center p-2 overflow-hidden group-hover:border-gaia-yellow/50 transition-colors">
                                 {match.logotipo_casa ? (
                                     <img src={match.logotipo_casa} alt={match.equipa_casa} className="w-full h-full object-contain" />
                                 ) : (
                                     <Shield className="text-gray-400 dark:text-gray-600" size={32} />
                                 )}
                             </div>
-                            <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight group-hover:text-gaia-yellow transition-colors">
                                 {match.equipa_casa}
                             </h2>
-                        </div>
+                        </Link>
 
                         {/* Center Info */}
                         <div className="flex flex-col items-center gap-2 pt-4">
@@ -122,18 +122,18 @@ function Game() {
                         </div>
 
                         {/* Away */}
-                        <div className="flex-1 flex flex-col items-center text-center gap-3">
-                            <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center p-2 overflow-hidden">
+                        <Link to={`/team/${match.equipa_fora}`} className="flex-1 flex flex-col items-center text-center gap-3 group">
+                            <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center p-2 overflow-hidden group-hover:border-gaia-yellow/50 transition-colors">
                                 {match.logotipo_fora ? (
                                     <img src={match.logotipo_fora} alt={match.equipa_fora} className="w-full h-full object-contain" />
                                 ) : (
                                     <Shield className="text-gray-400 dark:text-gray-600" size={32} />
                                 )}
                             </div>
-                            <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight group-hover:text-gaia-yellow transition-colors">
                                 {match.equipa_fora}
                             </h2>
-                        </div>
+                        </Link>
                     </div>
 
                     {/* Big Score */}
@@ -148,6 +148,21 @@ function Game() {
                     </div>
 
                 </div>
+            </div>
+
+            {/* Previous Meetings Section */}
+            <div className="mb-6">
+                <Link to={`/team/${match.equipa_casa === 'FC Gaia' || match.equipa_casa === 'Gaia' ? match.equipa_fora : match.equipa_casa}`} className="block glass-card p-5 group hover:border-gaia-yellow/30 transition-colors">
+                    <div className="flex justify-between items-center mb-2">
+                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Confrontos Diretos</h3>
+                        <span className="text-xs text-gaia-yellow font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                            Ver Histórico Completo <ArrowLeft size={12} className="rotate-180" />
+                        </span>
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Clica para ver o histórico de jogos entre {match.equipa_casa} e {match.equipa_fora}.
+                    </div>
+                </Link>
             </div>
 
             {/* Info Grid - Adaptive Light/Dark */}

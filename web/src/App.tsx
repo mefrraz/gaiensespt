@@ -5,6 +5,7 @@ import Game from './pages/Game'
 import About from './pages/About'
 import Install from './pages/Install'
 import Stats from './pages/Stats'
+import Team from './pages/Team'
 
 function App() {
     return (
@@ -13,6 +14,7 @@ function App() {
                 <Route path="/" element={<Layout />}>
                     <Route index element={<Home />} />
                     <Route path="game/:slug" element={<Game />} />
+                    <Route path="team/:teamName" element={<Team />} />
                     <Route path="about" element={<About />} />
                     <Route path="install" element={<Install />} />
                     <Route path="stats" element={<Stats />} />

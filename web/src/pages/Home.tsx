@@ -18,6 +18,7 @@ export type Match = {
     logotipo_casa: string | null
     logotipo_fora: string | null
     status: 'AGENDADO' | 'A DECORRER' | 'FINALIZADO'
+    epoca?: string
 }
 
 // Update schedule (in UTC hours)
@@ -129,6 +130,8 @@ function Home() {
     const [escaloes, setEscaloes] = useState<string[]>([])
     const [lastScrape, setLastScrape] = useState<string>('')
     const [timeUntilUpdate, setTimeUntilUpdate] = useState<string>('')
+    const [selectedSeason, setSelectedSeason] = useState<string>('all')
+    const [seasons, setSeasons] = useState<string[]>([])
 
     // Fetch last scrape time from metadata
     const fetchLastScrape = async () => {
@@ -175,6 +178,13 @@ function Home() {
 
             const uniqueEscaloes = Array.from(new Set(sorted.map(m => m.escalao))).filter(Boolean).sort()
             setEscaloes(uniqueEscaloes)
+
+            // Extract unique seasons
+            const matchesWithSeasons = sorted as any[]
+            if (matchesWithSeasons.length > 0) {
+                const uniqueSeasons = Array.from(new Set(matchesWithSeasons.map(m => m.epoca || '').filter(Boolean))) as string[]
+                setSeasons(uniqueSeasons.sort().reverse())
+            }
         }
         setLoading(false)
     }
@@ -206,6 +216,7 @@ function Home() {
         }
 
         if (filterEscalao !== 'Todos' && match.escalao !== filterEscalao) return false
+        if (selectedSeason !== 'all' && (match as any).epoca !== selectedSeason) return false
         return true
     })
 
@@ -250,9 +261,9 @@ function Home() {
                 </button>
             </div>
 
-            {/* Filter */}
-            <div className="px-2 max-w-md mx-auto">
-                <div className="relative">
+            {/* Filters Row */}
+            <div className="px-2 max-w-md mx-auto flex gap-2">
+                <div className="relative flex-1">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
                         <Filter size={14} />
                     </div>
@@ -267,6 +278,20 @@ function Home() {
                         ))}
                     </select>
                 </div>
+
+                {/* Season Filter */}
+                {seasons.length > 0 && (
+                    <div className="relative w-1/3">
+                        <select
+                            value={selectedSeason}
+                            onChange={(e) => setSelectedSeason(e.target.value)}
+                            className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-300 text-xs font-medium rounded-lg focus:ring-1 focus:ring-gaia-yellow focus:border-gaia-yellow block w-full px-2 p-2.5 shadow-sm text-center"
+                        >
+                            <option value="all">Todas</option>
+                            {seasons.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                    </div>
+                )}
             </div>
 
             {/* Update Info with Countdown */}
@@ -343,9 +368,9 @@ function Home() {
                                                                     <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{match.equipa_casa.substring(0, 1)}</span>
                                                                 </div>
                                                             )}
-                                                            <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
+                                                            <Link to={`/team/${match.equipa_casa}`} onClick={(e) => e.stopPropagation()} className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px] hover:text-gaia-yellow hover:underline decoration-gaia-yellow/50 underline-offset-2 transition-all">
                                                                 {match.equipa_casa}
-                                                            </span>
+                                                            </Link>
                                                         </div>
                                                         {view === 'results' && match.resultado_casa !== null && (
                                                             <span className={`text-xl font-mono font-bold ${match.resultado_casa > (match.resultado_fora || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
@@ -363,9 +388,9 @@ function Home() {
                                                                     <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{match.equipa_fora.substring(0, 1)}</span>
                                                                 </div>
                                                             )}
-                                                            <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
+                                                            <Link to={`/team/${match.equipa_fora}`} onClick={(e) => e.stopPropagation()} className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px] hover:text-gaia-yellow hover:underline decoration-gaia-yellow/50 underline-offset-2 transition-all">
                                                                 {match.equipa_fora}
-                                                            </span>
+                                                            </Link>
                                                         </div>
                                                         {view === 'results' && match.resultado_fora !== null && (
                                                             <span className={`text-xl font-mono font-bold ${match.resultado_fora > (match.resultado_casa || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
