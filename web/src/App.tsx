@@ -191,7 +191,7 @@ function App() {
 
                                                 <div className="flex justify-between items-start">
                                                     <span className="text-xs font-mono text-gray-500 border border-white/10 px-2 py-0.5 rounded">
-                                                        {match.hora.slice(0, 5)}
+                                                        {(match.hora || '00:00').slice(0, 5)}
                                                     </span>
                                                     <span className="text-xs text-blue-300 font-medium">
                                                         {match.escalao}
