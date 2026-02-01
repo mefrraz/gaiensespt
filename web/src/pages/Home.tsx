@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { Calendar, Trophy, Filter, Loader2, MapPin, ChevronRight, Clock } from 'lucide-react'
+import { Calendar, Trophy, Filter, Loader2, MapPin, ChevronRight, Clock, RefreshCw } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 // Types
@@ -26,6 +26,7 @@ function Home() {
     const [view, setView] = useState<'agenda' | 'results'>('agenda')
     const [filterEscalao, setFilterEscalao] = useState<string>('Todos')
     const [escaloes, setEscaloes] = useState<string[]>([])
+    const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
     // Fetch data
     const fetchMatches = async () => {
@@ -42,6 +43,7 @@ function Home() {
                 sorted = sorted.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
             }
             setMatches(sorted)
+            setLastUpdate(new Date()) // Record when data was fetched
 
             const uniqueEscaloes = Array.from(new Set(sorted.map(m => m.escalao))).filter(Boolean).sort()
             setEscaloes(uniqueEscaloes)
@@ -99,6 +101,12 @@ function Home() {
         return date.charAt(0).toUpperCase() + date.slice(1)
     }
 
+    // Format Last Update
+    const formatLastUpdate = () => {
+        if (!lastUpdate) return ''
+        return lastUpdate.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
+    }
+
     return (
         <div className="max-w-6xl mx-auto space-y-6 pb-20">
 
@@ -138,6 +146,17 @@ function Home() {
                             <option key={e} value={e}>{e}</option>
                         ))}
                     </select>
+                </div>
+            </div>
+
+            {/* Last Update Info */}
+            <div className="px-2 max-w-md mx-auto">
+                <div className="flex items-center justify-between text-[10px] text-gray-400 uppercase tracking-wide">
+                    <div className="flex items-center gap-1.5">
+                        <RefreshCw size={10} />
+                        <span>Última atualização: {formatLastUpdate()}</span>
+                    </div>
+                    <span className="text-gray-500">Atualiza a cada 2h</span>
                 </div>
             </div>
 
