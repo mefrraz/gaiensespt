@@ -258,7 +258,7 @@ function Home() {
         if (!groups[group]) groups[group] = []
         groups[group].push(team)
         return groups
-    }, {} as Record<string, any[]>)
+    }, {} as Record<string, Standing[]>)
 
     const formatDate = (dateStr: string) => {
         const options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'long' }
