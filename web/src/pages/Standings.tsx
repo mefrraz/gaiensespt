@@ -138,101 +138,97 @@ function Standings() {
                                             phases[phaseName].push({ grupo, teams })
                                             return phases
                                         }, {} as Record<string, { grupo: string, teams: Standing[] }[]>)
-                                    ).sort((a, b) => b[0].localeCompare(a[0])) // Sort phases descending (e.g. 2ª follows 1ª, but usually we want latest opened.
-                                    // Better sort logic might be needed if "Fase Final" etc. For now localeCompare usually puts "2.ª" after "1.ª".
-                                    // User wants "Last phase open, others closed".
-                                    // If we sort descending, "3.ª" comes before "2.ª" (if string). Wait. "3" > "2".
-                                    // So index 0 will be the "latest" phase.
-                                ).map(([phaseName, groups], index) => (
-                                    <div key={phaseName} className="space-y-4">
-                                        <details className="group" open={index === 0}>
-                                            <summary className="list-none cursor-pointer">
-                                                <div className="flex items-center justify-between mb-4 bg-zinc-100 dark:bg-white/5 p-4 rounded-xl hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors">
-                                                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                                                        <span className="w-2 h-8 bg-gaia-yellow rounded-full"></span>
-                                                        {phaseName}
-                                                    </h2>
-                                                    <ChevronRight className="transform transition-transform group-open:rotate-90 text-zinc-400" />
-                                                </div>
-                                            </summary>
-
-                                            <div className="space-y-6 animate-in slide-in-from-top-2 duration-300">
-                                                {groups.map(({ grupo, teams }) => (
-                                                    <div key={grupo} className="glass-card overflow-hidden">
-                                                        <div className="bg-gradient-to-r from-zinc-50 to-white dark:from-white/5 dark:to-zinc-900/50 p-6 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center">
-                                                            <div>
-                                                                <span className="text-[10px] font-bold text-gaia-yellow uppercase tracking-wider block mb-1">
-                                                                    {selectedCompetition}
-                                                                </span>
-                                                                <h3 className="text-base font-bold text-zinc-900 dark:text-white">{grupo}</h3>
-                                                            </div>
-                                                            <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-zinc-400 bg-white dark:bg-black/20 px-3 py-1.5 rounded-full border border-zinc-100 dark:border-white/5">
-                                                                <Calendar size={12} />
-                                                                2025/2026
-                                                            </div>
+                                    ).sort((a, b) => b[0].localeCompare(a[0]))
+                                        .map(([phaseName, groups], index) => (
+                                            <div key={phaseName} className="space-y-4">
+                                                <details className="group" open={index === 0}>
+                                                    <summary className="list-none cursor-pointer">
+                                                        <div className="flex items-center justify-between mb-4 bg-zinc-100 dark:bg-white/5 p-4 rounded-xl hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors">
+                                                            <h2 className="text-lg font-bold text-zinc-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                                                                <span className="w-2 h-8 bg-gaia-yellow rounded-full"></span>
+                                                                {phaseName}
+                                                            </h2>
+                                                            <ChevronRight className="transform transition-transform group-open:rotate-90 text-zinc-400" />
                                                         </div>
+                                                    </summary>
 
-                                                        <div className="overflow-x-auto">
-                                                            <table className="w-full text-sm text-left">
-                                                                <thead className="text-xs text-zinc-400 uppercase bg-zinc-50/50 dark:bg-white/5 border-b border-zinc-100 dark:border-white/5">
-                                                                    <tr>
-                                                                        <th className="px-6 py-4 font-bold text-center w-16">#</th>
-                                                                        <th className="px-6 py-4 font-bold">Equipa</th>
-                                                                        <th className="px-4 py-4 font-bold text-center w-14">J</th>
-                                                                        <th className="px-4 py-4 font-bold text-center w-14">V</th>
-                                                                        <th className="px-4 py-4 font-bold text-center w-14">D</th>
-                                                                        <th className="px-6 py-4 font-bold text-center w-16 text-zinc-900 dark:text-white">PTS</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
-                                                                    {teams.sort((a, b) => a.posicao - b.posicao).map((team) => {
-                                                                        const isGaia = isGaiaTeam(team.equipa)
-                                                                        return (
-                                                                            <tr
-                                                                                key={team.equipa}
-                                                                                className={`transition-colors relative overflow-hidden group ${isGaia
-                                                                                    ? 'bg-gaia-yellow/10 hover:bg-gaia-yellow/20'
-                                                                                    : 'hover:bg-zinc-50 dark:hover:bg-white/5 even:bg-zinc-50/30 dark:even:bg-white/[0.02]'
-                                                                                    }`}
-                                                                            >
-                                                                                <td className="px-6 py-4 text-center">
-                                                                                    <span className={`inline-flex w-7 h-7 items-center justify-center rounded-lg text-xs font-bold leading-none ${team.posicao <= 2
-                                                                                        ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 ring-1 ring-green-500/20'
-                                                                                        : team.posicao >= teams.length - 1
-                                                                                            ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 ring-1 ring-red-500/20'
-                                                                                            : 'bg-zinc-100 dark:bg-white/10 text-zinc-500'
-                                                                                        }`}>
-                                                                                        {team.posicao}
-                                                                                    </span>
-                                                                                </td>
-                                                                                <td className="px-6 py-4">
-                                                                                    <div className="flex items-center gap-3">
-                                                                                        {isGaia && (
-                                                                                            <div className="w-1.5 h-1.5 rounded-full bg-gaia-yellow shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
-                                                                                        )}
-                                                                                        <span className={`font-bold ${isGaia ? 'text-zinc-900 dark:text-white text-base' : 'text-zinc-600 dark:text-zinc-300'}`}>
-                                                                                            {team.equipa}
-                                                                                        </span>
-                                                                                    </div>
-                                                                                </td>
-                                                                                <td className="px-4 py-4 text-center font-medium text-zinc-500">{team.jogos}</td>
-                                                                                <td className="px-4 py-4 text-center font-bold text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-500/5 rounded-lg my-1">{team.vitorias}</td>
-                                                                                <td className="px-4 py-4 text-center font-medium text-red-500 dark:text-red-400 bg-red-50/50 dark:bg-red-500/5 rounded-lg my-1">{team.derrotas}</td>
-                                                                                <td className="px-6 py-4 text-center">
-                                                                                    <span className="text-lg font-black text-zinc-900 dark:text-white tracking-tight">{team.pontos}</span>
-                                                                                </td>
+                                                    <div className="space-y-6 animate-in slide-in-from-top-2 duration-300">
+                                                        {groups.map(({ grupo, teams }) => (
+                                                            <div key={grupo} className="glass-card overflow-hidden">
+                                                                <div className="bg-gradient-to-r from-zinc-50 to-white dark:from-white/5 dark:to-zinc-900/50 p-6 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center">
+                                                                    <div>
+                                                                        <span className="text-[10px] font-bold text-gaia-yellow uppercase tracking-wider block mb-1">
+                                                                            {selectedCompetition}
+                                                                        </span>
+                                                                        <h3 className="text-base font-bold text-zinc-900 dark:text-white">{grupo}</h3>
+                                                                    </div>
+                                                                    <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-zinc-400 bg-white dark:bg-black/20 px-3 py-1.5 rounded-full border border-zinc-100 dark:border-white/5">
+                                                                        <Calendar size={12} />
+                                                                        2025/2026
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="overflow-x-auto">
+                                                                    <table className="w-full text-sm text-left">
+                                                                        <thead className="text-xs text-zinc-400 uppercase bg-zinc-50/50 dark:bg-white/5 border-b border-zinc-100 dark:border-white/5">
+                                                                            <tr>
+                                                                                <th className="px-6 py-4 font-bold text-center w-16">#</th>
+                                                                                <th className="px-6 py-4 font-bold">Equipa</th>
+                                                                                <th className="px-4 py-4 font-bold text-center w-14">J</th>
+                                                                                <th className="px-4 py-4 font-bold text-center w-14">V</th>
+                                                                                <th className="px-4 py-4 font-bold text-center w-14">D</th>
+                                                                                <th className="px-6 py-4 font-bold text-center w-16 text-zinc-900 dark:text-white">PTS</th>
                                                                             </tr>
-                                                                        )
-                                                                    })}
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
+                                                                        </thead>
+                                                                        <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
+                                                                            {teams.sort((a, b) => a.posicao - b.posicao).map((team) => {
+                                                                                const isGaia = isGaiaTeam(team.equipa)
+                                                                                return (
+                                                                                    <tr
+                                                                                        key={team.equipa}
+                                                                                        className={`transition-colors relative overflow-hidden group ${isGaia
+                                                                                            ? 'bg-gaia-yellow/10 hover:bg-gaia-yellow/20'
+                                                                                            : 'hover:bg-zinc-50 dark:hover:bg-white/5 even:bg-zinc-50/30 dark:even:bg-white/[0.02]'
+                                                                                            }`}
+                                                                                    >
+                                                                                        <td className="px-6 py-4 text-center">
+                                                                                            <span className={`inline-flex w-7 h-7 items-center justify-center rounded-lg text-xs font-bold leading-none ${team.posicao <= 2
+                                                                                                ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 ring-1 ring-green-500/20'
+                                                                                                : team.posicao >= teams.length - 1
+                                                                                                    ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 ring-1 ring-red-500/20'
+                                                                                                    : 'bg-zinc-100 dark:bg-white/10 text-zinc-500'
+                                                                                                }`}>
+                                                                                                {team.posicao}
+                                                                                            </span>
+                                                                                        </td>
+                                                                                        <td className="px-6 py-4">
+                                                                                            <div className="flex items-center gap-3">
+                                                                                                {isGaia && (
+                                                                                                    <div className="w-1.5 h-1.5 rounded-full bg-gaia-yellow shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
+                                                                                                )}
+                                                                                                <span className={`font-bold ${isGaia ? 'text-zinc-900 dark:text-white text-base' : 'text-zinc-600 dark:text-zinc-300'}`}>
+                                                                                                    {team.equipa}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                        </td>
+                                                                                        <td className="px-4 py-4 text-center font-medium text-zinc-500">{team.jogos}</td>
+                                                                                        <td className="px-4 py-4 text-center font-bold text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-500/5 rounded-lg my-1">{team.vitorias}</td>
+                                                                                        <td className="px-4 py-4 text-center font-medium text-red-500 dark:text-red-400 bg-red-50/50 dark:bg-red-500/5 rounded-lg my-1">{team.derrotas}</td>
+                                                                                        <td className="px-6 py-4 text-center">
+                                                                                            <span className="text-lg font-black text-zinc-900 dark:text-white tracking-tight">{team.pontos}</span>
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                )
+                                                                            })}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                ))}
+                                                </details>
                                             </div>
-                                        </details>
-                                    </div>
-                                ))}
+                                        ))}
                                 </div>
                             )
                             }
