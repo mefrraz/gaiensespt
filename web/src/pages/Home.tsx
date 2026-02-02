@@ -284,16 +284,21 @@ function Home() {
                     </select>
                 </div>
 
-                {/* Season Filter (Hardcoded list) */}
-                <div className="relative w-1/3">
-                    <select
-                        value={selectedSeason}
-                        onChange={(e) => setSelectedSeason(e.target.value)}
-                        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-300 text-xs font-medium rounded-lg focus:ring-1 focus:ring-gaia-yellow focus:border-gaia-yellow block w-full px-2 p-2.5 shadow-sm text-center"
-                    >
-                        {AVAILABLE_SEASONS.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                </div>
+                {/* Season Filter (Only in Results) */}
+                {view === 'results' && (
+                    <div className="relative w-1/3">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+                            <Calendar size={14} />
+                        </div>
+                        <select
+                            value={selectedSeason}
+                            onChange={(e) => setSelectedSeason(e.target.value)}
+                            className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-300 text-xs font-medium rounded-lg focus:ring-1 focus:ring-gaia-yellow focus:border-gaia-yellow block w-full pl-9 p-2.5 appearance-none shadow-sm text-center"
+                        >
+                            {AVAILABLE_SEASONS.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                    </div>
+                )}
             </div>
 
             {/* Update Info with Countdown */}
@@ -307,16 +312,6 @@ function Home() {
                 </Link>
             </div>
 
-            {/* Subscribe to Calendar */}
-            <div className="px-2 max-w-md mx-auto mb-4">
-                <a
-                    href="/api/calendar"
-                    className="flex items-center justify-center gap-2 w-full py-3 bg-zinc-900 dark:bg-zinc-800 text-white dark:text-zinc-200 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-zinc-800 dark:hover:bg-zinc-700 transition-colors shadow-lg"
-                >
-                    <CalendarPlus size={16} />
-                    Subscrever Calendário
-                </a>
-            </div>
 
             {/* Content List */}
             {

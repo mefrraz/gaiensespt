@@ -216,6 +216,7 @@ function Game() {
                                 width="100%"
                                 height="100%"
                                 style={{ border: 0 }}
+                                className="dark:grayscale dark:invert dark:contrast-75 dark:opacity-80 transition-all duration-500"
                                 loading="lazy"
                                 allowFullScreen
                                 src={`https://maps.google.com/maps?q=${encodeURIComponent(match.local)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
@@ -258,7 +259,7 @@ function Game() {
                     <div className="flex-1">
                         <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Data e Hora</h4>
                         <p className="text-sm font-medium text-gray-900 dark:text-white capitalize">{dateFormatted}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 font-mono mt-0.5">{(match.hora || '00:00')}</p>
+                        {!isFinished && <p className="text-sm text-gray-500 dark:text-gray-400 font-mono mt-0.5">{(match.hora || '00:00')}</p>}
                     </div>
                 </div>
 
@@ -267,18 +268,6 @@ function Game() {
             {/* Footer Actions: Share + Calendar */}
             <div className="mt-8 flex flex-col gap-3 items-center">
 
-                {/* Add to Calendar (Only for AGENDADO) */}
-                {match.status === 'AGENDADO' && match.hora && (
-                    <a
-                        href={generateGoogleCalendarLink()}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full max-w-xs bg-gaia-yellow hover:bg-yellow-400 text-black font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg shadow-yellow-500/20"
-                    >
-                        <CalendarPlus size={18} />
-                        Adicionar ao Calendário
-                    </a>
-                )}
 
                 <button
                     onClick={() => {
