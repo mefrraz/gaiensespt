@@ -132,9 +132,7 @@ function Home() {
     const [escaloes, setEscaloes] = useState<string[]>([])
     const [lastScrape, setLastScrape] = useState<string>('')
     const [timeUntilUpdate, setTimeUntilUpdate] = useState<string>('')
-    // Available seasons for dropdown
-    const AVAILABLE_SEASONS = ['2025/2026', '2024/2025', '2023/2024']
-    const [selectedSeason, setSelectedSeason] = useState<string>('2025/2026')
+
 
     // Fetch last scrape time from metadata
     const fetchLastScrape = async () => {
@@ -169,10 +167,11 @@ function Home() {
     const fetchMatches = async () => {
         setLoading(true)
 
+        // Fetch ALL games order by date
+        // Ideally we should limit this for performance if db grows huge, but for now ok.
         const { data, error } = await supabase
             .from('games')
             .select('*')
-            .eq('epoca', selectedSeason)
             .order('data', { ascending: view === 'agenda' })
 
         if (error) {
@@ -181,8 +180,11 @@ function Home() {
             setEscaloes([])
         } else {
             let sorted = data as Match[]
+            // Client-side sort to be double sure
             if (view === 'results') {
                 sorted = sorted.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
+            } else {
+                sorted = sorted.sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
             }
             setMatches(sorted)
 
@@ -208,12 +210,21 @@ function Home() {
         return () => {
             supabase.removeChannel(channel)
         }
-    }, [view, selectedSeason])
+    }, [view])
 
     // Filter logic
     const filteredMatches = matches.filter(match => {
+        const today = new Date().toISOString().split('T')[0]
+
         if (view === 'agenda') {
             if (match.status === 'FINALIZADO') return false
+            // Show only upcoming games (including today if not finished)
+            // Can add date check if needed, but status is usually reliable enough if maintained.
+            // If user explicitly wants "current epoch games", we might want to date limit?
+            // "so exibir jogos da epoca atual" -> usually implies scraping only brings current epoch.
+            // But db has old ones.
+            // Let's filter by date >= today for Agenda to be safe?
+            if (match.data < today && match.status !== 'A DECORRER') return false
         } else {
             if (match.status !== 'FINALIZADO') return false
         }
@@ -305,21 +316,7 @@ function Home() {
                     </select>
                 </div>
 
-                {/* Season Filter (Only in Results) */}
-                {view === 'results' && (
-                    <div className="relative w-1/3">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
-                            <Calendar size={14} />
-                        </div>
-                        <select
-                            value={selectedSeason}
-                            onChange={(e) => setSelectedSeason(e.target.value)}
-                            className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-300 text-xs font-medium rounded-lg focus:ring-1 focus:ring-gaia-yellow focus:border-gaia-yellow block w-full pl-9 p-2.5 appearance-none shadow-sm text-center"
-                        >
-                            {AVAILABLE_SEASONS.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                    </div>
-                )}
+
             </div>
 
             {/* Update Info with Countdown */}
