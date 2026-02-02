@@ -2,7 +2,7 @@ import os
 import json
 import time
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from fpb_parser import fetch_and_parse
@@ -49,7 +49,7 @@ def update_last_scrape():
     if not supabase:
         return
     try:
-        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        now = datetime.now(timezone.utc).isoformat()
         supabase.table("metadata").upsert({
             "key": "last_scrape",
             "value": now,
