@@ -125,9 +125,10 @@ function formatTimeUntil(target: Date): string {
 function Home() {
     const [matches, setMatches] = useState<Match[]>([])
     const [loading, setLoading] = useState(true)
-    const [view, setView] = useState<'agenda' | 'results'>('agenda')
+    const [view, setView] = useState<'agenda' | 'results' | 'standings'>('agenda')
     const [filterEscalao, setFilterEscalao] = useState<string>('Todos')
     const [escaloes, setEscaloes] = useState<string[]>([])
+    const [standings, setStandings] = useState<any[]>([])
     const [lastScrape, setLastScrape] = useState<string>('')
     const [timeUntilUpdate, setTimeUntilUpdate] = useState<string>('')
     // Available seasons for dropdown
@@ -146,6 +147,18 @@ function Home() {
             const scrapeDate = new Date(data.value)
             setLastScrape(scrapeDate.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }))
         }
+    }
+
+    const fetchStandings = async () => {
+        setLoading(true)
+        const { data, error } = await supabase
+            .from('classificacoes')
+            .select('*')
+
+        if (!error && data) {
+            setStandings(data)
+        }
+        setLoading(false)
     }
 
     // Update countdown every minute
@@ -239,6 +252,14 @@ function Home() {
             : new Date(b).getTime() - new Date(a).getTime()
     })
 
+    // Group Standings by Group
+    const groupedStandings = standings.reduce((groups, team) => {
+        const group = team.grupo
+        if (!groups[group]) groups[group] = []
+        groups[group].push(team)
+        return groups
+    }, {} as Record<string, any[]>)
+
     const formatDate = (dateStr: string) => {
         const options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'long' }
         const date = new Date(dateStr).toLocaleDateString('pt-PT', options)
@@ -252,17 +273,24 @@ function Home() {
             <div className="sticky top-20 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-xl p-1.5 rounded-2xl border border-zinc-200 dark:border-white/10 flex gap-1 shadow-xl mx-1 max-w-md mx-auto">
                 <button
                     onClick={() => setView('agenda')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'agenda' ? 'bg-gaia-yellow text-black shadow-lg shadow-yellow-500/20' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${view === 'agenda' ? 'bg-gaia-yellow text-black shadow-lg shadow-yellow-500/20' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'}`}
                 >
-                    <Calendar size={16} strokeWidth={2.5} />
+                    <Calendar size={14} strokeWidth={2.5} />
                     AGENDA
                 </button>
                 <button
                     onClick={() => setView('results')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${view === 'results' ? 'bg-zinc-100 dark:bg-white text-black shadow-lg' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${view === 'results' ? 'bg-zinc-100 dark:bg-white text-black shadow-lg' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'}`}
                 >
-                    <Trophy size={16} strokeWidth={2.5} />
+                    <Trophy size={14} strokeWidth={2.5} />
                     RESULTADOS
+                </button>
+                <button
+                    onClick={() => { setView('standings'); fetchStandings() }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${view === 'standings' ? 'bg-zinc-100 dark:bg-white text-black shadow-lg' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'}`}
+                >
+                    <Trophy size={14} strokeWidth={2.5} />
+                    TABELA
                 </button>
             </div>
 
@@ -319,6 +347,52 @@ function Home() {
                     <div className="flex justify-center py-32">
                         <Loader2 className="animate-spin text-gaia-yellow" size={32} />
                     </div>
+                ) : view === 'standings' ? (
+                    <div className="space-y-8 px-1">
+                        {Object.entries(groupedStandings).length === 0 ? (
+                            <div className="text-center py-20 text-zinc-600 font-medium">
+                                Nenhuma classificação encontrada.
+                            </div>
+                        ) : (
+                            Object.entries(groupedStandings).map(([grupo, teams]) => (
+                                <div key={grupo} className="glass-card p-0 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                    <div className="bg-gray-50 dark:bg-white/5 p-4 border-b border-gray-100 dark:border-white/10 flex justify-between items-center">
+                                        <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{grupo}</h3>
+                                        <span className="text-[10px] font-bold bg-gaia-yellow/20 text-gaia-yellow px-2 py-0.5 rounded">Sub-14</span>
+                                    </div>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="text-xs text-zinc-500 bg-gray-50/50 dark:bg-white/5 uppercase">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-center w-12">#</th>
+                                                    <th className="px-4 py-3">Equipa</th>
+                                                    <th className="px-4 py-3 text-center w-12">J</th>
+                                                    <th className="px-4 py-3 text-center w-12">V</th>
+                                                    <th className="px-4 py-3 text-center w-12">D</th>
+                                                    <th className="px-4 py-3 text-center w-12 font-bold">PTS</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                                                {teams.sort((a, b) => a.posicao - b.posicao).map((team) => (
+                                                    <tr key={team.equipa} className={team.equipa.includes("GAIA") ? "bg-gaia-yellow/10" : ""}>
+                                                        <td className="px-4 py-3 text-center font-bold text-zinc-500">{team.posicao}</td>
+                                                        <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white">
+                                                            {team.equipa}
+                                                            {team.equipa.includes("GAIA") && <span className="ml-2 inline-block w-1.5 h-1.5 bg-gaia-yellow rounded-full"></span>}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-center text-zinc-600 dark:text-zinc-400">{team.jogos}</td>
+                                                        <td className="px-4 py-3 text-center text-green-600 font-bold bg-green-50 dark:bg-green-500/10 rounded">{team.vitorias}</td>
+                                                        <td className="px-4 py-3 text-center text-red-500 bg-red-50 dark:bg-red-500/10 rounded">{team.derrotas}</td>
+                                                        <td className="px-4 py-3 text-center font-bold text-zinc-900 dark:text-white">{team.pontos}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 ) : (
                     <div className="space-y-8 px-1">
                         {sortedDates.length === 0 ? (
@@ -328,15 +402,12 @@ function Home() {
                         ) : (
                             sortedDates.map(date => (
                                 <div key={date} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-
                                     <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 mb-3 uppercase tracking-widest pl-2">
                                         {formatDate(date)}
                                     </h3>
-
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {groupedMatches[date].map(match => (
                                             <Link to={`/game/${match.slug}`} key={match.slug} className="glass-card flex flex-col gap-0 group active:scale-[0.98] hover:border-gaia-yellow/30">
-
                                                 <div className="flex justify-between items-center p-4 pb-2 border-b border-zinc-100 dark:border-white/5">
                                                     <div className="flex items-center gap-2 text-gaia-yellow">
                                                         {view === 'agenda' ? (
@@ -354,7 +425,6 @@ function Home() {
                                                         {match.escalao}
                                                     </span>
                                                 </div>
-
                                                 <div className="p-4 flex flex-col gap-3">
                                                     <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa < match.resultado_fora ? 'opacity-60 grayscale' : 'opacity-100'}`}>
                                                         <div className="flex items-center gap-3">
@@ -375,7 +445,6 @@ function Home() {
                                                             </span>
                                                         )}
                                                     </div>
-
                                                     <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora < match.resultado_casa ? 'opacity-60 grayscale' : 'opacity-100'}`}>
                                                         <div className="flex items-center gap-3">
                                                             {match.logotipo_fora ? (
@@ -396,7 +465,6 @@ function Home() {
                                                         )}
                                                     </div>
                                                 </div>
-
                                                 <div className="px-4 pb-4 pt-0 flex justify-between items-center text-[10px] font-medium text-zinc-500 uppercase tracking-wide">
                                                     <div className="flex items-center gap-1.5 truncate max-w-[70%] text-zinc-400">
                                                         {match.local ? (
@@ -408,17 +476,14 @@ function Home() {
                                                             <span>{match.competicao}</span>
                                                         )}
                                                     </div>
-
                                                     {match.status === 'A DECORRER' && (
                                                         <span className="text-red-500 font-bold flex items-center gap-1 animate-pulse">
                                                             <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                                                             LIVE
                                                         </span>
                                                     )}
-
                                                     <ChevronRight size={14} className="text-zinc-400 group-hover:text-gaia-yellow transition-colors" />
                                                 </div>
-
                                             </Link>
                                         ))}
                                     </div>
