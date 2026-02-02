@@ -255,12 +255,5 @@ function GroupAccordion({ grupo, teams, isDefaultOpen, selectedCompetition, isGa
         </div>
     )
 }
-                        </div >
-                    )}
-                </main >
-            </div >
-        </div >
-    )
-}
 
 export default Standings

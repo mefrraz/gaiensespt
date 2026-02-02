@@ -214,7 +214,7 @@ function Home() {
 
     // Filter logic
     const filteredMatches = matches.filter(match => {
-        const today = new Date().toISOString().split('T')[0]
+
 
         if (view === 'agenda') {
             if (match.status === 'FINALIZADO') return false
