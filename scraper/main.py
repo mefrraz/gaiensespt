@@ -5,6 +5,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client, Client
+from fpb_parser import fetch_and_parse
 
 load_dotenv()
 
