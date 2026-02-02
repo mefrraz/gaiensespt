@@ -167,11 +167,11 @@ function Home() {
     const fetchMatches = async () => {
         setLoading(true)
 
-        // Fetch ALL games order by date
-        // Ideally we should limit this for performance if db grows huge, but for now ok.
+        // Fetch games for CURRENT SEASON ONLY (2025/2026)
         const { data, error } = await supabase
             .from('games')
             .select('*')
+            .eq('epoca', '2025/2026')
             .order('data', { ascending: view === 'agenda' })
 
         if (error) {
@@ -218,13 +218,6 @@ function Home() {
 
         if (view === 'agenda') {
             if (match.status === 'FINALIZADO') return false
-            // Show only upcoming games (including today if not finished)
-            // Can add date check if needed, but status is usually reliable enough if maintained.
-            // If user explicitly wants "current epoch games", we might want to date limit?
-            // "so exibir jogos da epoca atual" -> usually implies scraping only brings current epoch.
-            // But db has old ones.
-            // Let's filter by date >= today for Agenda to be safe?
-            if (match.data < today && match.status !== 'A DECORRER') return false
         } else {
             if (match.status !== 'FINALIZADO') return false
         }
