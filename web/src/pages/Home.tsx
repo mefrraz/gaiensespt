@@ -264,8 +264,15 @@ function Home() {
             : new Date(b).getTime() - new Date(a).getTime()
     })
 
+    // Filter Standings by Escalão
+    const filteredStandings = standings.filter(team => {
+        if (filterEscalao === 'Todos') return true
+        // Map simple Escalão (Sub-14) to Competition Name (Camp. Distrital Sub14)
+        return team.competicao.includes(filterEscalao)
+    })
+
     // Group Standings by Group
-    const groupedStandings = standings.reduce((groups, team) => {
+    const groupedStandings = filteredStandings.reduce((groups, team) => {
         const group = team.grupo
         if (!groups[group]) groups[group] = []
         groups[group].push(team)

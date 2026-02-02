@@ -7,9 +7,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configuration
+# Configuration
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-TARGET_URL = "https://resultados.tugabasket.com/getCompetitionDetails?competitionId=11038"
+
+COMPETITIONS = [
+    {"name": "Camp. Distrital Sub14", "url": "https://resultados.tugabasket.com/getCompetitionDetails?competitionId=11038", "id": "sub14"},
+    {"name": "Camp. Distrital Sub16", "url": "https://resultados.tugabasket.com/getCompetitionDetails?competitionId=11040", "id": "sub16"},
+    {"name": "Camp. Distrital Sub18", "url": "https://resultados.tugabasket.com/getCompetitionDetails?competitionId=11042", "id": "sub18"}
+]
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     print("Error: SUPABASE_URL and SUPABASE_KEY must be set.")
@@ -29,12 +35,12 @@ def fetch_html(url):
         print(f"Failed to fetch {url}: {response.status_code}")
         return None
 
-def parse_standings(html_content):
+def parse_standings(html_content, competition_name):
     soup = BeautifulSoup(html_content, 'html.parser')
     
     # Locate all accordions which contain the group names and tables
     accordions = soup.find_all("div", class_="accordion")
-    print(f"Found {len(accordions)} accordions.")
+    print(f"Found {len(accordions)} accordions for {competition_name}.")
     
     standings_data = []
     
@@ -90,7 +96,7 @@ def parse_standings(html_content):
                 pos = int(pos_text)
                 
                 group_standings.append({
-                    "competicao": "Camp. Distrital Sub14", # Hardcoded for now based on URL, or extract from page title?
+                    "competicao": competition_name,
                     "grupo": group_name,
                     "equipa": team_name,
                     "posicao": pos,
@@ -104,10 +110,8 @@ def parse_standings(html_content):
                 continue
         
         # Only add this group if Gaia is in it (to keep relevant data)
-        # OR if we want all groups for context. Let's keep ONLY Gaia groups for now to avoid clutter,
-        # unless user wants full league view.
         if has_gaia:
-            print(f"Found Gaia in group: {group_name}")
+            print(f"Found Gaia in group: {group_name} ({competition_name})")
             standings_data.extend(group_standings)
             
     return standings_data
@@ -128,23 +132,28 @@ def upsert_standings(data):
         print(f"Error upserting to Supabase: {e}")
 
 def main():
-    print("Starting Standings Scraper...")
+    print("Starting Standings Scraper for Multiple Competitions...")
     
-    # 1. Try fetching from URL
-    html = fetch_html(TARGET_URL)
-    
-    # 2. If URL fails (e.g. from agent env), check for local file "temp_tuga.html"
-    # This allows us to run via "run_command" with proper networking, or fallback to file.
-    if not html and os.path.exists("temp_tuga.html"):
-        print("Using local temp_tuga.html fallback...")
-        with open("temp_tuga.html", "r") as f:
-            html = f.read()
-            
-    if html:
-        data = parse_standings(html)
-        upsert_standings(data)
-    else:
-        print("Could not get HTML content.")
+    all_data = []
+
+    for comp in COMPETITIONS:
+        print(f"Processing {comp['name']}...")
+        html = fetch_html(comp['url'])
+        
+        # Fallback for Sub14 (development mainly)
+        if not html and comp['id'] == 'sub14' and os.path.exists("temp_tuga.html"):
+             print("Using local temp_tuga.html fallback for Sub14...")
+             with open("temp_tuga.html", "r") as f:
+                 html = f.read()
+        
+        if html:
+            comp_data = parse_standings(html, comp['name'])
+            all_data.extend(comp_data)
+        else:
+            print(f"Could not get HTML content for {comp['name']}")
+
+    if all_data:
+        upsert_standings(all_data)
 
 if __name__ == "__main__":
     main()
