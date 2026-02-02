@@ -36,42 +36,7 @@ def fetch_html(url):
         print(f"Failed to fetch {url}: {response.status_code}")
         return None
 
-def normalize_team_name(team_name, competition_context):
-    """
-    Simplifies team names for better display on mobile.
-    Ex: 'FC Gaia A' -> 'Sub14 A'
-    Ex: 'FC GAIA - FOKUS' -> 'Seniores'
-    """
-    name_upper = team_name.upper()
-    
-    # Only normalize FC Gaia teams
-    if "GAIA" not in name_upper:
-        return team_name
 
-    # Determine suffix (A, B, C, or empty)
-    suffix = ""
-    # "FC Gaia A" or "FC Gaia B" detection
-    if " A" in name_upper or name_upper.endswith(" A"):
-        suffix = " A"
-    elif " B" in name_upper or name_upper.endswith(" B"):
-        suffix = " B"
-    elif " C" in name_upper or name_upper.endswith(" C"):
-        suffix = " C"
-        
-    # Map competition context to short name
-    comp_upper = competition_context.upper()
-    
-    if "SUB14" in comp_upper or "SUB-14" in comp_upper:
-        return f"Sub14{suffix}"
-    elif "SUB16" in comp_upper or "SUB-16" in comp_upper:
-        return f"Sub16{suffix}"
-    elif "SUB18" in comp_upper or "SUB-18" in comp_upper:
-        return f"Sub18{suffix}"
-    elif "SENIORES" in comp_upper or "SÉNIOR" in comp_upper or "NACIONAL" in comp_upper:
-        return f"Seniores{suffix}"
-        
-    # Fallback: Just return generic "Gaia" + suffix if we can't determine category
-    return f"Gaia{suffix}"
 
 def parse_standings(html_content, competition_name):
     soup = BeautifulSoup(html_content, 'html.parser')
@@ -114,8 +79,8 @@ def parse_standings(html_content, competition_name):
             pos_text = cols[0].get_text(strip=True)
             original_team_name = cols[1].get_text(strip=True)
             
-            # Normalize Name
-            team_name = normalize_team_name(original_team_name, competition_name)
+            # Keep original name
+            team_name = original_team_name
             
             # Check if this is a Gaia team (using original name to be safe)
             if "GAIA" in original_team_name.upper():
