@@ -190,17 +190,14 @@ function Home() {
     const fetchMatches = async () => {
         setLoading(true)
 
-        let tableName = 'partidas_2025_2026' // Default
-        if (selectedSeason === '2024/2025') tableName = 'partidas_2024_2025'
-        if (selectedSeason === '2023/2024') tableName = 'partidas_2023_2024'
-
         const { data, error } = await supabase
-            .from(tableName as any)
+            .from('games')
             .select('*')
+            .eq('epoca', selectedSeason)
             .order('data', { ascending: view === 'agenda' })
 
         if (error) {
-            console.error('Error fetching from', tableName, error)
+            console.error('Error fetching from games', error)
             setMatches([])
             setEscaloes([])
         } else {
@@ -221,13 +218,9 @@ function Home() {
         fetchMatches()
         fetchLastScrape()
 
-        let tableName = 'partidas_2025_2026'
-        if (selectedSeason === '2024/2025') tableName = 'partidas_2024_2025'
-        if (selectedSeason === '2023/2024') tableName = 'partidas_2023_2024'
-
         const channel = supabase
-            .channel(`public:${tableName}`)
-            .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, () => {
+            .channel('public:games')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'games' }, () => {
                 fetchMatches()
                 fetchLastScrape()
             })
@@ -275,7 +268,10 @@ function Home() {
 
     // Extract unique teams (Sub14 A, Sub14 B, etc.) from standings
     const gaiaTeams = Array.from(new Set(standings
-        .filter(s => s.equipa.toUpperCase().includes('FC GAIA'))
+        .filter(s => {
+            const name = s.equipa.toUpperCase()
+            return name.startsWith('SUB') || name.startsWith('SENIORES') || name.includes('GAIA')
+        })
         .map(s => s.equipa)
     )).sort()
 
@@ -336,6 +332,27 @@ function Home() {
         const options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'long' }
         const date = new Date(dateStr).toLocaleDateString('pt-PT', options)
         return date.charAt(0).toUpperCase() + date.slice(1)
+    }
+
+    const formatTeamName = (name: string, escalao: string) => {
+        const uName = name.toUpperCase()
+        if (uName.includes('FC GAIA') || uName.includes('GAIA')) {
+            // Simplify Gaia names
+            let suffix = ''
+            if (uName.includes(' A') || uName.endsWith(' A')) suffix = ' A'
+            else if (uName.includes(' B') || uName.endsWith(' B')) suffix = ' B'
+            else if (uName.includes(' C') || uName.endsWith(' C')) suffix = ' C'
+
+            const uEscalao = escalao.toUpperCase()
+            if (uEscalao.includes('SUB14') || uEscalao.includes('SUB 14')) return `Sub14${suffix}`
+            if (uEscalao.includes('SUB16') || uEscalao.includes('SUB 16')) return `Sub16${suffix}`
+            if (uEscalao.includes('SUB18') || uEscalao.includes('SUB 18')) return `Sub18${suffix}`
+            if (uEscalao.includes('SENIORES') || uEscalao.includes('SÉNIOR')) return `Seniores${suffix}`
+
+            // Fallback
+            return `Gaia${suffix}`
+        }
+        return name
     }
 
     return (
@@ -591,7 +608,7 @@ function Home() {
                                                                 </div>
                                                             )}
                                                             <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
-                                                                {match.equipa_casa}
+                                                                {formatTeamName(match.equipa_casa, match.escalao)}
                                                             </span>
                                                         </div>
                                                         {view === 'results' && match.resultado_casa !== null && (
@@ -610,7 +627,7 @@ function Home() {
                                                                 </div>
                                                             )}
                                                             <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
-                                                                {match.equipa_fora}
+                                                                {formatTeamName(match.equipa_fora, match.escalao)}
                                                             </span>
                                                         </div>
                                                         {view === 'results' && match.resultado_fora !== null && (

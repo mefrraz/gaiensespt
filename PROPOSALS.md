@@ -8,17 +8,17 @@ This is the most impactful feature to "wow" users and provide deep value, as req
 ### Concept
 A dedicated page for each FC Gaia squad (Sub-14, Sub-16, Seniors, etc.) that goes beyond just results.
 
+### Data Sources
+- **ABP Website / Swish:** Source for rosters (since FC Gaia plays in ABP).
+- **Note:** Stats might be limited compared to full FPB game sheets.
+
 ### Features
-- **Roster (Plantel):** List of all players with photos (if available), numbers, and positions.
-- **Player Stats (Média por Atleta):**
-  - Use data from "Fichas de Jogo" (Game Sheets) available on FPB.
-  - Metrics: Points per game (PTS), Fouls, Minutes (if available).
-  - *Challenge*: Parsing PDF game sheets or detailed HTML stats requires a more advanced scraper.
-- **Team Averages:** Points scored/conceded per game for this specific squad.
+- **Roster (Plantel):** List of all players.
+- **Team Averages:** Points scored/conceded per game.
 
 ### Implementation Strategy
-- **Scraper:** Update scraper to visit the "Equipa" page on FPB to get the roster.
-- **Database:** Create `players` and `team_stats` tables.
+- **Scraper:** Target ABP website for squad lists.
+- **Database:** Create `players` table linked to teams.
 
 ---
 
@@ -28,10 +28,15 @@ Currently, we only show games. Users want to know "Where are we in the table?".
 ### Concept
 Automated standings table for each competition FC Gaia participates in.
 
+### Data Sources
+- **Primary:** `resultados.tugabasket.com` (JSON API).
+    - Endpoint: `getCompetitionDetails?competitionId=XXXX`
+    - Provides: Group standings, recent results.
+- **Secondary:** `fpb.pt/classificacao/associacao_4/`.
+
 ### Features
 - **Live Standings:** Rank, Points, Games Played, W/L record.
 - **Form Guide:** Small icons showing last 5 games (e.g., ✅ ❌ ✅ ✅ ➖).
-- **Promotion/Relegation Zones:** Visual indicators for important table positions.
 
 ### Implementation Strategy
 - **Scraper:** Scrape the "Classificação" tab from the FPB competition page.

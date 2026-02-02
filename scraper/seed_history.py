@@ -31,16 +31,8 @@ def upsert_to_supabase(data):
         print("No data to upsert.")
         return
 
-    # Determine table based on season in data (assuming all data in chunk is same season)
-    # The scraping logic for seed_history guarantees consistent season per batch
-    season = data[0].get('epoca')
-    table_name = "partidas" # Fallback
-    if season == "2023/2024":
-        table_name = "partidas_2023_2024"
-    elif season == "2024/2025":
-        table_name = "partidas_2024_2025"
-    elif season == "2025/2026":
-        table_name = "partidas_2025_2026"
+    # Unified 'games' table
+    table_name = "games"
 
     # Deduplicate by slug to avoid "ON CONFLICT DO UPDATE command cannot affect row a second time"
     # This keeps the last occurrence of a slug in the list.

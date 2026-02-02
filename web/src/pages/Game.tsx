@@ -14,62 +14,12 @@ function Game() {
             if (!slug) return
             setLoading(true)
 
-            // Deduce season table from slug date YYYY-MM-DD
-            // If date is >= August, it belongs to Season YYYY/(YYYY+1)
-            // If date is < August, it belongs to Season (YYYY-1)/YYYY
-
-            // Slug format: YYYY-MM-DD-home-away... or just YYYY-MM-DD
-            // Extract the date part
-            const datePart = slug.substring(0, 10) // "2023-10-05"
-            // Simple validation that it looks like a date
-            if (!/^\d{4}-\d{2}-\d{2}/.test(datePart)) {
-                // Fallback to searching all or just current
-                // Let's try current first
-                console.warn("Could not determine date from slug, trying current season")
-            }
-
-            const year = parseInt(datePart.substring(0, 4))
-            const month = parseInt(datePart.substring(5, 7))
-
-            let tableName = 'partidas_2025_2026' // default
-
-            if (year === 2023) {
-                if (month >= 8) tableName = 'partidas_2023_2024'
-                else tableName = 'partidas_2022_2023' // Not supported, maybe 2023/2024 leg?
-                // Actually 2023-01 to 2023-07 is 2022/2023, which we don't have.
-                // But 2023-09 is 2023/2024.
-            } else if (year === 2024) {
-                if (month >= 8) tableName = 'partidas_2024_2025'
-                else tableName = 'partidas_2023_2024'
-            } else if (year === 2025) {
-                if (month >= 8) tableName = 'partidas_2025_2026'
-                else tableName = 'partidas_2024_2025'
-            } else if (year === 2026) {
-                if (month < 8) tableName = 'partidas_2025_2026'
-            }
-
-            // Quick check if we have this table supported
-            const SUPPORTED = ['partidas_2023_2024', 'partidas_2024_2025', 'partidas_2025_2026']
-            if (!SUPPORTED.includes(tableName)) {
-                // If we calculated something outside range, fallback to searching all?
-                // Or just try the closest.
-                tableName = 'partidas_2025_2026'
-            }
-
-            // Try fetching from calculated table
+            // Try fetching from unified games table
             let { data, error } = await supabase
-                .from(tableName as any)
+                .from('games')
                 .select('*')
                 .eq('slug', slug)
                 .single()
-
-            // If not found, maybe our date logic was off or slug format is different?
-            // Optional: Backup search if data is null
-            if (!data && !error) {
-                // Try 2025_2026
-                const res = await supabase.from('partidas_2025_2026').select('*').eq('slug', slug).single()
-                if (res.data) data = res.data
-            }
 
             if (error && !data) console.error(error)
             else setMatch(data as Match)

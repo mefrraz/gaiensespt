@@ -26,7 +26,7 @@ def get_supabase_client() -> Optional[Client]:
 
 supabase = get_supabase_client()
 
-def upsert_to_supabase(data, table_name="partidas_2025_2026"):
+def upsert_to_supabase(data, table_name="games"):
     if not supabase:
         print("Supabase client not initialized. Skipping upsert.")
         return
@@ -65,11 +65,11 @@ def main():
 
     # Process Agenda (Current Season)
     agenda_games = fetch_and_parse(AGENDA_URL, is_agenda=True, season='2025/2026')
-    upsert_to_supabase(agenda_games, "partidas_2025_2026")
+    upsert_to_supabase(agenda_games)
 
     # Process Resultados (Current Season)
     results_games = fetch_and_parse(RESULTADOS_URL, is_agenda=False, season='2025/2026')
-    upsert_to_supabase(results_games, "partidas_2025_2026")
+    upsert_to_supabase(results_games)
     
     # Update last scrape timestamp
     update_last_scrape()
