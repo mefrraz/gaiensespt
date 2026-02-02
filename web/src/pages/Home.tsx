@@ -21,6 +21,18 @@ export type Match = {
     epoca?: string
 }
 
+export interface Standing {
+    id: string
+    competicao: string
+    grupo: string
+    equipa: string
+    posicao: number
+    jogos: number
+    vitorias: number
+    derrotas: number
+    pontos: number
+}
+
 // Update schedule (in UTC hours)
 const WEEKDAY_UPDATES = [12, 18, 22] // Mon-Thu
 const FRIDAY_START = 16
@@ -128,7 +140,7 @@ function Home() {
     const [view, setView] = useState<'agenda' | 'results' | 'standings'>('agenda')
     const [filterEscalao, setFilterEscalao] = useState<string>('Todos')
     const [escaloes, setEscaloes] = useState<string[]>([])
-    const [standings, setStandings] = useState<any[]>([])
+    const [standings, setStandings] = useState<Standing[]>([])
     const [lastScrape, setLastScrape] = useState<string>('')
     const [timeUntilUpdate, setTimeUntilUpdate] = useState<string>('')
     // Available seasons for dropdown
@@ -156,7 +168,7 @@ function Home() {
             .select('*')
 
         if (!error && data) {
-            setStandings(data)
+            setStandings(data as Standing[])
         }
         setLoading(false)
     }
