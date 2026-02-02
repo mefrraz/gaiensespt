@@ -77,6 +77,12 @@ function Standings() {
                             </div>
                         </div>
 
+                        {/* Back to Home Button (Desktop) */}
+                        <Link to="/" className="hidden md:flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-gaia-yellow transition-colors px-1">
+                            <Home size={16} />
+                            <span>Voltar à Home</span>
+                        </Link>
+
                         {/* Mobile Tabs */}
                         <div className="md:hidden overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
                             <div className="flex gap-2">
