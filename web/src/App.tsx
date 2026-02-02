@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Layout from './Layout'
 import Home from './pages/Home'
 import Game from './pages/Game'
+import Standings from './pages/Standings'
 import About from './pages/About'
 import Install from './pages/Install'
 
@@ -12,6 +13,7 @@ function App() {
                 <Route path="/" element={<Layout />}>
                     <Route index element={<Home />} />
                     <Route path="game/:slug" element={<Game />} />
+                    <Route path="standings" element={<Standings />} />
                     <Route path="about" element={<About />} />
                     <Route path="install" element={<Install />} />
                 </Route>
