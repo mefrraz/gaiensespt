@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, MapPin, Calendar, Loader2, Share2, Shield, CalendarPlus } from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, Loader2, Share2, Shield } from 'lucide-react'
 import { Match } from './Home'
 
 function Game() {
@@ -95,24 +95,6 @@ function Game() {
     const dateFormatted = new Date(match.data).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
     const isFinished = match.status === 'FINALIZADO'
 
-    // Google Calendar Link Generator
-    const generateGoogleCalendarLink = () => {
-        if (!match.data || !match.hora) return '#'
-
-        const [hours, minutes] = match.hora.split(':')
-        const startDate = new Date(match.data)
-        startDate.setHours(parseInt(hours), parseInt(minutes))
-
-        const endDate = new Date(startDate.getTime() + 90 * 60000) // Assumes 1h30m duration
-
-        const formatDate = (date: Date) => date.toISOString().replace(/-|:|\.\d\d\d/g, "")
-
-        const title = `Jogo: ${match.equipa_casa} vs ${match.equipa_fora}`
-        const details = `Competição: ${match.competicao}\nEscalão: ${match.escalao}\n\nAcompanha em Gaienses App.`
-        const location = match.local || 'Local a definir'
-
-        return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${formatDate(startDate)}/${formatDate(endDate)}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(location)}&sf=true&output=xml`
-    }
 
     return (
         <div className="max-w-xl mx-auto pb-12">

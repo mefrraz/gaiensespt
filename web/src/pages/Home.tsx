@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { Calendar, Trophy, Filter, Loader2, MapPin, ChevronRight, Clock, RefreshCw, CalendarPlus } from 'lucide-react'
+import { Calendar, Trophy, Filter, Loader2, MapPin, ChevronRight, Clock, RefreshCw } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 // Types
