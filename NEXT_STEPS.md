@@ -10,20 +10,8 @@
 ## 2. Ações Pendentes (Para o Utilizador)
 
 ### Passo A: Prepara a Base de Dados (Supabase)
-Corre este SQL no editor do Supabase para adicionar a coluna `epoca`:
-
-```sql
-ALTER TABLE partidas ADD COLUMN IF NOT EXISTS epoca TEXT DEFAULT '2025/2026';
-UPDATE partidas SET epoca = '2025/2026' WHERE epoca IS NULL;
-CREATE INDEX IF NOT EXISTS idx_partidas_epoca ON partidas(epoca);
-```
-
-### Passo B: Carregar Histórico
-Como já fizeste o push do código, agora podes carregar os dados antigos sem sujar o teu computador:
-1. Vai ao GitHub do projeto -> Tab **Actions**.
-2. Clica em **Seed History Data** (na esquerda).
-3. Clica **Run workflow**.
-4. Espera 2 minutos e a página de Estatísticas vai ficar cheia de dados!
+- [x] Corre este SQL no editor do Supabase para adicionar a coluna `epoca`.
+- [x] Carregar Histórico (Feito via GitHub Actions).
 
 ---
 

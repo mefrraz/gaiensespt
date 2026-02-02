@@ -31,6 +31,17 @@ def upsert_to_supabase(data):
         print("No data to upsert.")
         return
 
+    # Determine table based on season in data (assuming all data in chunk is same season)
+    # The scraping logic for seed_history guarantees consistent season per batch
+    season = data[0].get('epoca')
+    table_name = "partidas" # Fallback
+    if season == "2023/2024":
+        table_name = "partidas_2023_2024"
+    elif season == "2024/2025":
+        table_name = "partidas_2024_2025"
+    elif season == "2025/2026":
+        table_name = "partidas_2025_2026"
+
     # Deduplicate by slug to avoid "ON CONFLICT DO UPDATE command cannot affect row a second time"
     # This keeps the last occurrence of a slug in the list.
     unique_map = {item['slug']: item for item in data}
@@ -39,12 +50,12 @@ def upsert_to_supabase(data):
     if len(unique_data) < len(data):
         print(f"Removed {len(data) - len(unique_data)} duplicate records.")
 
-    print(f"Upserting {len(unique_data)} records...")
+    print(f"Upserting {len(unique_data)} records to table '{table_name}'...")
     try:
         for i in range(0, len(unique_data), 100):
             chunk = unique_data[i:i+100]
             # Use count argument properly or ignore return
-            supabase.table("partidas").upsert(chunk).execute()
+            supabase.table(table_name).upsert(chunk).execute()
         print("Upsert complete.")
     except Exception as e:
         print(f"Error upserting to Supabase: {e}")

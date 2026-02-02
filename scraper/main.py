@@ -25,7 +25,7 @@ def get_supabase_client() -> Optional[Client]:
 
 supabase = get_supabase_client()
 
-def upsert_to_supabase(data):
+def upsert_to_supabase(data, table_name="partidas_2025_2026"):
     if not supabase:
         print("Supabase client not initialized. Skipping upsert.")
         return
@@ -34,11 +34,11 @@ def upsert_to_supabase(data):
         print("No data to upsert.")
         return
 
-    print(f"Upserting {len(data)} records to Supabase...")
+    print(f"Upserting {len(data)} records to Supabase table '{table_name}'...")
     try:
         for i in range(0, len(data), 100):
             chunk = data[i:i+100]
-            response = supabase.table("partidas").upsert(chunk).execute()
+            response = supabase.table(table_name).upsert(chunk).execute()
         print("Upsert complete.")
     except Exception as e:
         print(f"Error upserting to Supabase: {e}")
@@ -64,11 +64,11 @@ def main():
 
     # Process Agenda (Current Season)
     agenda_games = fetch_and_parse(AGENDA_URL, is_agenda=True, season='2025/2026')
-    upsert_to_supabase(agenda_games)
+    upsert_to_supabase(agenda_games, "partidas_2025_2026")
 
     # Process Resultados (Current Season)
     results_games = fetch_and_parse(RESULTADOS_URL, is_agenda=False, season='2025/2026')
-    upsert_to_supabase(results_games)
+    upsert_to_supabase(results_games, "partidas_2025_2026")
     
     # Update last scrape timestamp
     update_last_scrape()

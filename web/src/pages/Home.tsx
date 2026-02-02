@@ -130,8 +130,9 @@ function Home() {
     const [escaloes, setEscaloes] = useState<string[]>([])
     const [lastScrape, setLastScrape] = useState<string>('')
     const [timeUntilUpdate, setTimeUntilUpdate] = useState<string>('')
-    const [selectedSeason, setSelectedSeason] = useState<string>('all')
-    const [seasons, setSeasons] = useState<string[]>([])
+    // Available seasons for dropdown
+    const AVAILABLE_SEASONS = ['2025/2026', '2024/2025', '2023/2024']
+    const [selectedSeason, setSelectedSeason] = useState<string>('2025/2026')
 
     // Fetch last scrape time from metadata
     const fetchLastScrape = async () => {
@@ -163,13 +164,21 @@ function Home() {
     // Fetch data
     const fetchMatches = async () => {
         setLoading(true)
+
+        let tableName = 'partidas_2025_2026' // Default
+        if (selectedSeason === '2024/2025') tableName = 'partidas_2024_2025'
+        if (selectedSeason === '2023/2024') tableName = 'partidas_2023_2024'
+
         const { data, error } = await supabase
-            .from('partidas')
+            .from(tableName as any)
             .select('*')
             .order('data', { ascending: view === 'agenda' })
 
-        if (error) console.error('Error fetching:', error)
-        else {
+        if (error) {
+            console.error('Error fetching from', tableName, error)
+            setMatches([])
+            setEscaloes([])
+        } else {
             let sorted = data as Match[]
             if (view === 'results') {
                 sorted = sorted.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
@@ -178,21 +187,6 @@ function Home() {
 
             const uniqueEscaloes = Array.from(new Set(sorted.map(m => m.escalao))).filter(Boolean).sort()
             setEscaloes(uniqueEscaloes)
-
-            // Extract unique seasons
-            const matchesWithSeasons = sorted as any[]
-            if (matchesWithSeasons.length > 0) {
-                const uniqueSeasons = Array.from(new Set(matchesWithSeasons.map(m => m.epoca || '').filter(Boolean))) as string[]
-                setSeasons(uniqueSeasons.sort().reverse())
-
-                // If viewing results, default to the latest season found in data
-                // "apenas apresentar os resultados da ultima época" -> set selectedSeason to latest
-                if (view === 'results' && uniqueSeasons.length > 0 && selectedSeason === 'all') {
-                    // Try to find current season e.g. "2024/2025" or the first in the list
-                    // Actually, if we just set it to the first one (latest due to sort), it fulfills the request.
-                    setSelectedSeason(uniqueSeasons[0])
-                }
-            }
         }
         setLoading(false)
     }
@@ -202,9 +196,13 @@ function Home() {
         fetchMatches()
         fetchLastScrape()
 
+        let tableName = 'partidas_2025_2026'
+        if (selectedSeason === '2024/2025') tableName = 'partidas_2024_2025'
+        if (selectedSeason === '2023/2024') tableName = 'partidas_2023_2024'
+
         const channel = supabase
-            .channel('public:partidas')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'partidas' }, () => {
+            .channel(`public:${tableName}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, () => {
                 fetchMatches()
                 fetchLastScrape()
             })
@@ -213,7 +211,7 @@ function Home() {
         return () => {
             supabase.removeChannel(channel)
         }
-    }, [view])
+    }, [view, selectedSeason])
 
     // Filter logic
     const filteredMatches = matches.filter(match => {
@@ -224,7 +222,6 @@ function Home() {
         }
 
         if (filterEscalao !== 'Todos' && match.escalao !== filterEscalao) return false
-        if (selectedSeason !== 'all' && (match as any).epoca !== selectedSeason) return false
         return true
     })
 
@@ -287,19 +284,16 @@ function Home() {
                     </select>
                 </div>
 
-                {/* Season Filter */}
-                {seasons.length > 0 && (
-                    <div className="relative w-1/3">
-                        <select
-                            value={selectedSeason}
-                            onChange={(e) => setSelectedSeason(e.target.value)}
-                            className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-300 text-xs font-medium rounded-lg focus:ring-1 focus:ring-gaia-yellow focus:border-gaia-yellow block w-full px-2 p-2.5 shadow-sm text-center"
-                        >
-                            <option value="all">Todas</option>
-                            {seasons.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                    </div>
-                )}
+                {/* Season Filter (Hardcoded list) */}
+                <div className="relative w-1/3">
+                    <select
+                        value={selectedSeason}
+                        onChange={(e) => setSelectedSeason(e.target.value)}
+                        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-300 text-xs font-medium rounded-lg focus:ring-1 focus:ring-gaia-yellow focus:border-gaia-yellow block w-full px-2 p-2.5 shadow-sm text-center"
+                    >
+                        {AVAILABLE_SEASONS.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                </div>
             </div>
 
             {/* Update Info with Countdown */}
@@ -376,9 +370,9 @@ function Home() {
                                                                     <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{match.equipa_casa.substring(0, 1)}</span>
                                                                 </div>
                                                             )}
-                                                            <Link to={`/team/${match.equipa_casa}`} onClick={(e) => e.stopPropagation()} className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px] hover:text-gaia-yellow hover:underline decoration-gaia-yellow/50 underline-offset-2 transition-all">
+                                                            <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
                                                                 {match.equipa_casa}
-                                                            </Link>
+                                                            </span>
                                                         </div>
                                                         {view === 'results' && match.resultado_casa !== null && (
                                                             <span className={`text-xl font-mono font-bold ${match.resultado_casa > (match.resultado_fora || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
@@ -396,9 +390,9 @@ function Home() {
                                                                     <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{match.equipa_fora.substring(0, 1)}</span>
                                                                 </div>
                                                             )}
-                                                            <Link to={`/team/${match.equipa_fora}`} onClick={(e) => e.stopPropagation()} className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px] hover:text-gaia-yellow hover:underline decoration-gaia-yellow/50 underline-offset-2 transition-all">
+                                                            <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
                                                                 {match.equipa_fora}
-                                                            </Link>
+                                                            </span>
                                                         </div>
                                                         {view === 'results' && match.resultado_fora !== null && (
                                                             <span className={`text-xl font-mono font-bold ${match.resultado_fora > (match.resultado_casa || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
