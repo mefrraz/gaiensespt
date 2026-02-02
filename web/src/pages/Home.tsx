@@ -264,11 +264,44 @@ function Home() {
             : new Date(b).getTime() - new Date(a).getTime()
     })
 
-    // Filter Standings by Escalão
+    // Extract unique phases from standings (e.g., "1.ª FASE", "2.ª FASE", "3.ª FASE")
+    const phases = Array.from(new Set(standings.map(s => {
+        const parts = s.grupo.split(' - ')
+        return parts[0] || 'Outra'
+    }))).sort()
+
+    const [filterPhase, setFilterPhase] = useState<string>('Todas')
+    const [filterTeam, setFilterTeam] = useState<string>('Todos')
+
+    // Extract unique teams (Sub14 A, Sub14 B, etc.) from standings
+    const gaiaTeams = Array.from(new Set(standings
+        .filter(s => s.equipa.toUpperCase().includes('FC GAIA'))
+        .map(s => s.equipa)
+    )).sort()
+
+    // Filter Standings by Escalão, Phase, and Team
     const filteredStandings = standings.filter(team => {
-        if (filterEscalao === 'Todos') return true
-        // Map simple Escalão (Sub-14) to Competition Name (Camp. Distrital Sub14)
-        return team.competicao.includes(filterEscalao)
+        // Filter by Escalão
+        if (filterEscalao !== 'Todos' && !team.competicao.includes(filterEscalao)) {
+            return false
+        }
+
+        // Filter by Phase
+        if (filterPhase !== 'Todas') {
+            const teamPhase = team.grupo.split(' - ')[0] || ''
+            if (teamPhase !== filterPhase) return false
+        }
+
+        // Filter by specific Gaia Team (e.g., "FC GAIA A")
+        if (filterTeam !== 'Todos') {
+            // Check if this group contains the selected team
+            const groupHasSelectedTeam = standings.some(
+                s => s.grupo === team.grupo && s.equipa === filterTeam
+            )
+            if (!groupHasSelectedTeam) return false
+        }
+
+        return true
     })
 
     // Group Standings by Group
@@ -279,7 +312,7 @@ function Home() {
         return groups
     }, {} as Record<string, Standing[]>)
 
-    // Accordion State
+    // Accordion State - Default to ALL CLOSED for cleaner UX
     const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
 
     const toggleGroup = (group: string) => {
@@ -289,19 +322,15 @@ function Home() {
         }))
     }
 
-    // Initialize all groups as expanded by default (or maybe just the first one?)
-    useEffect(() => {
-        if (Object.keys(groupedStandings).length > 0 && Object.keys(expandedGroups).length === 0) {
-            // Optional: Default to all open or closed. Let's Default to ALL OPEN for visibility, allow close.
-            // Or matches user request "increase or decrease" -> Start OPEN is better for discovery.
-            const initial: Record<string, boolean> = {}
-            Object.keys(groupedStandings).forEach(g => initial[g] = true)
-            setExpandedGroups(initial)
-        }
-    }, [groupedStandings])
+    const expandAll = () => {
+        const all: Record<string, boolean> = {}
+        Object.keys(groupedStandings).forEach(g => all[g] = true)
+        setExpandedGroups(all)
+    }
 
-    // Extract Phases for potential future filtering (optional, but good for structure)
-    // const phases = Array.from(new Set(standings.map(s => s.grupo.split(' - ')[0])))
+    const collapseAll = () => {
+        setExpandedGroups({})
+    }
 
     const formatDate = (dateStr: string) => {
         const options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'long' }
@@ -392,54 +421,123 @@ function Home() {
                     </div>
                 ) : view === 'standings' ? (
                     <div className="space-y-4 px-1">
+                        {/* Standings Filter Bar */}
+                        <div className="glass-card p-4 space-y-4">
+                            {/* Phase + Team Filters */}
+                            <div className="flex flex-wrap gap-3">
+                                {/* Phase Filter */}
+                                <div className="flex-1 min-w-[120px]">
+                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Fase</label>
+                                    <select
+                                        value={filterPhase}
+                                        onChange={(e) => setFilterPhase(e.target.value)}
+                                        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-300 text-xs font-medium rounded-lg focus:ring-1 focus:ring-gaia-yellow focus:border-gaia-yellow block w-full p-2.5 shadow-sm"
+                                    >
+                                        <option value="Todas">Todas as Fases</option>
+                                        {phases.map(p => <option key={p} value={p}>{p}</option>)}
+                                    </select>
+                                </div>
+
+                                {/* Team Filter */}
+                                <div className="flex-1 min-w-[140px]">
+                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Equipa Gaia</label>
+                                    <select
+                                        value={filterTeam}
+                                        onChange={(e) => setFilterTeam(e.target.value)}
+                                        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-300 text-xs font-medium rounded-lg focus:ring-1 focus:ring-gaia-yellow focus:border-gaia-yellow block w-full p-2.5 shadow-sm"
+                                    >
+                                        <option value="Todos">Todas as Equipas</option>
+                                        {gaiaTeams.map(t => <option key={t} value={t}>{t}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Expand/Collapse Controls */}
+                            <div className="flex justify-between items-center pt-2 border-t border-zinc-100 dark:border-white/5">
+                                <span className="text-xs text-zinc-500">{Object.keys(groupedStandings).length} grupo(s)</span>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={expandAll}
+                                        className="text-[10px] font-bold uppercase tracking-wider text-gaia-yellow hover:text-yellow-600 transition-colors"
+                                    >
+                                        Abrir Todos
+                                    </button>
+                                    <span className="text-zinc-300">|</span>
+                                    <button
+                                        onClick={collapseAll}
+                                        className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+                                    >
+                                        Fechar Todos
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         {Object.entries(groupedStandings).length === 0 ? (
                             <div className="text-center py-20 text-zinc-600 font-medium">
-                                Nenhuma classificação encontrada.
+                                Nenhuma classificação encontrada para os filtros selecionados.
                             </div>
                         ) : (
                             Object.entries(groupedStandings).map(([grupo, teams]) => (
                                 <div key={grupo} className="glass-card p-0 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500">
                                     <button
                                         onClick={() => toggleGroup(grupo)}
-                                        className="w-full bg-gray-50 dark:bg-white/5 p-4 border-b border-gray-100 dark:border-white/10 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                                        className="w-full bg-gradient-to-r from-zinc-50 to-white dark:from-white/5 dark:to-zinc-900/50 p-4 border-b border-gray-100 dark:border-white/10 flex justify-between items-center hover:from-zinc-100 hover:to-zinc-50 dark:hover:from-white/10 dark:hover:to-zinc-800/50 transition-all duration-300"
                                     >
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-bold bg-gaia-yellow/20 text-gaia-yellow px-2 py-0.5 rounded uppercase tracking-wider">
-                                                {teams[0]?.competicao.replace('Camp. Distrital ', '') || ''}
-                                            </span>
-                                            <h3 className="text-xs font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-widest text-left">{grupo}</h3>
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm transition-all duration-300 ${expandedGroups[grupo] ? 'bg-gaia-yellow text-black rotate-90' : 'bg-zinc-100 dark:bg-white/10 text-zinc-500'}`}>
+                                                <ChevronRight size={16} />
+                                            </div>
+                                            <div className="text-left">
+                                                <span className="text-[10px] font-bold text-gaia-yellow uppercase tracking-wider block">
+                                                    {teams[0]?.competicao.replace('Camp. Distrital ', '') || ''}
+                                                </span>
+                                                <h3 className="text-sm font-bold text-zinc-800 dark:text-white">{grupo}</h3>
+                                            </div>
                                         </div>
-                                        <div className={`transition-transform duration-300 ${expandedGroups[grupo] ? 'rotate-180' : ''}`}>
-                                            <ChevronRight size={16} className="text-zinc-400" />
+                                        <div className="text-right">
+                                            <span className="text-xs text-zinc-400">{teams.length} equipas</span>
                                         </div>
                                     </button>
 
                                     {/* Collapsible Content */}
-                                    <div className={`transition-all duration-300 ease-in-out ${expandedGroups[grupo] ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${expandedGroups[grupo] ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'}`}>
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-sm text-left">
-                                                <thead className="text-xs text-zinc-500 bg-gray-50/50 dark:bg-white/5 uppercase">
+                                                <thead className="text-xs text-zinc-500 bg-gradient-to-r from-zinc-50 to-white dark:from-white/5 dark:to-zinc-900/30 uppercase">
                                                     <tr>
                                                         <th className="px-4 py-3 text-center w-12">#</th>
                                                         <th className="px-4 py-3">Equipa</th>
                                                         <th className="px-4 py-3 text-center w-12">J</th>
                                                         <th className="px-4 py-3 text-center w-12">V</th>
                                                         <th className="px-4 py-3 text-center w-12">D</th>
-                                                        <th className="px-4 py-3 text-center w-12 font-bold">PTS</th>
+                                                        <th className="px-4 py-3 text-center w-14 font-bold">PTS</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-100 dark:divide-white/5">
                                                     {teams.sort((a, b) => a.posicao - b.posicao).map((team) => (
-                                                        <tr key={team.equipa} className={team.equipa.includes("GAIA") ? "bg-gaia-yellow/10" : ""}>
-                                                            <td className="px-4 py-3 text-center font-bold text-zinc-500">{team.posicao}</td>
+                                                        <tr key={team.equipa} className={`transition-colors ${team.equipa.includes("GAIA") ? "bg-gradient-to-r from-gaia-yellow/20 to-gaia-yellow/5" : "hover:bg-zinc-50 dark:hover:bg-white/5"}`}>
+                                                            <td className="px-4 py-3 text-center">
+                                                                <span className={`inline-flex w-6 h-6 items-center justify-center rounded-full text-xs font-bold ${team.posicao <= 2 ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400' : team.posicao >= teams.length - 1 ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400' : 'bg-zinc-100 dark:bg-white/10 text-zinc-500'}`}>
+                                                                    {team.posicao}
+                                                                </span>
+                                                            </td>
                                                             <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white">
-                                                                {team.equipa}
-                                                                {team.equipa.includes("GAIA") && <span className="ml-2 inline-block w-1.5 h-1.5 bg-gaia-yellow rounded-full"></span>}
+                                                                <div className="flex items-center gap-2">
+                                                                    {team.equipa}
+                                                                    {team.equipa.includes("GAIA") && <span className="inline-block w-2 h-2 bg-gaia-yellow rounded-full animate-pulse"></span>}
+                                                                </div>
                                                             </td>
                                                             <td className="px-4 py-3 text-center text-zinc-600 dark:text-zinc-400">{team.jogos}</td>
-                                                            <td className="px-4 py-3 text-center text-green-600 font-bold bg-green-50 dark:bg-green-500/10 rounded">{team.vitorias}</td>
-                                                            <td className="px-4 py-3 text-center text-red-500 bg-red-50 dark:bg-red-500/10 rounded">{team.derrotas}</td>
-                                                            <td className="px-4 py-3 text-center font-bold text-zinc-900 dark:text-white">{team.pontos}</td>
+                                                            <td className="px-4 py-3 text-center">
+                                                                <span className="inline-flex w-7 h-7 items-center justify-center rounded-lg bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 font-bold text-xs">{team.vitorias}</span>
+                                                            </td>
+                                                            <td className="px-4 py-3 text-center">
+                                                                <span className="inline-flex w-7 h-7 items-center justify-center rounded-lg bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 text-xs">{team.derrotas}</span>
+                                                            </td>
+                                                            <td className="px-4 py-3 text-center">
+                                                                <span className="inline-flex w-8 h-8 items-center justify-center rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black font-bold text-sm">{team.pontos}</span>
+                                                            </td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
