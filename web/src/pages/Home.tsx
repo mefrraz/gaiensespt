@@ -169,9 +169,8 @@ function Home() {
 
         // Fetch games for CURRENT SEASON ONLY (2025/2026)
         const { data, error } = await supabase
-            .from('games')
+            .from('games_2025_2026')
             .select('*')
-            .eq('epoca', '2025/2026')
             .order('data', { ascending: view === 'agenda' })
 
         if (error) {

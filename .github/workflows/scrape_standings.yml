@@ -2,7 +2,7 @@ name: Scrape Standings
 
 on:
   schedule:
-    # Run every day at 04:00 UTC
+    # Run every day at 04:00 UTC (Targets 2025/2026 tables)
     - cron: '0 4 * * *'
   workflow_dispatch: # Allow manual trigger
 

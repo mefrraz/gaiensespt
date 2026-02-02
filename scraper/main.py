@@ -65,11 +65,11 @@ def main():
 
     # Process Agenda (Current Season)
     agenda_games = fetch_and_parse(AGENDA_URL, is_agenda=True, season='2025/2026')
-    upsert_to_supabase(agenda_games)
+    upsert_to_supabase(agenda_games, table_name="games_2025_2026")
 
     # Process Resultados (Current Season)
     results_games = fetch_and_parse(RESULTADOS_URL, is_agenda=False, season='2025/2026')
-    upsert_to_supabase(results_games)
+    upsert_to_supabase(results_games, table_name="games_2025_2026")
     
     # Update last scrape timestamp
     update_last_scrape()

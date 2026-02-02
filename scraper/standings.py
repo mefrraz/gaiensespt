@@ -132,7 +132,7 @@ def upsert_standings(data):
         # Upsert in chunks
         for i in range(0, len(data), 100):
             chunk = data[i:i+100]
-            supabase.table("classificacoes").upsert(chunk, on_conflict="competicao,grupo,equipa").execute()
+            supabase.table("classificacoes_2025_2026").upsert(chunk, on_conflict="competicao,grupo,equipa").execute()
         print("Upsert complete.")
     except Exception as e:
         print(f"Error upserting to Supabase: {e}")

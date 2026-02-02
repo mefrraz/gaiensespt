@@ -2,7 +2,7 @@ name: Update FC Gaia Data
 
 on:
   schedule:
-    # Mon-Thu: 12:00, 18:00, 22:00 UTC
+    # Mon-Thu: 12:00, 18:00, 22:00 UTC (Targets 2025/2026 tables)
     - cron: '0 12,18,22 * * 1-4'
     
     # Friday: every 30 min from 16:00 to 23:30 UTC

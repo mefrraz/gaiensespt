@@ -23,7 +23,7 @@ function Standings() {
     const fetchStandings = async () => {
         setLoading(true)
         const { data, error } = await supabase
-            .from('classificacoes')
+            .from('classificacoes_2025_2026')
             .select('*')
 
         if (!error && data) {
@@ -153,8 +153,8 @@ function Standings() {
                                                 </h2>
 
                                                 <div className="space-y-4">
-                                                    {groups.map(({ grupo, teams }, idx) => (
-                                                        <GroupAccordion key={grupo} grupo={grupo} teams={teams} isDefaultOpen={idx === 0} selectedCompetition={selectedCompetition} isGaiaTeam={isGaiaTeam} />
+                                                    {groups.map(({ grupo, teams }) => (
+                                                        <GroupAccordion key={grupo} grupo={grupo} teams={teams} isDefaultOpen={false} selectedCompetition={selectedCompetition} isGaiaTeam={isGaiaTeam} />
                                                     ))}
                                                 </div>
                                             </div>
