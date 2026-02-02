@@ -279,6 +279,30 @@ function Home() {
         return groups
     }, {} as Record<string, Standing[]>)
 
+    // Accordion State
+    const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
+
+    const toggleGroup = (group: string) => {
+        setExpandedGroups(prev => ({
+            ...prev,
+            [group]: !prev[group]
+        }))
+    }
+
+    // Initialize all groups as expanded by default (or maybe just the first one?)
+    useEffect(() => {
+        if (Object.keys(groupedStandings).length > 0 && Object.keys(expandedGroups).length === 0) {
+            // Optional: Default to all open or closed. Let's Default to ALL OPEN for visibility, allow close.
+            // Or matches user request "increase or decrease" -> Start OPEN is better for discovery.
+            const initial: Record<string, boolean> = {}
+            Object.keys(groupedStandings).forEach(g => initial[g] = true)
+            setExpandedGroups(initial)
+        }
+    }, [groupedStandings])
+
+    // Extract Phases for potential future filtering (optional, but good for structure)
+    // const phases = Array.from(new Set(standings.map(s => s.grupo.split(' - ')[0])))
+
     const formatDate = (dateStr: string) => {
         const options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'long' }
         const date = new Date(dateStr).toLocaleDateString('pt-PT', options)
@@ -367,7 +391,7 @@ function Home() {
                         <Loader2 className="animate-spin text-gaia-yellow" size={32} />
                     </div>
                 ) : view === 'standings' ? (
-                    <div className="space-y-8 px-1">
+                    <div className="space-y-4 px-1">
                         {Object.entries(groupedStandings).length === 0 ? (
                             <div className="text-center py-20 text-zinc-600 font-medium">
                                 Nenhuma classificação encontrada.
@@ -375,38 +399,52 @@ function Home() {
                         ) : (
                             Object.entries(groupedStandings).map(([grupo, teams]) => (
                                 <div key={grupo} className="glass-card p-0 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                    <div className="bg-gray-50 dark:bg-white/5 p-4 border-b border-gray-100 dark:border-white/10 flex justify-between items-center">
-                                        <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{grupo}</h3>
-                                        <span className="text-[10px] font-bold bg-gaia-yellow/20 text-gaia-yellow px-2 py-0.5 rounded">Sub-14</span>
-                                    </div>
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-sm text-left">
-                                            <thead className="text-xs text-zinc-500 bg-gray-50/50 dark:bg-white/5 uppercase">
-                                                <tr>
-                                                    <th className="px-4 py-3 text-center w-12">#</th>
-                                                    <th className="px-4 py-3">Equipa</th>
-                                                    <th className="px-4 py-3 text-center w-12">J</th>
-                                                    <th className="px-4 py-3 text-center w-12">V</th>
-                                                    <th className="px-4 py-3 text-center w-12">D</th>
-                                                    <th className="px-4 py-3 text-center w-12 font-bold">PTS</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                                                {teams.sort((a, b) => a.posicao - b.posicao).map((team) => (
-                                                    <tr key={team.equipa} className={team.equipa.includes("GAIA") ? "bg-gaia-yellow/10" : ""}>
-                                                        <td className="px-4 py-3 text-center font-bold text-zinc-500">{team.posicao}</td>
-                                                        <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white">
-                                                            {team.equipa}
-                                                            {team.equipa.includes("GAIA") && <span className="ml-2 inline-block w-1.5 h-1.5 bg-gaia-yellow rounded-full"></span>}
-                                                        </td>
-                                                        <td className="px-4 py-3 text-center text-zinc-600 dark:text-zinc-400">{team.jogos}</td>
-                                                        <td className="px-4 py-3 text-center text-green-600 font-bold bg-green-50 dark:bg-green-500/10 rounded">{team.vitorias}</td>
-                                                        <td className="px-4 py-3 text-center text-red-500 bg-red-50 dark:bg-red-500/10 rounded">{team.derrotas}</td>
-                                                        <td className="px-4 py-3 text-center font-bold text-zinc-900 dark:text-white">{team.pontos}</td>
+                                    <button
+                                        onClick={() => toggleGroup(grupo)}
+                                        className="w-full bg-gray-50 dark:bg-white/5 p-4 border-b border-gray-100 dark:border-white/10 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-bold bg-gaia-yellow/20 text-gaia-yellow px-2 py-0.5 rounded uppercase tracking-wider">
+                                                {teams[0]?.competicao.replace('Camp. Distrital ', '') || ''}
+                                            </span>
+                                            <h3 className="text-xs font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-widest text-left">{grupo}</h3>
+                                        </div>
+                                        <div className={`transition-transform duration-300 ${expandedGroups[grupo] ? 'rotate-180' : ''}`}>
+                                            <ChevronRight size={16} className="text-zinc-400" />
+                                        </div>
+                                    </button>
+
+                                    {/* Collapsible Content */}
+                                    <div className={`transition-all duration-300 ease-in-out ${expandedGroups[grupo] ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm text-left">
+                                                <thead className="text-xs text-zinc-500 bg-gray-50/50 dark:bg-white/5 uppercase">
+                                                    <tr>
+                                                        <th className="px-4 py-3 text-center w-12">#</th>
+                                                        <th className="px-4 py-3">Equipa</th>
+                                                        <th className="px-4 py-3 text-center w-12">J</th>
+                                                        <th className="px-4 py-3 text-center w-12">V</th>
+                                                        <th className="px-4 py-3 text-center w-12">D</th>
+                                                        <th className="px-4 py-3 text-center w-12 font-bold">PTS</th>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                                                    {teams.sort((a, b) => a.posicao - b.posicao).map((team) => (
+                                                        <tr key={team.equipa} className={team.equipa.includes("GAIA") ? "bg-gaia-yellow/10" : ""}>
+                                                            <td className="px-4 py-3 text-center font-bold text-zinc-500">{team.posicao}</td>
+                                                            <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white">
+                                                                {team.equipa}
+                                                                {team.equipa.includes("GAIA") && <span className="ml-2 inline-block w-1.5 h-1.5 bg-gaia-yellow rounded-full"></span>}
+                                                            </td>
+                                                            <td className="px-4 py-3 text-center text-zinc-600 dark:text-zinc-400">{team.jogos}</td>
+                                                            <td className="px-4 py-3 text-center text-green-600 font-bold bg-green-50 dark:bg-green-500/10 rounded">{team.vitorias}</td>
+                                                            <td className="px-4 py-3 text-center text-red-500 bg-red-50 dark:bg-red-500/10 rounded">{team.derrotas}</td>
+                                                            <td className="px-4 py-3 text-center font-bold text-zinc-900 dark:text-white">{team.pontos}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             ))
