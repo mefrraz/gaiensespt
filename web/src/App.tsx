@@ -4,7 +4,6 @@ import Home from './pages/Home'
 import Game from './pages/Game'
 import About from './pages/About'
 import Install from './pages/Install'
-import Stats from './pages/Stats'
 import Team from './pages/Team'
 
 function App() {
@@ -17,7 +16,6 @@ function App() {
                     <Route path="team/:teamName" element={<Team />} />
                     <Route path="about" element={<About />} />
                     <Route path="install" element={<Install />} />
-                    <Route path="stats" element={<Stats />} />
                 </Route>
             </Routes>
         </BrowserRouter>

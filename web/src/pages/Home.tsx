@@ -184,6 +184,14 @@ function Home() {
             if (matchesWithSeasons.length > 0) {
                 const uniqueSeasons = Array.from(new Set(matchesWithSeasons.map(m => m.epoca || '').filter(Boolean))) as string[]
                 setSeasons(uniqueSeasons.sort().reverse())
+
+                // If viewing results, default to the latest season found in data
+                // "apenas apresentar os resultados da ultima época" -> set selectedSeason to latest
+                if (view === 'results' && uniqueSeasons.length > 0 && selectedSeason === 'all') {
+                    // Try to find current season e.g. "2024/2025" or the first in the list
+                    // Actually, if we just set it to the first one (latest due to sort), it fulfills the request.
+                    setSelectedSeason(uniqueSeasons[0])
+                }
             }
         }
         setLoading(false)

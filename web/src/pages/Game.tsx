@@ -173,23 +173,15 @@ function Game() {
                 <div className="glass-card p-0 overflow-hidden hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group flex flex-col">
                     {match.local ? (
                         <div className="w-full h-48 relative">
+                            {/* Use standard Google Maps Embed (Search mode) which often works without specific Place API restrictions or use query param mode */}
                             <iframe
                                 width="100%"
                                 height="100%"
                                 style={{ border: 0 }}
                                 loading="lazy"
                                 allowFullScreen
-                                src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(match.local)}`}
+                                src={`https://maps.google.com/maps?q=${encodeURIComponent(match.local)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                             ></iframe>
-                            {/* Overlay if no API key or just to make it clickable to open app? 
-                                Actually, embed requires API Key. If user doesn't have one, this breaks.
-                                Fallback: Use simple static link or basic map if possible without key?
-                                Google Maps Embed API requires key for 'place' mode.
-                                
-                                ALTERNATIVE for no-key: 
-                                Use <iframe src="https://maps.google.com/maps?q=...&t=&z=13&ie=UTF8&iwloc=&output=embed" ...>
-                                This is the old/hacky way but works without API key usually.
-                            */}
                             <div className="absolute inset-0 pointer-events-none border-b border-gray-200 dark:border-white/10" />
                         </div>
                     ) : null}

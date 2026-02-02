@@ -1,8 +1,10 @@
 import os
-import datetime
-from supabase import create_client, Client
+import json
+import time
+from typing import List, Dict, Any, Optional
+from datetime import datetime
 from dotenv import load_dotenv
-from fpb_parser import fetch_and_parse
+from supabase import create_client, Client
 
 load_dotenv()
 
