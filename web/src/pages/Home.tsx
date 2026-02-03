@@ -247,25 +247,8 @@ function Home() {
         return date.charAt(0).toUpperCase() + date.slice(1)
     }
 
-    const formatTeamName = (name: string, escalao: string) => {
-        const uName = name.toUpperCase()
-        if (uName.includes('FC GAIA') || uName.includes('GAIA')) {
-            // Simplify Gaia names
-            let suffix = ''
-            if (uName.includes(' A') || uName.endsWith(' A')) suffix = ' A'
-            else if (uName.includes(' B') || uName.endsWith(' B')) suffix = ' B'
-            else if (uName.includes(' C') || uName.endsWith(' C')) suffix = ' C'
-
-            const uEscalao = escalao.toUpperCase()
-            if (uEscalao.includes('SUB14') || uEscalao.includes('SUB 14')) return `Sub14${suffix}`
-            if (uEscalao.includes('SUB16') || uEscalao.includes('SUB 16')) return `Sub16${suffix}`
-            if (uEscalao.includes('SUB18') || uEscalao.includes('SUB 18')) return `Sub18${suffix}`
-            if (uEscalao.includes('SENIORES') || uEscalao.includes('SÉNIOR')) return `Seniores${suffix}`
-
-            // Fallback
-            return `Gaia${suffix}`
-        }
-        return name
+    const formatTeamName = (name: string, _escalao: string) => {
+        return name.toUpperCase()
     }
 
     return (
