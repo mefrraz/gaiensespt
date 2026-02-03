@@ -1,93 +1,83 @@
-# GaiensesPT - Portal do Adepto FC Gaia Basquetebol
+# GaiensesPT
 
-Bem-vindo ao repositório oficial do GaiensesPT.
+![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg) ![Platform](https://img.shields.io/badge/platform-web%20%7C%20mobile-lightgrey)
 
-🔴 **Acede à App:** [gaiensespt.vercel.app](https://gaiensespt.vercel.app)
+**[gaiensespt.vercel.app](https://gaiensespt.vercel.app)**
 
----
-
-## 📖 Para Utilizadores
-
-Esta é a aplicação que centraliza toda a informação das equipas de basquetebol do FC Gaia.
-
-### Funcionalidades Principais
-*   📅 **Agenda Completa:** Todos os jogos futuros com indicação de dias, horas e pavilhões.
-*   📊 **Resultados em Tempo Real:** Resultados atualizados automaticamente após os jogos (ou durante, dependendo da fonte).
-*   🏆 **Classificações Históricas:** Consulta a tabela classificativa da época atual e de épocas passadas (desde 2022).
-*   📍 **Navegação:** Botão direto para abrir a localização do pavilhão no Google Maps/Waze.
-*   📱 **PWA:** Podes instalar como se fosse uma aplicação nativa no teu telemóvel (Android/iOS).
-
-### Dados Históricos
-A plataforma permite viajar no tempo e consultar classificações das épocas 2022/2023, 2023/2024 e 2024/2025, preservando a memória desportiva do clube.
+GaiensesPT is a centralized web platform designed to aggregate and display real-time results, schedules, and standings for FC Gaia Basketball teams. It serves as a unified digital hub for fans, athletes, and club members.
 
 ---
 
-## 🛠 Para Desenvolvedores (Técnico)
+## System Architecture
 
-Este projeto utiliza uma stack moderna para garantir performance, facilidade de manutenção e updates automáticos.
+The project operates on a **headless architecture**, separating the frontend presentation from the data acquisition layer.
 
-### 🏗 Arquitetura & Tecnologias
-*   **Frontend:** React (Vite) + TypeScript + TailwindCSS.
-*   **Data Storage:** Supabase (PostgreSQL).
-*   **Data Scrapers:**
-    *   **Python (`scrapers/scrape_games.py`):** Raspa jogos e resultados atuais da FPB/Tugabasket.
-    *   **Node.js/Playwright (`scrapers/scrape_history.js`):** Raspa classificações históricas e complexas que requerem interação com a página (dropdowns, javascript).
-*   **CI/CD & Automação:** GitHub Actions.
-
-### 📂 Estrutura do Projeto
-```
-/scrapers      - Scripts de extração de dados (Python & Node.js)
-/web           - Aplicação Frontend (React + Vite)
-/database      - Scripts SQL para migrações e configuração do Supabase
-/.github       - Workflows de automação (Github Actions)
-```
-
-### 🤖 Automação (GitHub Actions)
-O sistema está desenhado para ser autónomo para a época corrente, mas manual para dados históricos (que não mudam).
-
-1.  **Update Current Season (`update_current_season.yml`)**
-    *   **Frequência:** Diária (06:00 UTC).
-    *   **O que faz:** Executa o script Python para buscar os jogos da época atual (`2025/2026`) e atualiza a tabela `games_2025_2026`.
-    *   **Trigger:** Cron ou Manual.
-
-2.  **Scrape Historical Data (`scrape_history.yml`)**
-    *   **Frequência:** Apenas Manual (`workflow_dispatch`).
-    *   **O que faz:** Executa o script Playwright para raspar classificações de épocas passadas (2022-2025) e popula as tabelas `classificacoes_YYYY_YYYY`.
-    *   **Porquê manual?** Como são dados históricos, só precisam de ser carregados uma vez ou se houver correções.
-
-### ⚙️ Configuração Local
-
-**Pré-requisitos:** Node.js 18+, Python 3.10+, Conta Supabase.
-
-#### 1. Setup Variáveis de Ambiente
-Cria um ficheiro `.env` na raiz do projeto (ver `.env.example` se existir, ou baseia-te nisto):
-```env
-VITE_SUPABASE_URL=tua_url_supabase
-VITE_SUPABASE_ANON_KEY=tua_key_anon
-SUPABASE_URL=tua_url_supabase (para python)
-SUPABASE_KEY=tua_service_role_key (para python/escrita)
+```mermaid
+graph TD
+    subgraph Data Acquisition
+        A[Official Federation Site] -->|Python Request Scraper| B(Current Season Data)
+        A -->|Node/Playwright Engine| C(Historical Standings)
+    end
+    
+    subgraph Data Layer
+        B -->|Upsert| D[(Supabase SQL)]
+        C -->|Upsert| D
+    end
+    
+    subgraph Presentation
+        D -->|Realtime API| E[React Frontend]
+        E -->|Render| F[User Interface]
+    end
 ```
 
-#### 2. Correr Scraper de Jogos (Python)
-```bash
-pip install -r scrapers/requirements.txt
-python scrapers/scrape_games.py --season "2025/2026"
-```
+### 1. Data Ingestion Layer
 
-#### 3. Correr Scraper de Histórico (Node.js)
-```bash
-npm install # na raiz ou onde estiver o package.json
-node scrapers/scrape_history.js
-```
+The scraping strategy employs a **hybrid approach** to balance performance with capability:
 
-#### 4. Frontend
-```bash
-cd web
-npm install
-npm run dev
-```
+*   **Current Season (Python)**: Utilizes `BeautifulSoup` and `Requests` for lightweight, high-frequency polling. This scraper targets the FPB agenda and results pages, parsing server-side rendered HTML to extract match details (time, venue, score). It is optimized for speed and low resource consumption during live matchdays.
+*   **Historical Data (Node.js/Playwright)**: Utilizes a headless browser engine to handle client-side rendered Standings tables. This scraper interacts with the dynamic `select` dropdowns for different competition phases, extracting deep historical records that are otherwise inaccessible via simple HTTP requests.
+
+### 2. Automation & Scheduling (CI/CD)
+
+Data reliability is maintained through **GitHub Actions**, which orchestrate the scraping jobs based on specific temporal patterns:
+
+*   **Weekday Routine (Mon-Thu)**: Executes 3 times daily to capture schedule changes or midweek games.
+*   **Matchday High-Frequency (Fri-Sun)**: Scales up to 30-minute intervals during prime game windows (Friday evenings and weekends) to ensure near-real-time score updates.
+*   **Resource Management**: The schedule is tightly optimized to stay within approximately 40% of the GitHub Actions free tier quota (~800 minutes/month), preventing service interruption.
+
+### 3. Frontend Application
+
+The user interface is built with **React** and **TypeScript**, emphasizing:
+*   **Responsive Design**: Mobile-first approach using TailwindCSS.
+*   **PWA Standards**: Service workers enable installation on native devices.
+*   **Performance**: Static generation with dynamic data fetching on the client side.
 
 ---
 
-## Licença
-Este projeto não está afiliado oficialmente ao FC Gaia ou à FPB. Criado por adeptos, para adeptos.
+## Technical Stack
+
+| Component | Technology | Description |
+|-----------|------------|-------------|
+| **Frontend** | React, Vite | Core application framework |
+| **Styling** | TailwindCSS | Utility-first CSS framework |
+| **Database** | Supabase (PostgreSQL) | Relational data storage |
+| **Scraper A** | Python 3.10 | Static content parser |
+| **Scraper B** | Playwright (Node.js) | Dynamic content crawler |
+| **CI/CD** | GitHub Actions | Automated workflow orchestration |
+
+---
+
+## Project Structure
+
+*   **/scrapers**: Contains the data extraction logic.
+    *   `scrape_games.py`: The high-frequency script for current match data.
+    *   `scrape_history.js`: The complex script for multi-phase historical data.
+*   **/web**: The source code for the frontend application.
+*   **/database**: SQL migration files and schema definitions.
+*   **/.github**: Workflow configuration files defining the automation schedules.
+
+---
+
+## Disclaimer
+
+This project is an independent community initiative. It is not officially affiliated with, endorsed by, or connected to FC Gaia or the Portuguese Basketball Federation (FPB).

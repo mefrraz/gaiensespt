@@ -2,10 +2,11 @@ name: Update Current Season Data
 
 on:
   schedule:
-    # Weekdays: 10:00, 14:00, 18:00, 22:00
-    - cron: '0 10,14,18,22 * * 1-5'
-    # Friday: Every 30 mins from 14:00 to 23:59
-    - cron: '*/30 14-23 * * 5'
+    # Weekdays (Mon-Thu): 12:00, 19:00, 23:00 (Approximate times for game updates)
+    - cron: '0 12,19,23 * * 1-4'
+    # Friday: One check at 12:00, then every 30 mins from 17:00 to 23:59
+    - cron: '0 12 * * 5'
+    - cron: '*/30 17-23 * * 5'
     # Weekend: Every 30 mins from 09:00 to 23:59
     - cron: '*/30 9-23 * * 0,6'
   workflow_dispatch:
