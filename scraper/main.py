@@ -60,19 +60,32 @@ def update_last_scrape():
         print(f"Error updating last_scrape: {e}")
 
 def main():
-    print(f"Assuming Agenda URL: {AGENDA_URL}")
-    print(f"Assuming Resultados URL: {RESULTADOS_URL}")
-
-    # Process Agenda (Current Season)
-    agenda_games = fetch_and_parse(AGENDA_URL, is_agenda=True, season='2025/2026')
-    upsert_to_supabase(agenda_games, table_name="games_2025_2026")
-
-    # Process Resultados (Current Season)
-    results_games = fetch_and_parse(RESULTADOS_URL, is_agenda=False, season='2025/2026')
-    upsert_to_supabase(results_games, table_name="games_2025_2026")
+    import argparse
     
-    # Update last scrape timestamp
-    update_last_scrape()
+    parser = argparse.ArgumentParser(description="FC Gaia Game Scraper")
+    parser.add_argument("--season", type=str, default="2025/2026", help="Season to scrape (e.g., 2025/2026)")
+    parser.add_argument("--table", type=str, default="games_2025_2026", help="Supabase table to upsert data to")
+    parser.add_argument("--agenda-url", type=str, default=AGENDA_URL, help="URL for the agenda")
+    parser.add_argument("--results-url", type=str, default=RESULTADOS_URL, help="URL for the results")
+    
+    args = parser.parse_args()
+
+    print(f"Scraping Season: {args.season}")
+    print(f"Target Table: {args.table}")
+    print(f"Agenda URL: {args.agenda_url}")
+    print(f"Resultados URL: {args.results_url}")
+
+    # Process Agenda
+    agenda_games = fetch_and_parse(args.agenda_url, is_agenda=True, season=args.season)
+    upsert_to_supabase(agenda_games, table_name=args.table)
+
+    # Process Resultados
+    results_games = fetch_and_parse(args.results_url, is_agenda=False, season=args.season)
+    upsert_to_supabase(results_games, table_name=args.table)
+    
+    # Update last scrape timestamp (only if scraping current season, or maybe we can just always update it)
+    if args.season == "2025/2026": # Only update metadata if scraping current season
+        update_last_scrape()
 
 if __name__ == "__main__":
     main()

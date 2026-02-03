@@ -16,7 +16,7 @@ function Game() {
 
             // Try fetching from unified games table
             let { data, error } = await supabase
-                .from('games')
+                .from('games_2025_2026')
                 .select('*')
                 .eq('slug', slug)
                 .single()

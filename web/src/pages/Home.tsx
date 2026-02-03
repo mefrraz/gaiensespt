@@ -200,7 +200,7 @@ function Home() {
 
         const channel = supabase
             .channel('public:games')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'games' }, () => {
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'games_2025_2026' }, () => {
                 fetchMatches()
                 fetchLastScrape()
             })

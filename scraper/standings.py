@@ -122,44 +122,70 @@ def parse_standings(html_content, competition_name):
             
     return standings_data
 
-def upsert_standings(data):
+def upsert_standings(data, table_name="classificacoes_2025_2026"):
     if not data:
         print("No standings data to upsert.")
         return
         
-    print(f"Upserting {len(data)} standing records...")
+    print(f"Upserting {len(data)} standing records to {table_name}...")
     try:
         # Upsert in chunks
         for i in range(0, len(data), 100):
             chunk = data[i:i+100]
-            supabase.table("classificacoes_2025_2026").upsert(chunk, on_conflict="competicao,grupo,equipa").execute()
+            supabase.table(table_name).upsert(chunk, on_conflict="competicao,grupo,equipa").execute()
         print("Upsert complete.")
     except Exception as e:
         print(f"Error upserting to Supabase: {e}")
 
 def main():
-    print("Starting Standings Scraper for Multiple Competitions...")
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="FC Gaia Standings Scraper")
+    parser.add_argument("--season", type=str, default="2025/2026", help="Season to scrape (e.g., 2025/2026)")
+    parser.add_argument("--table", type=str, default="classificacoes_2025_2026", help="Supabase table to upsert data to")
+    parser.add_argument("--url", type=str, help="Specific URL to scrape (overrides built-in competitions)")
+    
+    args = parser.parse_args()
+    
+    print(f"Starting Standings Scraper...")
+    print(f"Target Table: {args.table}")
     
     all_data = []
 
-    for comp in COMPETITIONS:
-        print(f"Processing {comp['name']}...")
-        html = fetch_html(comp['url'])
-        
-        # Fallback for Sub14 (development mainly)
-        if not html and comp['id'] == 'sub14' and os.path.exists("temp_tuga.html"):
-             print("Using local temp_tuga.html fallback for Sub14...")
-             with open("temp_tuga.html", "r") as f:
-                 html = f.read()
-        
+    if args.url:
+        print(f"Processing single URL: {args.url}")
+        html = fetch_html(args.url)
         if html:
-            comp_data = parse_standings(html, comp['name'])
+            # We don't have the competition name easily if we just pass a URL.
+            # We can either pass it as an arg or extract it.
+            # For simplicity, let's assume the parser can handle it or we pass a generic name.
+            # Actually, parse_standings needs a competition name.
+            # Let's add --competition-name arg as well if using --url.
+            comp_name = "Camp. Passada" # Default fallback
+            comp_data = parse_standings(html, comp_name)
             all_data.extend(comp_data)
         else:
-            print(f"Could not get HTML content for {comp['name']}")
+             print(f"Failed to fetch {args.url}")
+    else:
+        # Default behavior: Scrape known competitions
+        for comp in COMPETITIONS:
+            print(f"Processing {comp['name']}...")
+            html = fetch_html(comp['url'])
+            
+            # Fallback for Sub14 (development mainly)
+            if not html and comp['id'] == 'sub14' and os.path.exists("temp_tuga.html"):
+                 print("Using local temp_tuga.html fallback for Sub14...")
+                 with open("temp_tuga.html", "r") as f:
+                     html = f.read()
+            
+            if html:
+                comp_data = parse_standings(html, comp['name'])
+                all_data.extend(comp_data)
+            else:
+                print(f"Could not get HTML content for {comp['name']}")
 
     if all_data:
-        upsert_standings(all_data)
+        upsert_standings(all_data, table_name=args.table)
 
 if __name__ == "__main__":
     main()
