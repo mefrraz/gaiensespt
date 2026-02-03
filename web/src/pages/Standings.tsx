@@ -1,259 +1,181 @@
-import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
-import { Trophy, ChevronRight, Loader2, Calendar, Home } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ChevronDown, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { StandingsTable } from '../components/StandingsTable'
+import { supabase } from '../lib/supabase'
+import { Standing } from '../components/types'
 
-export interface Standing {
-    id: string
-    competicao: string
-    grupo: string
-    equipa: string
-    posicao: number
-    jogos: number
-    vitorias: number
-    derrotas: number
-    pontos: number
-}
+const SEASONS = ['2025/2026', '2024/2025', '2023/2024', '2022/2023']
 
-function Standings() {
+export default function Standings() {
+    const [season, setSeason] = useState('2025/2026')
     const [standings, setStandings] = useState<Standing[]>([])
     const [loading, setLoading] = useState(true)
-    const [selectedCompetition, setSelectedCompetition] = useState<string>('')
 
-    const fetchStandings = async () => {
-        setLoading(true)
-        const { data, error } = await supabase
-            .from('classificacoes_2025_2026')
-            .select('*')
+    // Filters
+    const [competition, setCompetition] = useState('')
+    const [phase, setPhase] = useState('Todas')
+    const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
 
-        if (!error && data) {
-            setStandings(data as Standing[])
-            // Default to first competition if not set
-            if (data.length > 0 && !selectedCompetition) {
-                const comps = Array.from(new Set(data.map((s: Standing) => s.competicao))).sort()
-                if (comps.length > 0) setSelectedCompetition(comps[0])
-            }
-        }
-        setLoading(false)
-    }
-
+    // Fetch Data
     useEffect(() => {
+        const fetchStandings = async () => {
+            setLoading(true)
+            setCompetition('') // Reset filters on season change
+            setPhase('Todas')
+
+            const tableName = `classificacoes_${season.replace('/', '_')}`
+
+            const { data, error } = await supabase
+                .from(tableName)
+                .select('*')
+
+            if (!error && data) {
+                setStandings(data as Standing[])
+
+                // Set default competition if available
+                if (data.length > 0) {
+                    const comps = [...new Set(data.map((s: Standing) => s.competicao))].sort()
+                    setCompetition(comps[0] || '')
+                }
+            } else {
+                console.error('Error fetching standings:', error)
+                setStandings([])
+            }
+            setLoading(false)
+        }
+
         fetchStandings()
-    }, [])
+    }, [season])
 
-    // Extract unique Competitions
-    const competitions = Array.from(new Set(standings.map(s => s.competicao))).sort()
+    // Derived Data
+    const competitions = [...new Set(standings.map(s => s.competicao))].sort()
+    const byCompetition = standings.filter(s => s.competicao === competition)
 
-    // Filter by Selected Competition
-    const filteredStandings = standings.filter(s => s.competicao === selectedCompetition)
+    // Sort phases (groups) descending to show newest first
+    const phases = [...new Set(byCompetition.map(s => s.grupo))].sort().reverse()
 
-    // Group by Group Name
-    const groupedStandings = filteredStandings.reduce((groups, team) => {
-        const group = team.grupo
-        if (!groups[group]) groups[group] = []
-        groups[group].push(team)
-        return groups
-    }, {} as Record<string, Standing[]>)
+    // Logic to determine active phase
+    // 1. Extract base phase names (e.g. "1.ª Fase" from "1.ª Fase - Série A")
+    const basePhases = [...new Set(byCompetition.map(s => s.grupo.split(' - ')[0]))].sort().reverse()
+    const currentBasePhase = basePhases[0] // Top one is assumed current
 
-    // Helper to check if it's a Gaia team for highlighting
-    const isGaiaTeam = (name: string) => {
-        return name.toUpperCase().includes('GAIA')
+    const getStatus = (group: string) => {
+        if (season !== '2025/2026') return 'finished' // Past seasons are all finished
+        if (!currentBasePhase) return 'finished'
+        return group.startsWith(currentBasePhase) ? 'active' : 'finished'
     }
 
+    const filtered = phase === 'Todas' ? byCompetition : byCompetition.filter(s => s.grupo === phase)
+    // Sort groups based on phase order (descending)
+    const groups = [...new Set(filtered.map(s => s.grupo))].sort((a, b) => b.localeCompare(a))
+
+    const toggleGroup = (grupo: string) => setOpenGroups(prev => ({ ...prev, [grupo]: !prev[grupo] }))
+    const isOpen = (grupo: string) => openGroups[grupo] !== false
+
     return (
-        <div className="max-w-7xl mx-auto pb-20 px-4 md:px-8 py-8">
-            <div className="flex flex-col md:flex-row gap-8">
+        <div className="min-h-screen bg-zinc-50 dark:bg-[#09090b] animate-fadeIn pb-12 pt-16 px-4 md:px-6">
+            <div className="max-w-5xl mx-auto">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-6">
+                    <div>
+                        <h1 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight mb-2">Classificações</h1>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">Consulte as tabelas e resultados de todas as equipas.</p>
+                    </div>
 
-                {/* Sidebar (Desktop) / Tabs (Mobile) */}
-                <aside className="w-full md:w-64 flex-shrink-0">
-                    <div className="sticky top-24 space-y-6">
-                        <div className="flex items-center gap-3 md:mb-6">
-                            <div className="w-10 h-10 bg-gaia-yellow rounded-xl flex items-center justify-center text-black shadow-lg shadow-yellow-500/20">
-                                <Trophy size={20} strokeWidth={2.5} />
-                            </div>
-                            <div>
-                                <h1 className="text-xl md:text-2xl font-bold text-zinc-900 dark:text-white">Classificações</h1>
-                                <p className="text-[10px] md:text-xs text-zinc-500 font-medium uppercase tracking-wide">Época 2025/2026</p>
-                            </div>
+                    <div className="flex items-center gap-3">
+                        {/* Season Selector */}
+                        <div className="relative">
+                            <select
+                                value={season}
+                                onChange={e => { setSeason(e.target.value); setOpenGroups({}) }}
+                                className="appearance-none bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 pr-8 text-sm font-bold text-zinc-900 dark:text-white cursor-pointer hover:border-amber-500/50 dark:hover:border-amber-500/50 transition-colors shadow-sm"
+                            >
+                                {SEASONS.map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                            <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
                         </div>
-
-                        {/* Back to Home Button (Desktop) */}
-                        <Link to="/" className="hidden md:flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-gaia-yellow transition-colors px-1">
-                            <Home size={16} />
-                            <span>Voltar à Home</span>
+                        <Link
+                            to="/"
+                            className="hidden md:flex items-center justify-center px-4 py-2 text-sm font-bold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700"
+                        >
+                            <span className="mr-2">←</span> Voltar
                         </Link>
+                    </div>
+                </div>
 
-                        {/* Mobile Tabs */}
-                        <div className="md:hidden overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-                            <div className="flex gap-2">
-                                {competitions.map(comp => (
-                                    <button
-                                        key={comp}
-                                        onClick={() => setSelectedCompetition(comp)}
-                                        className={`whitespace-nowrap px-4 py-2 rounded-lg text-xs font-bold transition-all ${selectedCompetition === comp
-                                            ? 'bg-gaia-yellow text-black shadow-md'
-                                            : 'bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-100 dark:border-white/5'
-                                            }`}
-                                    >
-                                        {comp.replace('Camp. Distrital ', '').replace('Camp. Nacional ', '')}
-                                    </button>
-                                ))}
+                {/* Filters */}
+                <div className="flex flex-col md:flex-row gap-3 mb-6">
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Competição</label>
+                            <div className="relative">
+                                <select
+                                    value={competition}
+                                    onChange={e => { setCompetition(e.target.value); setPhase('Todas'); setOpenGroups({}) }}
+                                    className="w-full appearance-none bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-sm font-bold text-zinc-900 dark:text-white cursor-pointer focus:border-amber-500 dark:focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all shadow-sm disabled:opacity-50"
+                                    disabled={loading || competitions.length === 0}
+                                >
+                                    {loading ? <option>A carregar...</option> : competitions.map(c => <option key={c} value={c}>{c}</option>)}
+                                    {!loading && competitions.length === 0 && <option>Sem competições</option>}
+                                </select>
+                                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
                             </div>
                         </div>
-
-                        {/* Desktop Sidebar Menu */}
-                        <nav className="hidden md:flex flex-col gap-1">
-                            <h3 className="px-3 text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2">Competições</h3>
-                            {competitions.map(comp => (
-                                <button
-                                    key={comp}
-                                    onClick={() => setSelectedCompetition(comp)}
-                                    className={`text-left px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-between group ${selectedCompetition === comp
-                                        ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-lg'
-                                        : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white'
-                                        }`}
+                        <div>
+                            <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Fase</label>
+                            <div className="relative">
+                                <select
+                                    value={phase}
+                                    onChange={e => setPhase(e.target.value)}
+                                    className="w-full appearance-none bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2.5 text-sm font-bold text-zinc-900 dark:text-white cursor-pointer focus:border-amber-500 dark:focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all shadow-sm disabled:opacity-50"
+                                    disabled={loading || phases.length === 0}
                                 >
-                                    <span className="truncate">{comp.replace('Camp. ', '')}</span>
-                                    {selectedCompetition === comp && <ChevronRight size={14} />}
-                                </button>
-                            ))}
-                        </nav>
+                                    <option value="Todas">Todas as Fases</option>
+                                    {phases.map(p => <option key={p} value={p}>{p}</option>)}
+                                </select>
+                                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+                            </div>
+                        </div>
                     </div>
-                </aside>
+                </div>
 
-                {/* Main Content */}
-                <main className="flex-1 min-w-0">
-                    {loading ? (
-                        <div className="flex justify-center py-32">
-                            <Loader2 className="animate-spin text-gaia-yellow" size={32} />
-                        </div>
-                    ) : (
-                        <div className="space-y-8">
-                            {Object.entries(groupedStandings).length === 0 ? (
-                                <div className="text-center py-20 text-zinc-500 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-white/5">
-                                    <Trophy size={48} className="mx-auto mb-4 text-zinc-200 dark:text-zinc-800" />
-                                    <p className="font-medium">Selecione uma competição para ver a tabela.</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-6">
-                                    {Object.entries(
-                                        // Group by Phase first
-                                        Object.entries(groupedStandings).reduce((phases, [grupo, teams]) => {
-                                            const phaseName = grupo.split(' - ')[0] || 'Outros'
-                                            if (!phases[phaseName]) phases[phaseName] = []
-                                            phases[phaseName].push({ grupo, teams })
-                                            return phases
-                                        }, {} as Record<string, { grupo: string, teams: Standing[] }[]>)
-                                    ).sort((a, b) => b[0].localeCompare(a[0])) // Sort phases (e.g. 2ª follows 1ª)
-                                        .map(([phaseName, groups]) => (
-                                            <div key={phaseName} className="space-y-4">
-                                                <h2 className="text-lg font-bold text-zinc-900 dark:text-white uppercase tracking-wider flex items-center gap-2 px-2">
-                                                    <span className="w-2 h-6 bg-gaia-yellow rounded-full"></span>
-                                                    {phaseName}
-                                                </h2>
+                {/* Content */}
+                {loading ? (
+                    <div className="flex justify-center py-20">
+                        <Loader2 className="animate-spin text-amber-500" size={32} />
+                    </div>
+                ) : groups.length === 0 ? (
+                    <div className="text-center py-20 bg-white dark:bg-zinc-900/50 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                        <p className="text-zinc-500 font-medium">Não foram encontrados resultados para esta seleção.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4 mb-8">
+                        {groups.map(grupo => (
+                            <StandingsTable
+                                key={grupo}
+                                grupo={grupo}
+                                teams={filtered.filter(s => s.grupo === grupo)}
+                                isOpen={isOpen(grupo)}
+                                onToggle={() => toggleGroup(grupo)}
+                                status={getStatus(grupo)}
+                            />
+                        ))}
+                    </div>
+                )}
 
-                                                <div className="space-y-4">
-                                                    {groups.map(({ grupo, teams }) => (
-                                                        <GroupAccordion key={grupo} grupo={grupo} teams={teams} isDefaultOpen={false} selectedCompetition={selectedCompetition} isGaiaTeam={isGaiaTeam} />
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ))}
-                                </div>
-                            )
-                            }
-                        </div>
-                    )}
-                </main>
+                {/* Legend */}
+                <div className="flex flex-wrap gap-4 text-[10px] font-medium text-zinc-500 dark:text-zinc-400 px-1">
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded bg-green-500 shadow-sm shadow-green-500/50" /> Zona de Subida</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded bg-red-500 shadow-sm shadow-red-500/50" /> Zona de Descida</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded bg-amber-500 shadow-sm shadow-amber-500/50" /> FC Gaia</span>
+                </div>
             </div>
+
+            <style>{`
+                @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+                .animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
+            `}</style>
         </div>
     )
 }
-
-// Sub-component for Animated Accordion
-function GroupAccordion({ grupo, teams, isDefaultOpen, selectedCompetition, isGaiaTeam }: { grupo: string, teams: Standing[], isDefaultOpen: boolean, selectedCompetition: string, isGaiaTeam: (n: string) => boolean }) {
-    const [isOpen, setIsOpen] = useState(isDefaultOpen)
-
-    return (
-        <div className="glass-card overflow-hidden transition-all duration-300">
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="w-full bg-gradient-to-r from-zinc-50 to-white dark:from-white/5 dark:to-zinc-900/50 p-4 sm:p-6 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors text-left"
-            >
-                <div>
-                    <span className="text-[10px] font-bold text-gaia-yellow uppercase tracking-wider block mb-1">
-                        {selectedCompetition}
-                    </span>
-                    <h3 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-white">{grupo}</h3>
-                </div>
-                <div className="flex items-center gap-4">
-                    <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-zinc-400 bg-white dark:bg-black/20 px-3 py-1.5 rounded-full border border-zinc-100 dark:border-white/5">
-                        <Calendar size={12} />
-                        2025/2026
-                    </div>
-                    <ChevronRight className={`transform transition-transform duration-300 text-zinc-400 ${isOpen ? 'rotate-90' : ''}`} />
-                </div>
-            </button>
-
-            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-zinc-400 uppercase bg-zinc-50/50 dark:bg-white/5 border-b border-zinc-100 dark:border-white/5">
-                            <tr>
-                                <th className="px-6 py-4 font-bold text-center w-16">#</th>
-                                <th className="px-6 py-4 font-bold">Equipa</th>
-                                <th className="px-4 py-4 font-bold text-center w-14">J</th>
-                                <th className="px-4 py-4 font-bold text-center w-14">V</th>
-                                <th className="px-4 py-4 font-bold text-center w-14">D</th>
-                                <th className="px-6 py-4 font-bold text-center w-16 text-zinc-900 dark:text-white">PTS</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
-                            {teams.sort((a, b) => a.posicao - b.posicao).map((team) => {
-                                const isGaia = isGaiaTeam(team.equipa)
-                                return (
-                                    <tr
-                                        key={team.equipa}
-                                        className={`transition-colors relative overflow-hidden group ${isGaia
-                                            ? 'bg-gaia-yellow/10 hover:bg-gaia-yellow/20'
-                                            : 'hover:bg-zinc-50 dark:hover:bg-white/5 even:bg-zinc-50/30 dark:even:bg-white/[0.02]'
-                                            }`}
-                                    >
-                                        <td className="px-6 py-4 text-center">
-                                            <span className={`inline-flex w-7 h-7 items-center justify-center rounded-lg text-xs font-bold leading-none ${team.posicao <= 2
-                                                ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 ring-1 ring-green-500/20'
-                                                : team.posicao >= teams.length - 1
-                                                    ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 ring-1 ring-red-500/20'
-                                                    : 'bg-zinc-100 dark:bg-white/10 text-zinc-500'
-                                                }`}>
-                                                {team.posicao}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                {isGaia && (
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-gaia-yellow shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
-                                                )}
-                                                <span className={`font-bold ${isGaia ? 'text-zinc-900 dark:text-white text-base' : 'text-zinc-600 dark:text-zinc-300'}`}>
-                                                    {team.equipa}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-4 text-center font-medium text-zinc-500">{team.jogos}</td>
-                                        <td className="px-4 py-4 text-center font-bold text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-500/5 rounded-lg my-1">{team.vitorias}</td>
-                                        <td className="px-4 py-4 text-center font-medium text-red-500 dark:text-red-400 bg-red-50/50 dark:bg-red-500/5 rounded-lg my-1">{team.derrotas}</td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="text-lg font-black text-zinc-900 dark:text-white tracking-tight">{team.pontos}</span>
-                                        </td>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    )
-}
-
-export default Standings
