@@ -3,11 +3,13 @@ import json
 import time
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
+from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from fpb_parser import fetch_and_parse
 
-load_dotenv()
+# Load .env from project root (parent of scrapers directory)
+load_dotenv(Path(__file__).parent.parent / '.env')
 
 # --- Configuration ---
 AGENDA_URL = os.getenv("AGENDA_URL", "https://www.fpb.pt/calendario/clube_119/")
