@@ -166,9 +166,19 @@ export default function Standings() {
 
                 {/* Legend */}
                 <div className="flex flex-wrap gap-4 text-[10px] font-medium text-zinc-500 dark:text-zinc-400 px-1">
-                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded bg-green-500 shadow-sm shadow-green-500/50" /> Zona de Subida</span>
-                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded bg-red-500 shadow-sm shadow-red-500/50" /> Zona de Descida</span>
-                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded bg-amber-500 shadow-sm shadow-amber-500/50" /> FC Gaia</span>
+                    <div className="flex flex-wrap gap-4 items-center">
+                        <div className="flex items-center gap-3 pr-4 border-r border-zinc-200 dark:border-zinc-800">
+                            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded bg-green-500 shadow-sm shadow-green-500/50" /> Zona de Subida</span>
+                            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded bg-red-500 shadow-sm shadow-red-500/50" /> Zona de Descida</span>
+                            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded bg-amber-500 shadow-sm shadow-amber-500/50" /> FC Gaia</span>
+                        </div>
+                        <div className="flex gap-3 text-zinc-400">
+                            <span><span className="font-bold text-zinc-500 dark:text-zinc-300">Pts</span>: Pontos</span>
+                            <span><span className="font-bold text-zinc-500 dark:text-zinc-300">J</span>: Jogos</span>
+                            <span><span className="font-bold text-zinc-500 dark:text-zinc-300">V</span>: Vitórias</span>
+                            <span><span className="font-bold text-zinc-500 dark:text-zinc-300">D</span>: Derrotas</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 

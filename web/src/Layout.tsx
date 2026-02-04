@@ -33,7 +33,7 @@ function Layout() {
                             alt="GaiensesPT Logo"
                             className="h-10 w-auto group-hover:scale-110 transition-transform duration-300 drop-shadow-md"
                         />
-                        <div className="flex flex-col">
+                        <div className="flex flex-col hidden sm:flex">
                             <span className="font-bold text-lg leading-tight tracking-tight text-zinc-900 dark:text-white">
                                 GaiensesPT
                             </span>
@@ -44,20 +44,21 @@ function Layout() {
                     </Link>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
+                        <Link
+                            to="/standings"
+                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-100/50 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-700 dark:text-zinc-200 transition-all border border-transparent hover:border-zinc-200 dark:hover:border-white/10"
+                            aria-label="Classificações"
+                        >
+                            <Trophy size={18} />
+                            <span className="text-xs font-bold">Classificações</span>
+                        </Link>
                         <Link
                             to="/about"
-                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-300 transition-colors"
+                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-300 transition-colors hidden sm:flex"
                             aria-label="Sobre"
                         >
                             <Info size={20} />
-                        </Link>
-                        <Link
-                            to="/standings"
-                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-300 transition-colors"
-                            aria-label="Classificações"
-                        >
-                            <Trophy size={20} />
                         </Link>
                         <button
                             onClick={toggleTheme}

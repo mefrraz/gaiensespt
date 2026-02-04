@@ -18,24 +18,26 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const SEASONS = {
+// Config with known OFFICIAL names where available. 
+// These names match the pattern the user requested (Official full names).
+const SEASONS_CONFIG = {
     "2024_2025": [
-        "https://resultados.tugabasket.com/standings?competitionId=10392",
-        "https://resultados.tugabasket.com/standings?competitionId=10487",
-        "https://resultados.tugabasket.com/standings?competitionId=10478",
-        "https://resultados.tugabasket.com/standings?competitionId=10476"
+        { id: "10392", name: "XII Campeonato Nacional da 1ª Divisão Masculina", url: "https://resultados.tugabasket.com/standings?competitionId=10392" },
+        { id: "10487", name: "Campeonato Distrital 1ª Divisão Sub14 masculinos", url: "https://resultados.tugabasket.com/standings?competitionId=10487" },
+        { id: "10478", name: "Campeonato Distrital 1ª Divisão Sub18 masculinos", url: "https://resultados.tugabasket.com/standings?competitionId=10478" },
+        { id: "10476", name: "Campeonato Distrital Naismith Sub16 masculinos", url: "https://resultados.tugabasket.com/standings?competitionId=10476" }
     ],
     "2023_2024": [
-        "https://resultados.tugabasket.com/standings?competitionId=9970",
-        "https://resultados.tugabasket.com/standings?competitionId=9972",
-        "https://resultados.tugabasket.com/standings?competitionId=9974",
-        "https://resultados.tugabasket.com/standings?competitionId=9863"
+        { id: "9970", name: "Campeonato Distrital 1ª Divisão Sub18 masculinos", url: "https://resultados.tugabasket.com/standings?competitionId=9970" },
+        { id: "9972", name: "Campeonato Distrital 1ª Divisão Sub16 masculinos", url: "https://resultados.tugabasket.com/standings?competitionId=9972" },
+        { id: "9974", name: "Campeonato Distrital 1ª Divisão Sub14 masculinos", url: "https://resultados.tugabasket.com/standings?competitionId=9974" },
+        { id: "9863", name: "XI Campeonato Nacional da 1ª Divisão Masculina", url: "https://resultados.tugabasket.com/standings?competitionId=9863" }
     ],
     "2022_2023": [
-        "https://resultados.tugabasket.com/standings?competitionId=9319",
-        "https://resultados.tugabasket.com/standings?competitionId=9415",
-        "https://resultados.tugabasket.com/standings?competitionId=9416",
-        "https://resultados.tugabasket.com/standings?competitionId=9417"
+        { id: "9319", name: "X Campeonato Nacional da 1ª Divisão Masculina", url: "https://resultados.tugabasket.com/standings?competitionId=9319" },
+        { id: "9415", name: "Campeonato Distrital 1ª Divisão Sub14 masculinos", url: "https://resultados.tugabasket.com/standings?competitionId=9415" },
+        { id: "9416", name: "Campeonato Distrital 1ª Divisão Sub16 masculinos", url: "https://resultados.tugabasket.com/standings?competitionId=9416" },
+        { id: "9417", name: "Campeonato Distrital 1ª Divisão Sub18 masculinos", url: "https://resultados.tugabasket.com/standings?competitionId=9417" }
     ]
 };
 
@@ -49,8 +51,24 @@ function cleanInt(val) {
     }
 }
 
-async function scrapeSeason(seasonKey, urls) {
+async function scrapeSeason(seasonKey, competitions) {
     console.log(`--- Processing Season: ${seasonKey} ---`);
+
+    // 0. Truncate table first to avoid duplicates
+    const tableName = `classificacoes_${seasonKey}`;
+    console.log(`  > Truncating table ${tableName}...`);
+
+    const { error: truncateError } = await supabase
+        .from(tableName)
+        .delete()
+        .gte('posicao', 0);
+
+    if (truncateError) {
+        console.error(`    Error truncating table: ${truncateError.message}`);
+    } else {
+        console.log(`    Table truncated.`);
+    }
+
     const browser = await chromium.launch({ headless: true });
     // Use a desktop user agent to be safe
     const context = await browser.newContext({
@@ -58,28 +76,32 @@ async function scrapeSeason(seasonKey, urls) {
     });
     const page = await context.newPage();
 
-    for (const url of urls) {
+    for (const competition of competitions) {
+        const { url, id: competitionId } = competition;
+        let competitionName = competition.name;
+
         console.log(`Navigating to: ${url}`);
-        const competitionIdMatch = url.match(/competitionId=(\d+)/);
-        const competitionId = competitionIdMatch ? competitionIdMatch[1] : null;
 
         if (!competitionId) {
-            console.error(`  Could not extract competitionId from ${url}`);
+            console.error(`  No competitionId found`);
             continue;
         }
 
         try {
             await page.goto(url, { timeout: 60000, waitUntil: 'domcontentloaded' });
 
-            // Get Competition Name
-            let competitionName = "Unknown Competition";
-            try {
-                // Try to find title in h1 inside .header-title
-                const titleEl = page.locator('.panel-comp__title .title__name a, .header-title h1');
-                if (await titleEl.count() > 0) {
-                    competitionName = (await titleEl.first().innerText()).trim();
+            if (!competitionName) {
+                // Try to find title in h1 inside .header-title or similar
+                try {
+                    // Page Title Strategy: "Standings - X Competition - FPB"
+                    const pageTitle = await page.title();
+                    // Remove common suffixes/prefixes if possible
+                    competitionName = pageTitle.replace('Standings - ', '').replace(' - FPB', '').trim();
+                } catch (e) {
+                    console.log('Error scraping title', e);
+                    competitionName = "Unknown Competition";
                 }
-            } catch (e) { }
+            }
             console.log(`  Competition: ${competitionName}`);
 
             // 1. Get Phases from Select
@@ -101,16 +123,13 @@ async function scrapeSeason(seasonKey, urls) {
             // 2. Loop phases and fetch data
             for (const phase of phases) {
                 const phaseUrl = `https://resultados.tugabasket.com/Competition/GetStandingsByPhase?competitionId=${competitionId}&phaseId=${phase.id}`;
-                // console.log(`    Fetching Phase: ${phase.name} (${phaseUrl})`);
 
-                // Navigate to the partial view
                 await page.goto(phaseUrl, { timeout: 30000, waitUntil: 'domcontentloaded' });
 
                 // Parse Table
-                // Selector based on debug_phase.html
                 const table = page.locator('table.standings, table.table-striped').first();
                 if (await table.count() === 0) {
-                    console.log(`    No table found for ${phase.name}`);
+                    // console.log(`    No table found for ${phase.name}`);
                     continue;
                 }
 
@@ -120,14 +139,9 @@ async function scrapeSeason(seasonKey, urls) {
 
                 for (const row of rows) {
                     const cols = await row.locator('td').all();
-                    if (cols.length < 10) continue; // safety check
+                    if (cols.length < 10) continue;
 
                     try {
-                        // Parse logic based on debug_phase.html
-                        // Col 0: Team info. Rank inside .t3, Name inside .ml-2 or direct text?
-                        // The debug HTML shows: 
-                        // <td class="primary"><div class="flex..."><div...><p class="t3">1</p>...<div class="ml-2">Name</div>...
-
                         const col0 = cols[0];
                         let pos = 0;
                         let teamName = "";
@@ -137,7 +151,6 @@ async function scrapeSeason(seasonKey, urls) {
                         if (await posEl.count() > 0) {
                             pos = cleanInt(await posEl.innerText());
                         } else {
-                            // Fallback
                             pos = cleanInt((await col0.innerText()).substring(0, 2));
                         }
 
@@ -151,18 +164,11 @@ async function scrapeSeason(seasonKey, urls) {
                         const played = cleanInt(await cols[1].innerText());
                         const won = cleanInt(await cols[2].innerText());
                         const lost = cleanInt(await cols[3].innerText());
-                        // Skip col 4 (FC), 5 (PM), 6 (PS), 7 (DIF), 8 (CASA), 9 (PM/PS), 10 (FORA), 11 (PM/PS)
-                        // PTS is usually 2nd to last or similar.
-                        // In debug_phase.html, PTS is index 12 (13th column).
-                        // Let's verify by checking header if possible, or just grab index 12.
-                        // Header: EQUIPA, J, V, D, FC, PM, PS, DIF, CASA, PM/PS, FORA, PM/PS, PTS, FORMA.
-                        // 14 columns. PTS is index 12.
 
                         let pts = 0;
                         if (cols.length >= 13) {
                             pts = cleanInt(await cols[12].innerText());
                         } else {
-                            // Fallback: search for Pts text? Or assume last numeric?
                             pts = cleanInt(await cols[cols.length - 2].innerText());
                         }
 
@@ -189,8 +195,8 @@ async function scrapeSeason(seasonKey, urls) {
                 if (gaiaFound) {
                     console.log(`    > Found Gaia in '${phase.name}'. Inserting ${parsedRows.length} rows.`);
                     const { error } = await supabase
-                        .from(`classificacoes_${seasonKey}`)
-                        .upsert(parsedRows, { onConflict: 'competicao,grupo,equipa' });
+                        .from(tableName)
+                        .insert(parsedRows);
 
                     if (error) {
                         console.error('      Error inserting to DB:', error);
@@ -210,8 +216,8 @@ async function scrapeSeason(seasonKey, urls) {
 
 async function main() {
     console.log("Starting import...");
-    for (const [season, links] of Object.entries(SEASONS)) {
-        await scrapeSeason(season, links);
+    for (const [season, competitions] of Object.entries(SEASONS_CONFIG)) {
+        await scrapeSeason(season, competitions);
     }
     console.log("Import complete.");
 }
