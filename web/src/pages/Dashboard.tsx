@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Calendar, Trophy, ChevronRight, Clock, MapPin, Loader2, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { Calendar, Trophy, ChevronRight, Clock, MapPin, Loader2 } from 'lucide-react'
 
 type Match = {
     slug: string
@@ -75,13 +75,26 @@ function Dashboard() {
 
             if (standingsData) {
                 // Filter for key teams only: Séniores and Sub-18
-                const keyTeams = standingsData.filter(s =>
+                const keyTeamsRaw = standingsData.filter(s =>
                     s.competicao.includes('Séniores') ||
                     s.competicao.includes('Sub-18') ||
                     s.competicao.includes('Sub18')
                 )
+
+                // Deduplicate (Keep entry with most games played, as it's likely the "main" one)
+                const dedupMap = new Map<string, StandingSummary>();
+                keyTeamsRaw.forEach((s: StandingSummary) => {
+                    const key = s.competicao.includes('Séniores') ? 'seniores' : 'sub18';
+                    const existing = dedupMap.get(key);
+                    if (!existing || s.jogos > existing.jogos) {
+                        dedupMap.set(key, s);
+                    }
+                });
+
+                const finalStandings = Array.from(dedupMap.values()).sort((a, b) => a.competicao.localeCompare(b.competicao));
+
                 // If no key teams found, show top 2 whatever they are
-                setStandings(keyTeams.length > 0 ? keyTeams as StandingSummary[] : (standingsData as StandingSummary[]).slice(0, 2))
+                setStandings(finalStandings.length > 0 ? finalStandings : (standingsData as StandingSummary[]).slice(0, 2))
             }
 
             setLoading(false)
@@ -137,9 +150,9 @@ function Dashboard() {
                             </div>
 
                             {/* Watermark Logos */}
-                            <div className="absolute inset-0 flex items-center justify-between px-10 pointer-events-none opacity-[0.03] dark:opacity-[0.05]">
-                                {nextGame.logotipo_casa && <img src={nextGame.logotipo_casa} className="w-32 h-32 object-contain grayscale" />}
-                                {nextGame.logotipo_fora && <img src={nextGame.logotipo_fora} className="w-32 h-32 object-contain grayscale" />}
+                            <div className="absolute inset-0 flex items-center justify-between px-10 pointer-events-none opacity-[0.06] dark:opacity-[0.08]">
+                                {nextGame.logotipo_casa && <img src={nextGame.logotipo_casa} className="w-40 h-40 object-contain grayscale" />}
+                                {nextGame.logotipo_fora && <img src={nextGame.logotipo_fora} className="w-40 h-40 object-contain grayscale" />}
                             </div>
 
                             <div className="flex items-center justify-between gap-4 mb-4">
@@ -204,7 +217,7 @@ function Dashboard() {
             <div className="grid grid-cols-2 gap-3">
 
                 {/* Agenda Card */}
-                <Link to="/agenda" className="glass-card p-4 group hover:border-gaia-yellow/30 transition-all">
+                <Link to="/games?view=agenda" className="glass-card p-4 group hover:border-gaia-yellow/30 transition-all">
                     <div className="flex items-center justify-between mb-3">
                         <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400">
                             <Calendar size={18} />
@@ -227,7 +240,7 @@ function Dashboard() {
                     </div>
                     <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-1">Classificações</h3>
                     <p className="text-xs text-zinc-500">
-                        {standings.length} competições
+                        {standings.length} equipas
                     </p>
                 </Link>
             </div>
@@ -249,7 +262,7 @@ function Dashboard() {
                             {standings.map((s, i) => (
                                 <div key={i} className="flex items-center justify-between py-2 border-b border-zinc-100 dark:border-zinc-800 last:border-0">
                                     <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 truncate max-w-[150px]">
-                                        {s.competicao}
+                                        {s.competicao.replace('Campeonato Distrital', 'Camp. Distrital')}
                                     </span>
                                     <div className="flex items-center gap-3">
                                         <span className={`text-sm font-bold ${s.posicao <= 2 ? 'text-green-600' : s.posicao >= 5 ? 'text-red-500' : 'text-zinc-900 dark:text-white'}`}>
@@ -272,7 +285,7 @@ function Dashboard() {
                             <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
                                 Últimos Resultados
                             </h3>
-                            <Link to="/agenda" className="text-xs text-gaia-yellow font-bold flex items-center gap-1 hover:underline">
+                            <Link to="/games?view=results" className="text-xs text-gaia-yellow font-bold flex items-center gap-1 hover:underline">
                                 Ver todos <ChevronRight size={12} />
                             </Link>
                         </div>
@@ -286,21 +299,21 @@ function Dashboard() {
                                         className="flex items-center justify-between py-2 border-b border-zinc-100 dark:border-zinc-800 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 -mx-2 px-2 rounded transition-colors"
                                     >
                                         <div className="flex items-center gap-2">
-                                            {won === true && <TrendingUp size={14} className="text-green-500" />}
-                                            {won === false && <TrendingDown size={14} className="text-red-500" />}
-                                            {won === null && <Minus size={14} className="text-zinc-400" />}
+                                            {won === true && <div className="w-1.5 h-1.5 rounded-full bg-black dark:bg-white" />}
+                                            {won === false && <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" />}
+                                            {won === null && <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" />}
                                             <div className="text-xs">
-                                                <span className="font-medium text-zinc-900 dark:text-white">
+                                                <span className={`font-medium ${won === true ? 'text-zinc-900 dark:text-white font-bold' : 'text-zinc-500'}`}>
                                                     {match.equipa_casa}
                                                 </span>
-                                                <span className="text-zinc-400 mx-1">vs</span>
-                                                <span className="font-medium text-zinc-900 dark:text-white">
+                                                <span className="text-zinc-300 mx-1">vs</span>
+                                                <span className={`font-medium ${won === false ? 'text-zinc-900 dark:text-white font-bold' : 'text-zinc-500'}`}>
                                                     {match.equipa_fora}
                                                 </span>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className={`text-sm font-mono font-bold ${won ? 'text-green-600' : won === false ? 'text-red-500' : 'text-zinc-500'}`}>
+                                            <span className={`text-sm font-mono font-bold ${won !== null ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
                                                 {match.resultado_casa} - {match.resultado_fora}
                                             </span>
                                             <span className="text-[10px] text-zinc-400">
@@ -323,7 +336,7 @@ function Dashboard() {
                             <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
                                 Próximos Jogos
                             </h3>
-                            <Link to="/agenda" className="text-xs text-gaia-yellow font-bold flex items-center gap-1 hover:underline">
+                            <Link to="/games?view=agenda" className="text-xs text-gaia-yellow font-bold flex items-center gap-1 hover:underline">
                                 Ver agenda <ChevronRight size={12} />
                             </Link>
                         </div>
