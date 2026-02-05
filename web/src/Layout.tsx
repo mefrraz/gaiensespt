@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link } from 'react-router-dom'
-import { Sun, Moon, Instagram, Facebook, Info, Calendar, BarChart2 } from 'lucide-react'
+import { Sun, Moon, Instagram, Facebook, Info, Calendar, BarChart2, Download } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
 
@@ -70,6 +70,14 @@ function Layout() {
                             aria-label="Sobre"
                         >
                             <Info size={18} />
+                        </Link>
+
+                        <Link
+                            to="/install"
+                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-gaia-yellow transition-colors flex"
+                            aria-label="Instalar"
+                        >
+                            <Download size={18} />
                         </Link>
 
                         <button
