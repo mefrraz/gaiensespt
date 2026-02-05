@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link } from 'react-router-dom'
-import { Sun, Moon, Instagram, Facebook, Info, Trophy, Calendar } from 'lucide-react'
+import { Sun, Moon, Instagram, Facebook, Info, Trophy, Calendar, BarChart2 } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
+import BottomNav from './components/BottomNav'
 
 function Layout() {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
@@ -65,7 +66,7 @@ function Layout() {
                             to="/standings"
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-100/50 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-900 dark:text-white transition-all border border-transparent hover:border-zinc-200 dark:hover:border-white/10"
                         >
-                            <div className="text-gaia-yellow"><Trophy size={16} /></div>
+                            <div className="text-gaia-yellow"><BarChart2 size={16} /></div>
                             <span className="text-xs font-bold">Classificações</span>
                         </Link>
 
@@ -113,6 +114,9 @@ function Layout() {
                     </div>
                 </div>
             </footer>
+
+            {/* Bottom Navigation - Mobile Only */}
+            <BottomNav />
 
             {/* PWA Install Banner - Mobile Only */}
             <PWAInstallBanner />

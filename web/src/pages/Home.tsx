@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { Calendar, Trophy, Filter, Loader2, MapPin, ChevronRight, Clock, RefreshCw } from 'lucide-react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Filter, Loader2, MapPin, ChevronRight, Clock, RefreshCw } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 // Types
 export type Match = {
@@ -127,11 +127,6 @@ function formatTimeUntil(target: Date): string {
 function Home() {
     const [matches, setMatches] = useState<Match[]>([])
     const [loading, setLoading] = useState(true)
-    const [searchParams] = useSearchParams()
-    const [view, setView] = useState<'agenda' | 'results'>(() => {
-        const v = searchParams.get('view')
-        return v === 'results' ? 'results' : 'agenda'
-    })
     const [filterEscalao, setFilterEscalao] = useState<string>('Todos')
     const [escaloes, setEscaloes] = useState<string[]>([])
     const [lastScrape, setLastScrape] = useState<string>('')
@@ -171,27 +166,24 @@ function Home() {
     const fetchMatches = async () => {
         setLoading(true)
 
-        // Fetch games for CURRENT SEASON ONLY (2025/2026)
+        // Fetch games for CURRENT SEASON ONLY (2025/2026) -> Agenda checks for NOT FINALIZADO (or date >= today if we want historical future? usually means active games)
+        // Usually Agenda means upcoming. Home.tsx was filtering client side before.
+        // Let's optimize to fetch NOT FINALIZADO
+
         const { data, error } = await supabase
             .from('games_2025_2026')
             .select('*')
-            .order('data', { ascending: view === 'agenda' })
+            .neq('status', 'FINALIZADO')
+            .order('data', { ascending: true }) // Ascending for upcoming
 
         if (error) {
             console.error('Error fetching from games', error)
             setMatches([])
             setEscaloes([])
         } else {
-            let sorted = data as Match[]
-            // Client-side sort to be double sure
-            if (view === 'results') {
-                sorted = sorted.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
-            } else {
-                sorted = sorted.sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
-            }
-            setMatches(sorted)
+            setMatches(data as Match[])
 
-            const uniqueEscaloes = Array.from(new Set(sorted.map(m => m.escalao))).filter(Boolean).sort()
+            const uniqueEscaloes = Array.from(new Set(data.map((m: Match) => m.escalao))).filter(Boolean).sort()
             setEscaloes(uniqueEscaloes)
         }
         setLoading(false)
@@ -203,7 +195,7 @@ function Home() {
         fetchLastScrape()
 
         const channel = supabase
-            .channel('public:games')
+            .channel('public:games:agenda')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'games_2025_2026' }, () => {
                 fetchMatches()
                 fetchLastScrape()
@@ -213,18 +205,10 @@ function Home() {
         return () => {
             supabase.removeChannel(channel)
         }
-    }, [view])
+    }, [])
 
     // Filter logic
     const filteredMatches = matches.filter(match => {
-
-
-        if (view === 'agenda') {
-            if (match.status === 'FINALIZADO') return false
-        } else {
-            if (match.status !== 'FINALIZADO') return false
-        }
-
         if (filterEscalao !== 'Todos' && match.escalao !== filterEscalao) return false
         return true
     })
@@ -238,9 +222,7 @@ function Home() {
     }, {} as Record<string, Match[]>)
 
     const sortedDates = Object.keys(groupedMatches).sort((a, b) => {
-        return view === 'agenda'
-            ? new Date(a).getTime() - new Date(b).getTime()
-            : new Date(b).getTime() - new Date(a).getTime()
+        return new Date(a).getTime() - new Date(b).getTime()
     })
 
 
@@ -256,25 +238,11 @@ function Home() {
     }
 
     return (
-        <div className="max-w-6xl mx-auto space-y-6 pb-20">
+        <div className="max-w-6xl mx-auto space-y-6 pb-24">
 
-            {/* Segment Controller */}
-            <div className="sticky top-20 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-xl p-1.5 rounded-2xl border border-zinc-200 dark:border-white/10 flex gap-1 shadow-xl mx-1 max-w-md mx-auto">
-                <button
-                    onClick={() => setView('agenda')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${view === 'agenda' ? 'bg-gaia-yellow text-black shadow-lg shadow-yellow-500/20' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'}`}
-                >
-                    <Calendar size={14} strokeWidth={2.5} />
-                    AGENDA
-                </button>
-                <button
-                    onClick={() => setView('results')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${view === 'results' ? 'bg-zinc-100 dark:bg-white text-black shadow-lg' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'}`}
-                >
-                    <Trophy size={14} strokeWidth={2.5} />
-                    RESULTADOS
-                </button>
-
+            {/* Page Header */}
+            <div className="flex items-center justify-between px-2 pt-2">
+                <h1 className="text-xl font-bold text-zinc-900 dark:text-white">Agenda</h1>
             </div>
 
             {/* Filters Row */}
@@ -294,8 +262,6 @@ function Home() {
                         ))}
                     </select>
                 </div>
-
-
             </div>
 
             {/* Update Info with Countdown */}
@@ -320,7 +286,7 @@ function Home() {
                     <div className="space-y-8 px-1">
                         {sortedDates.length === 0 ? (
                             <div className="text-center py-20 text-zinc-600 font-medium">
-                                Nenhum jogo encontrado.
+                                Nenhum jogo agendado.
                             </div>
                         ) : (
                             sortedDates.map(date => (
@@ -333,23 +299,17 @@ function Home() {
                                             <Link to={`/game/${match.slug}`} key={match.slug} className="glass-card flex flex-col gap-0 group active:scale-[0.98] hover:border-gaia-yellow/30">
                                                 <div className="flex justify-between items-center p-4 pb-2 border-b border-zinc-100 dark:border-white/5">
                                                     <div className="flex items-center gap-2 text-gaia-yellow">
-                                                        {view === 'agenda' ? (
-                                                            <>
-                                                                <Clock size={12} strokeWidth={3} />
-                                                                <span className="text-xs font-mono font-bold tracking-wider">
-                                                                    {(match.hora || '00:00').slice(0, 5)}
-                                                                </span>
-                                                            </>
-                                                        ) : (
-                                                            <span className="text-[10px] font-bold text-zinc-400">FIN</span>
-                                                        )}
+                                                        <Clock size={12} strokeWidth={3} />
+                                                        <span className="text-xs font-mono font-bold tracking-wider">
+                                                            {(match.hora || '00:00').slice(0, 5)}
+                                                        </span>
                                                     </div>
                                                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
                                                         {match.escalao}
                                                     </span>
                                                 </div>
                                                 <div className="p-4 flex flex-col gap-3">
-                                                    <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa < match.resultado_fora ? 'opacity-60 grayscale' : 'opacity-100'}`}>
+                                                    <div className="flex items-center justify-between">
                                                         <div className="flex items-center gap-3">
                                                             {match.logotipo_casa ? (
                                                                 <img src={match.logotipo_casa} alt={match.equipa_casa} className="w-8 h-8 object-contain" />
@@ -358,17 +318,12 @@ function Home() {
                                                                     <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{match.equipa_casa.substring(0, 1)}</span>
                                                                 </div>
                                                             )}
-                                                            <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
+                                                            <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[150px]">
                                                                 {formatTeamName(match.equipa_casa, match.escalao)}
                                                             </span>
                                                         </div>
-                                                        {view === 'results' && match.resultado_casa !== null && (
-                                                            <span className={`text-xl font-mono font-bold ${match.resultado_casa > (match.resultado_fora || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
-                                                                {match.resultado_casa}
-                                                            </span>
-                                                        )}
                                                     </div>
-                                                    <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora < match.resultado_casa ? 'opacity-60 grayscale' : 'opacity-100'}`}>
+                                                    <div className="flex items-center justify-between">
                                                         <div className="flex items-center gap-3">
                                                             {match.logotipo_fora ? (
                                                                 <img src={match.logotipo_fora} alt={match.equipa_fora} className="w-8 h-8 object-contain" />
@@ -377,15 +332,10 @@ function Home() {
                                                                     <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{match.equipa_fora.substring(0, 1)}</span>
                                                                 </div>
                                                             )}
-                                                            <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
+                                                            <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[150px]">
                                                                 {formatTeamName(match.equipa_fora, match.escalao)}
                                                             </span>
                                                         </div>
-                                                        {view === 'results' && match.resultado_fora !== null && (
-                                                            <span className={`text-xl font-mono font-bold ${match.resultado_fora > (match.resultado_casa || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
-                                                                {match.resultado_fora}
-                                                            </span>
-                                                        )}
                                                     </div>
                                                 </div>
                                                 <div className="px-4 pb-4 pt-0 flex justify-between items-center text-[10px] font-medium text-zinc-500 uppercase tracking-wide">
