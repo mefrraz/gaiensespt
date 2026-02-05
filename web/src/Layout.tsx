@@ -47,19 +47,19 @@ function Layout() {
                     {/* Actions */}
                     <div className="flex items-center gap-1 md:gap-2">
                         <Link
-                            to="/games?view=agenda"
+                            to="/standings"
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-400 transition-colors"
                         >
-                            <Calendar size={16} />
-                            <span className="text-xs font-bold">Jogos</span>
+                            <BarChart2 size={16} />
+                            <span className="text-xs font-bold">Classificações</span>
                         </Link>
 
                         <Link
-                            to="/standings"
+                            to="/games?view=agenda"
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-100/50 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-900 dark:text-white transition-all border border-transparent hover:border-zinc-200 dark:hover:border-white/10"
                         >
-                            <div className="text-gaia-yellow"><BarChart2 size={16} /></div>
-                            <span className="text-xs font-bold">Classificações</span>
+                            <div className="text-gaia-yellow"><Calendar size={16} /></div>
+                            <span className="text-xs font-bold">Jogos</span>
                         </Link>
 
                         <div className="w-px h-6 bg-zinc-200 dark:bg-white/10 mx-1 hidden sm:block"></div>
