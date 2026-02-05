@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { Calendar, Trophy, Filter, Loader2, MapPin, ChevronRight, Clock, RefreshCw } from 'lucide-react'
+import { Calendar, Trophy, Filter, Loader2, RefreshCw, ChevronRight } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 
 // Types
@@ -22,97 +22,7 @@ export type Match = {
 }
 
 // Update schedule helpers (reused)
-const WEEKDAY_UPDATES = [12, 18, 22] // Mon-Thu
-const FRIDAY_START = 16
-const FRIDAY_END = 24
-const FRIDAY_INTERVAL_MINS = 30
-const WEEKEND_UPDATES_START = 10
-const WEEKEND_UPDATES_END = 24
-const WEEKEND_INTERVAL_MINS = 15
 
-function getNextUpdateTime(): Date {
-    const now = new Date()
-    const dayOfWeek = now.getUTCDay()
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
-    const isFriday = dayOfWeek === 5
-
-    const currentHour = now.getUTCHours() + now.getUTCMinutes() / 60
-    const totalMins = now.getUTCHours() * 60 + now.getUTCMinutes()
-
-    if (isWeekend) {
-        if (currentHour < WEEKEND_UPDATES_START) {
-            const next = new Date(now)
-            next.setUTCHours(WEEKEND_UPDATES_START, 0, 0, 0)
-            return next
-        }
-        if (currentHour >= WEEKEND_UPDATES_END) {
-            const tomorrow = new Date(now)
-            tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
-            const tomorrowDow = tomorrow.getUTCDay()
-            if (tomorrowDow === 0 || tomorrowDow === 6) {
-                tomorrow.setUTCHours(WEEKEND_UPDATES_START, 0, 0, 0)
-            } else {
-                tomorrow.setUTCHours(WEEKDAY_UPDATES[0], 0, 0, 0)
-            }
-            return tomorrow
-        }
-        const nextSlotMins = Math.ceil(totalMins / WEEKEND_INTERVAL_MINS) * WEEKEND_INTERVAL_MINS
-        const next = new Date(now)
-        next.setUTCHours(Math.floor(nextSlotMins / 60) % 24, nextSlotMins % 60, 0, 0)
-        return next
-    } else if (isFriday) {
-        if (currentHour < FRIDAY_START) {
-            const next = new Date(now)
-            next.setUTCHours(FRIDAY_START, 0, 0, 0)
-            return next
-        }
-        if (currentHour >= FRIDAY_END) {
-            const tomorrow = new Date(now)
-            tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
-            tomorrow.setUTCHours(WEEKEND_UPDATES_START, 0, 0, 0)
-            return tomorrow
-        }
-        const nextSlotMins = Math.ceil(totalMins / FRIDAY_INTERVAL_MINS) * FRIDAY_INTERVAL_MINS
-        const next = new Date(now)
-        next.setUTCHours(Math.floor(nextSlotMins / 60) % 24, nextSlotMins % 60, 0, 0)
-        return next
-    } else {
-        for (const hour of WEEKDAY_UPDATES) {
-            if (hour > currentHour) {
-                const next = new Date(now)
-                next.setUTCHours(hour, 0, 0, 0)
-                return next
-            }
-        }
-        const tomorrow = new Date(now)
-        tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
-        const tomorrowDow = tomorrow.getUTCDay()
-        if (tomorrowDow === 5) {
-            tomorrow.setUTCHours(FRIDAY_START, 0, 0, 0)
-        } else if (tomorrowDow === 0 || tomorrowDow === 6) {
-            tomorrow.setUTCHours(WEEKEND_UPDATES_START, 0, 0, 0)
-        } else {
-            tomorrow.setUTCHours(WEEKDAY_UPDATES[0], 0, 0, 0)
-        }
-        return tomorrow
-    }
-}
-
-function formatTimeUntil(target: Date): string {
-    const now = new Date()
-    const diffMs = target.getTime() - now.getTime()
-
-    if (diffMs <= 0) return 'agora'
-
-    const diffMins = Math.floor(diffMs / 60000)
-    const hours = Math.floor(diffMins / 60)
-    const mins = diffMins % 60
-
-    if (hours > 0) {
-        return `${hours}h ${mins}min`
-    }
-    return `${mins}min`
-}
 
 function Games() {
     const [matches, setMatches] = useState<Match[]>([])
@@ -128,7 +38,7 @@ function Games() {
     const [filterEscalao, setFilterEscalao] = useState<string>('Todos')
     const [escaloes, setEscaloes] = useState<string[]>([])
     const [lastScrape, setLastScrape] = useState<string>('')
-    const [timeUntilUpdate, setTimeUntilUpdate] = useState<string>('')
+
 
     // Sync URL with view
     useEffect(() => {
@@ -150,14 +60,7 @@ function Games() {
             }
         }
 
-        const updateCountdown = () => {
-            const nextUpdate = getNextUpdateTime()
-            setTimeUntilUpdate(formatTimeUntil(nextUpdate))
-        }
-
         fetchLastScrape()
-        updateCountdown()
-        const interval = setInterval(updateCountdown, 60000)
 
         // Realtime subscription for metadata
         const channel = supabase
@@ -168,7 +71,6 @@ function Games() {
             .subscribe()
 
         return () => {
-            clearInterval(interval)
             supabase.removeChannel(channel)
         }
     }, [])
@@ -245,12 +147,7 @@ function Games() {
 
     const formatTeamName = (name: string) => name
 
-    const isGaiaWin = (match: Match) => {
-        if (match.resultado_casa === null || match.resultado_fora === null) return null
-        const gaiaHome = match.equipa_casa.toUpperCase().includes('GAIA')
-        if (gaiaHome) return match.resultado_casa > match.resultado_fora
-        return match.resultado_fora > match.resultado_casa
-    }
+
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 pb-24">
@@ -319,7 +216,6 @@ function Games() {
                                 </h3>
                                 <div className="space-y-2">
                                     {groupedMatches[date].map(match => {
-                                        const won = view === 'results' ? isGaiaWin(match) : null;
                                         const isHomeWinner = view === 'results' && match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa > match.resultado_fora;
                                         const isAwayWinner = view === 'results' && match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora > match.resultado_casa;
 
