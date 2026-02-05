@@ -110,10 +110,10 @@ function Dashboard() {
                                 </span>
                             </div>
 
-                            {/* Watermark Logos */}
-                            <div className="absolute inset-0 flex items-center justify-between px-10 pointer-events-none opacity-[0.06] dark:opacity-[0.08]">
-                                {nextGame.logotipo_casa && <img src={nextGame.logotipo_casa} className="w-40 h-40 object-contain grayscale" />}
-                                {nextGame.logotipo_fora && <img src={nextGame.logotipo_fora} className="w-40 h-40 object-contain grayscale" />}
+                            {/* Watermark Logos - Hidden on mobile for cleaner look */}
+                            <div className="absolute inset-0 hidden md:flex items-center justify-center gap-8 pointer-events-none opacity-[0.06] dark:opacity-[0.08]">
+                                {nextGame.logotipo_casa && <img src={nextGame.logotipo_casa} className="w-32 h-32 object-contain grayscale" />}
+                                {nextGame.logotipo_fora && <img src={nextGame.logotipo_fora} className="w-32 h-32 object-contain grayscale" />}
                             </div>
 
                             <div className="flex items-center justify-between gap-4 mb-4">
@@ -178,17 +178,17 @@ function Dashboard() {
             <div className="grid grid-cols-2 gap-3">
 
                 {/* Agenda / Games Action Card */}
-                <Link to="/games?view=agenda" className="relative overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-900 p-5 flex flex-col justify-between h-32 group shadow-xl transition-transform active:scale-[0.98]">
+                <Link to="/games?view=agenda" className="relative overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-900 p-5 flex flex-col justify-between h-32 group shadow-xl transition-transform active:scale-[0.98]">
                     <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-40 transition-opacity">
-                        <Calendar size={64} className="text-white transform rotate-12 translate-x-4 -translate-y-2" />
+                        <Calendar size={64} className="text-zinc-900 dark:text-white transform rotate-12 translate-x-4 -translate-y-2" />
                     </div>
 
-                    <div className="relative z-10 p-2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white mb-auto">
+                    <div className="relative z-10 p-2 w-10 h-10 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center text-zinc-900 dark:text-white mb-auto">
                         <Calendar size={20} />
                     </div>
 
                     <div className="relative z-10">
-                        <h3 className="text-white font-bold text-lg leading-tight">Jogos<br />& Agenda</h3>
+                        <h3 className="text-zinc-900 dark:text-white font-bold text-lg leading-tight">Jogos<br />& Agenda</h3>
                     </div>
                 </Link>
 
@@ -234,11 +234,11 @@ function Dashboard() {
                                             {won === false && <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" />}
                                             {won === null && <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" />}
                                             <div className="text-xs">
-                                                <span className={`font-medium ${won === true ? 'text-zinc-900 dark:text-white font-bold' : 'text-zinc-500'}`}>
+                                                <span className={`font-medium truncate inline-block max-w-[80px] sm:max-w-none ${won === true ? 'text-zinc-900 dark:text-white font-bold' : 'text-zinc-500'}`}>
                                                     {match.equipa_casa}
                                                 </span>
                                                 <span className="text-zinc-300 mx-1">vs</span>
-                                                <span className={`font-medium ${won === false ? 'text-zinc-900 dark:text-white font-bold' : 'text-zinc-500'}`}>
+                                                <span className={`font-medium truncate inline-block max-w-[80px] sm:max-w-none ${won === false ? 'text-zinc-900 dark:text-white font-bold' : 'text-zinc-500'}`}>
                                                     {match.equipa_fora}
                                                 </span>
                                             </div>
