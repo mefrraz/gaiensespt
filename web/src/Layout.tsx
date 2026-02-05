@@ -47,7 +47,7 @@ function Layout() {
                     {/* Actions */}
                     <div className="flex items-center gap-1 md:gap-2">
                         <Link
-                            to="/agenda?view=agenda"
+                            to="/games?view=agenda"
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-400 transition-colors"
                         >
                             <Calendar size={16} />
@@ -55,7 +55,7 @@ function Layout() {
                         </Link>
 
                         <Link
-                            to="/agenda?view=results"
+                            to="/games?view=results"
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-400 transition-colors"
                         >
                             <Trophy size={16} /> {/* Using Trophy for Results generically, distinct from Standings */}
