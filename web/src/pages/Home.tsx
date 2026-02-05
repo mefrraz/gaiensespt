@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { Calendar, Trophy, Filter, Loader2, MapPin, ChevronRight, Clock, RefreshCw } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 // Types
 export type Match = {
@@ -127,7 +127,11 @@ function formatTimeUntil(target: Date): string {
 function Home() {
     const [matches, setMatches] = useState<Match[]>([])
     const [loading, setLoading] = useState(true)
-    const [view, setView] = useState<'agenda' | 'results'>('agenda')
+    const [searchParams] = useSearchParams()
+    const [view, setView] = useState<'agenda' | 'results'>(() => {
+        const v = searchParams.get('view')
+        return v === 'results' ? 'results' : 'agenda'
+    })
     const [filterEscalao, setFilterEscalao] = useState<string>('Todos')
     const [escaloes, setEscaloes] = useState<string[]>([])
     const [lastScrape, setLastScrape] = useState<string>('')

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link } from 'react-router-dom'
-import { Sun, Moon, Instagram, Facebook, Info, Trophy } from 'lucide-react'
+import { Sun, Moon, Instagram, Facebook, Info, Trophy, Calendar } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 
 function Layout() {
@@ -44,28 +44,47 @@ function Layout() {
                     </Link>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 md:gap-2">
+                        <Link
+                            to="/agenda?view=agenda"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-400 transition-colors"
+                        >
+                            <Calendar size={16} />
+                            <span className="text-xs font-bold hidden sm:inline">Agenda</span>
+                        </Link>
+
+                        <Link
+                            to="/agenda?view=results"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-400 transition-colors"
+                        >
+                            <Trophy size={16} /> {/* Using Trophy for Results generically, distinct from Standings */}
+                            <span className="text-xs font-bold hidden sm:inline">Resultados</span>
+                        </Link>
+
                         <Link
                             to="/standings"
-                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-100/50 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-700 dark:text-zinc-200 transition-all border border-transparent hover:border-zinc-200 dark:hover:border-white/10"
-                            aria-label="Classificações"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-100/50 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-900 dark:text-white transition-all border border-transparent hover:border-zinc-200 dark:hover:border-white/10"
                         >
-                            <Trophy size={18} />
+                            <div className="text-gaia-yellow"><Trophy size={16} /></div>
                             <span className="text-xs font-bold">Classificações</span>
                         </Link>
+
+                        <div className="w-px h-6 bg-zinc-200 dark:bg-white/10 mx-1 hidden sm:block"></div>
+
                         <Link
                             to="/about"
-                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-300 transition-colors hidden sm:flex"
+                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-400 transition-colors hidden sm:flex"
                             aria-label="Sobre"
                         >
-                            <Info size={20} />
+                            <Info size={18} />
                         </Link>
+
                         <button
                             onClick={toggleTheme}
-                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-300 transition-colors"
+                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-400 transition-colors"
                             aria-label="Toggle Theme"
                         >
-                            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                         </button>
                     </div>
                 </div>
