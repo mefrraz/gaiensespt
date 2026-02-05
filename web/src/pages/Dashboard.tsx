@@ -1,0 +1,348 @@
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+import { Calendar, Trophy, ChevronRight, Clock, MapPin, Loader2, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+
+type Match = {
+    slug: string
+    data: string
+    hora: string
+    equipa_casa: string
+    equipa_fora: string
+    resultado_casa: number | null
+    resultado_fora: number | null
+    escalao: string
+    competicao: string
+    local: string | null
+    logotipo_casa: string | null
+    logotipo_fora: string | null
+    status: 'AGENDADO' | 'A DECORRER' | 'FINALIZADO'
+}
+
+type StandingSummary = {
+    competicao: string
+    equipa: string
+    posicao: number
+    pontos: number
+    jogos: number
+}
+
+function Dashboard() {
+    const [nextGame, setNextGame] = useState<Match | null>(null)
+    const [upcomingGames, setUpcomingGames] = useState<Match[]>([])
+    const [recentResults, setRecentResults] = useState<Match[]>([])
+    const [standings, setStandings] = useState<StandingSummary[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true)
+            const today = new Date().toISOString().split('T')[0]
+
+            // Fetch next game and upcoming
+            const { data: agendaData } = await supabase
+                .from('games_2025_2026')
+                .select('*')
+                .neq('status', 'FINALIZADO')
+                .gte('data', today)
+                .order('data', { ascending: true })
+                .order('hora', { ascending: true })
+                .limit(4)
+
+            if (agendaData && agendaData.length > 0) {
+                setNextGame(agendaData[0] as Match)
+                setUpcomingGames(agendaData.slice(1, 4) as Match[])
+            }
+
+            // Fetch recent results
+            const { data: resultsData } = await supabase
+                .from('games_2025_2026')
+                .select('*')
+                .eq('status', 'FINALIZADO')
+                .order('data', { ascending: false })
+                .limit(3)
+
+            if (resultsData) {
+                setRecentResults(resultsData as Match[])
+            }
+
+            // Fetch standings for FC Gaia
+            const { data: standingsData } = await supabase
+                .from('classificacoes_2025_2026')
+                .select('competicao, equipa, posicao, pontos, jogos')
+                .ilike('equipa', '%GAIA%')
+                .order('competicao')
+
+            if (standingsData) {
+                setStandings(standingsData as StandingSummary[])
+            }
+
+            setLoading(false)
+        }
+
+        fetchData()
+    }, [])
+
+    const formatDate = (dateStr: string) => {
+        const date = new Date(dateStr)
+        return date.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short' })
+    }
+
+    const formatDateShort = (dateStr: string) => {
+        const date = new Date(dateStr)
+        return date.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' })
+    }
+
+    const isGaiaWin = (match: Match) => {
+        if (match.resultado_casa === null || match.resultado_fora === null) return null
+        const gaiaHome = match.equipa_casa.toUpperCase().includes('GAIA')
+        if (gaiaHome) {
+            return match.resultado_casa > match.resultado_fora
+        }
+        return match.resultado_fora > match.resultado_casa
+    }
+
+    if (loading) {
+        return (
+            <div className="flex justify-center py-32">
+                <Loader2 className="animate-spin text-gaia-yellow" size={32} />
+            </div>
+        )
+    }
+
+    return (
+        <div className="max-w-2xl mx-auto space-y-6 pb-20 px-2">
+
+            {/* Hero: Next Game */}
+            {nextGame && (
+                <Link to={`/game/${nextGame.slug}`} className="block">
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gaia-yellow via-amber-500 to-orange-500 p-1 shadow-xl shadow-amber-500/20">
+                        <div className="bg-white dark:bg-zinc-900 rounded-xl p-6 relative overflow-hidden">
+                            {/* Background pattern */}
+                            <div className="absolute inset-0 opacity-5">
+                                <div className="absolute -right-10 -top-10 w-40 h-40 bg-gaia-yellow rounded-full blur-3xl" />
+                                <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-orange-500 rounded-full blur-3xl" />
+                            </div>
+
+                            <div className="relative z-10">
+                                <div className="flex items-center justify-between mb-4">
+                                    <span className="text-xs font-bold text-gaia-yellow uppercase tracking-widest">
+                                        Próximo Jogo
+                                    </span>
+                                    <span className="text-xs font-bold text-zinc-500 uppercase">
+                                        {nextGame.escalao}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center justify-between gap-4 mb-4">
+                                    {/* Home Team */}
+                                    <div className="flex-1 text-center">
+                                        <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden">
+                                            {nextGame.logotipo_casa ? (
+                                                <img src={nextGame.logotipo_casa} alt="" className="w-12 h-12 object-contain" />
+                                            ) : (
+                                                <span className="text-xl font-bold text-zinc-400">{nextGame.equipa_casa.charAt(0)}</span>
+                                            )}
+                                        </div>
+                                        <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">
+                                            {nextGame.equipa_casa}
+                                        </p>
+                                    </div>
+
+                                    {/* VS */}
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-2xl font-black text-zinc-300 dark:text-zinc-600">VS</span>
+                                    </div>
+
+                                    {/* Away Team */}
+                                    <div className="flex-1 text-center">
+                                        <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden">
+                                            {nextGame.logotipo_fora ? (
+                                                <img src={nextGame.logotipo_fora} alt="" className="w-12 h-12 object-contain" />
+                                            ) : (
+                                                <span className="text-xl font-bold text-zinc-400">{nextGame.equipa_fora.charAt(0)}</span>
+                                            )}
+                                        </div>
+                                        <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">
+                                            {nextGame.equipa_fora}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-center gap-4 text-sm text-zinc-500">
+                                    <div className="flex items-center gap-1.5">
+                                        <Clock size={14} className="text-gaia-yellow" />
+                                        <span className="font-medium">{formatDate(nextGame.data)} · {(nextGame.hora || '00:00').slice(0, 5)}</span>
+                                    </div>
+                                </div>
+
+                                {nextGame.local && (
+                                    <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-zinc-400">
+                                        <MapPin size={12} />
+                                        <span className="truncate max-w-[200px]">{nextGame.local}</span>
+                                    </div>
+                                )}
+
+                                <div className="mt-4 flex items-center justify-center gap-1 text-xs text-gaia-yellow font-bold">
+                                    <span>Ver detalhes</span>
+                                    <ChevronRight size={14} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </Link>
+            )}
+
+            {/* Quick Links Grid */}
+            <div className="grid grid-cols-2 gap-3">
+
+                {/* Agenda Card */}
+                <Link to="/agenda" className="glass-card p-4 group hover:border-gaia-yellow/30 transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400">
+                            <Calendar size={18} />
+                        </div>
+                        <ChevronRight size={16} className="text-zinc-400 group-hover:text-gaia-yellow transition-colors" />
+                    </div>
+                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-1">Agenda</h3>
+                    <p className="text-xs text-zinc-500">
+                        {upcomingGames.length + (nextGame ? 1 : 0)} jogos agendados
+                    </p>
+                </Link>
+
+                {/* Standings Card */}
+                <Link to="/standings" className="glass-card p-4 group hover:border-gaia-yellow/30 transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                            <Trophy size={18} />
+                        </div>
+                        <ChevronRight size={16} className="text-zinc-400 group-hover:text-gaia-yellow transition-colors" />
+                    </div>
+                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-1">Classificações</h3>
+                    <p className="text-xs text-zinc-500">
+                        {standings.length} competições
+                    </p>
+                </Link>
+            </div>
+
+            {/* Standings Summary */}
+            {standings.length > 0 && (
+                <div className="glass-card p-4">
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                            <Trophy size={16} className="text-gaia-yellow" />
+                            Posição do FC Gaia
+                        </h3>
+                        <Link to="/standings" className="text-xs text-gaia-yellow font-bold flex items-center gap-1 hover:underline">
+                            Ver tabelas <ChevronRight size={12} />
+                        </Link>
+                    </div>
+                    <div className="space-y-2">
+                        {standings.map((s, i) => (
+                            <div key={i} className="flex items-center justify-between py-2 border-b border-zinc-100 dark:border-zinc-800 last:border-0">
+                                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 truncate max-w-[150px]">
+                                    {s.competicao}
+                                </span>
+                                <div className="flex items-center gap-3">
+                                    <span className={`text-sm font-bold ${s.posicao <= 2 ? 'text-green-600' : s.posicao >= 5 ? 'text-red-500' : 'text-zinc-900 dark:text-white'}`}>
+                                        {s.posicao}º
+                                    </span>
+                                    <span className="text-xs text-zinc-500">{s.pontos} pts</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Recent Results */}
+            {recentResults.length > 0 && (
+                <div className="glass-card p-4">
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                            Últimos Resultados
+                        </h3>
+                        <Link to="/agenda" className="text-xs text-gaia-yellow font-bold flex items-center gap-1 hover:underline">
+                            Ver todos <ChevronRight size={12} />
+                        </Link>
+                    </div>
+                    <div className="space-y-2">
+                        {recentResults.map(match => {
+                            const won = isGaiaWin(match)
+                            return (
+                                <Link
+                                    to={`/game/${match.slug}`}
+                                    key={match.slug}
+                                    className="flex items-center justify-between py-2 border-b border-zinc-100 dark:border-zinc-800 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 -mx-2 px-2 rounded transition-colors"
+                                >
+                                    <div className="flex items-center gap-2">
+                                        {won === true && <TrendingUp size={14} className="text-green-500" />}
+                                        {won === false && <TrendingDown size={14} className="text-red-500" />}
+                                        {won === null && <Minus size={14} className="text-zinc-400" />}
+                                        <div className="text-xs">
+                                            <span className="font-medium text-zinc-900 dark:text-white">
+                                                {match.equipa_casa}
+                                            </span>
+                                            <span className="text-zinc-400 mx-1">vs</span>
+                                            <span className="font-medium text-zinc-900 dark:text-white">
+                                                {match.equipa_fora}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`text-sm font-mono font-bold ${won ? 'text-green-600' : won === false ? 'text-red-500' : 'text-zinc-500'}`}>
+                                            {match.resultado_casa} - {match.resultado_fora}
+                                        </span>
+                                        <span className="text-[10px] text-zinc-400">
+                                            {formatDateShort(match.data)}
+                                        </span>
+                                    </div>
+                                </Link>
+                            )
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {/* Upcoming Games Preview */}
+            {upcomingGames.length > 0 && (
+                <div className="glass-card p-4">
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                            Próximos Jogos
+                        </h3>
+                        <Link to="/agenda" className="text-xs text-gaia-yellow font-bold flex items-center gap-1 hover:underline">
+                            Ver agenda <ChevronRight size={12} />
+                        </Link>
+                    </div>
+                    <div className="space-y-2">
+                        {upcomingGames.map(match => (
+                            <Link
+                                to={`/game/${match.slug}`}
+                                key={match.slug}
+                                className="flex items-center justify-between py-2 border-b border-zinc-100 dark:border-zinc-800 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 -mx-2 px-2 rounded transition-colors"
+                            >
+                                <div className="text-xs">
+                                    <span className="font-medium text-zinc-900 dark:text-white">
+                                        {match.equipa_casa}
+                                    </span>
+                                    <span className="text-zinc-400 mx-1">vs</span>
+                                    <span className="font-medium text-zinc-900 dark:text-white">
+                                        {match.equipa_fora}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-zinc-500">
+                                    <span>{formatDateShort(match.data)}</span>
+                                    <span className="font-mono">{(match.hora || '00:00').slice(0, 5)}</span>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+        </div>
+    )
+}
+
+export default Dashboard
