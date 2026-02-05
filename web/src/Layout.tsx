@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link } from 'react-router-dom'
-import { Sun, Moon, Instagram, Facebook, Info, Trophy, Calendar, BarChart2 } from 'lucide-react'
+import { Sun, Moon, Instagram, Facebook, Info, Calendar, BarChart2 } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
 
@@ -51,15 +51,7 @@ function Layout() {
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-400 transition-colors"
                         >
                             <Calendar size={16} />
-                            <span className="text-xs font-bold hidden sm:inline">Agenda</span>
-                        </Link>
-
-                        <Link
-                            to="/games?view=results"
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-400 transition-colors"
-                        >
-                            <Trophy size={16} /> {/* Using Trophy for Results generically, distinct from Standings */}
-                            <span className="text-xs font-bold hidden sm:inline">Resultados</span>
+                            <span className="text-xs font-bold">Jogos</span>
                         </Link>
 
                         <Link
