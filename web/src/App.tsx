@@ -1,8 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Layout from './Layout'
 import Dashboard from './pages/Dashboard'
-import Home from './pages/Home'
-import Results from './pages/Results'
+import Games from './pages/Games'
 import Game from './pages/Game'
 import Standings from './pages/Standings'
 import About from './pages/About'
@@ -14,8 +13,7 @@ function App() {
             <Routes>
                 <Route path="/" element={<Layout />}>
                     <Route index element={<Dashboard />} />
-                    <Route path="agenda" element={<Home />} />
-                    <Route path="results" element={<Results />} />
+                    <Route path="games" element={<Games />} />
                     <Route path="game/:slug" element={<Game />} />
                     <Route path="standings" element={<Standings />} />
                     <Route path="about" element={<About />} />

@@ -136,6 +136,12 @@ function Dashboard() {
                                 </span>
                             </div>
 
+                            {/* Watermark Logos */}
+                            <div className="absolute inset-0 flex items-center justify-between px-10 pointer-events-none opacity-[0.03] dark:opacity-[0.05]">
+                                {nextGame.logotipo_casa && <img src={nextGame.logotipo_casa} className="w-32 h-32 object-contain grayscale" />}
+                                {nextGame.logotipo_fora && <img src={nextGame.logotipo_fora} className="w-32 h-32 object-contain grayscale" />}
+                            </div>
+
                             <div className="flex items-center justify-between gap-4 mb-4">
                                 {/* Home Team */}
                                 <div className="flex-1 text-center">

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Calendar, Trophy, BarChart2 } from 'lucide-react'
+import { Home, Calendar, BarChart2 } from 'lucide-react'
 
 function BottomNav() {
     const location = useLocation()
@@ -13,8 +13,7 @@ function BottomNav() {
 
     const navItems = [
         { icon: Home, label: 'Início', path: '/' },
-        { icon: Calendar, label: 'Agenda', path: '/agenda' },
-        { icon: Trophy, label: 'Resultados', path: '/results' },
+        { icon: Calendar, label: 'Jogos', path: '/games' },
         { icon: BarChart2, label: 'Tabelas', path: '/standings' },
     ]
 
