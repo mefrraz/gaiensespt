@@ -233,12 +233,12 @@ function Dashboard() {
                                             {won === true && <div className="w-1.5 h-1.5 rounded-full bg-black dark:bg-white" />}
                                             {won === false && <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" />}
                                             {won === null && <div className="w-1.5 h-1.5 rounded-full bg-zinc-300" />}
-                                            <div className="text-xs">
-                                                <span className={`font-medium truncate inline-block max-w-[80px] sm:max-w-none ${won === true ? 'text-zinc-900 dark:text-white font-bold' : 'text-zinc-500'}`}>
+                                            <div className="text-xs flex items-center gap-1 flex-wrap">
+                                                <span className={`font-medium truncate max-w-[70px] sm:max-w-none ${won === true ? 'text-zinc-900 dark:text-white font-bold' : 'text-zinc-500'}`}>
                                                     {match.equipa_casa}
                                                 </span>
-                                                <span className="text-zinc-300 mx-1">vs</span>
-                                                <span className={`font-medium truncate inline-block max-w-[80px] sm:max-w-none ${won === false ? 'text-zinc-900 dark:text-white font-bold' : 'text-zinc-500'}`}>
+                                                <span className="text-zinc-300">vs</span>
+                                                <span className={`font-medium truncate max-w-[70px] sm:max-w-none ${won === false ? 'text-zinc-900 dark:text-white font-bold' : 'text-zinc-500'}`}>
                                                     {match.equipa_fora}
                                                 </span>
                                             </div>
@@ -278,12 +278,12 @@ function Dashboard() {
                                     key={match.slug}
                                     className="flex items-center justify-between py-2 border-b border-zinc-100 dark:border-zinc-800 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 -mx-2 px-2 rounded transition-colors"
                                 >
-                                    <div className="text-xs">
-                                        <span className="font-medium text-zinc-900 dark:text-white">
+                                    <div className="text-xs flex items-center gap-1 flex-wrap">
+                                        <span className="font-medium text-zinc-900 dark:text-white truncate max-w-[70px] sm:max-w-none">
                                             {match.equipa_casa}
                                         </span>
-                                        <span className="text-zinc-400 mx-1">vs</span>
-                                        <span className="font-medium text-zinc-900 dark:text-white">
+                                        <span className="text-zinc-400">vs</span>
+                                        <span className="font-medium text-zinc-900 dark:text-white truncate max-w-[70px] sm:max-w-none">
                                             {match.equipa_fora}
                                         </span>
                                     </div>

@@ -48,7 +48,7 @@ function Layout() {
                     <div className="flex items-center gap-1 md:gap-2">
                         <Link
                             to="/standings"
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-400 transition-colors"
+                            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-400 transition-colors"
                         >
                             <BarChart2 size={16} />
                             <span className="text-xs font-bold">Classificações</span>
@@ -56,7 +56,7 @@ function Layout() {
 
                         <Link
                             to="/games?view=agenda"
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-100/50 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-900 dark:text-white transition-all border border-transparent hover:border-zinc-200 dark:hover:border-white/10"
+                            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-100/50 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-900 dark:text-white transition-all border border-transparent hover:border-zinc-200 dark:hover:border-white/10"
                         >
                             <div className="text-gaia-yellow"><Calendar size={16} /></div>
                             <span className="text-xs font-bold">Jogos</span>
@@ -66,7 +66,7 @@ function Layout() {
 
                         <Link
                             to="/about"
-                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-400 transition-colors hidden sm:flex"
+                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-400 transition-colors flex"
                             aria-label="Sobre"
                         >
                             <Info size={18} />
