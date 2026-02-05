@@ -235,7 +235,7 @@ function Games() {
                                                                 )}
                                                             </>
                                                         ) : (
-                                                            <span className="text-[10px] font-bold text-zinc-400">FIN</span>
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
                                                         )}
                                                     </div>
 

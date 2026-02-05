@@ -19,19 +19,11 @@ type Match = {
     status: 'AGENDADO' | 'A DECORRER' | 'FINALIZADO'
 }
 
-type StandingSummary = {
-    competicao: string
-    equipa: string
-    posicao: number
-    pontos: number
-    jogos: number
-}
 
 function Dashboard() {
     const [nextGame, setNextGame] = useState<Match | null>(null)
     const [upcomingGames, setUpcomingGames] = useState<Match[]>([])
     const [recentResults, setRecentResults] = useState<Match[]>([])
-    const [standings, setStandings] = useState<StandingSummary[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -64,37 +56,6 @@ function Dashboard() {
 
             if (resultsData) {
                 setRecentResults(resultsData as Match[])
-            }
-
-            // Fetch standings for FC Gaia
-            const { data: standingsData } = await supabase
-                .from('classificacoes_2025_2026')
-                .select('competicao, equipa, posicao, pontos, jogos')
-                .ilike('equipa', '%GAIA%')
-                .order('competicao')
-
-            if (standingsData) {
-                // Filter for key teams only: Séniores and Sub-18
-                const keyTeamsRaw = standingsData.filter(s =>
-                    s.competicao.includes('Séniores') ||
-                    s.competicao.includes('Sub-18') ||
-                    s.competicao.includes('Sub18')
-                )
-
-                // Deduplicate (Keep entry with most games played, as it's likely the "main" one)
-                const dedupMap = new Map<string, StandingSummary>();
-                keyTeamsRaw.forEach((s: StandingSummary) => {
-                    const key = s.competicao.includes('Séniores') ? 'seniores' : 'sub18';
-                    const existing = dedupMap.get(key);
-                    if (!existing || s.jogos > existing.jogos) {
-                        dedupMap.set(key, s);
-                    }
-                });
-
-                const finalStandings = Array.from(dedupMap.values()).sort((a, b) => a.competicao.localeCompare(b.competicao));
-
-                // If no key teams found, show top 2 whatever they are
-                setStandings(finalStandings.length > 0 ? finalStandings : (standingsData as StandingSummary[]).slice(0, 2))
             }
 
             setLoading(false)
@@ -213,69 +174,39 @@ function Dashboard() {
                 </Link>
             )}
 
-            {/* Quick Links Grid */}
+            {/* Quick Links Grid - Bento Style */}
             <div className="grid grid-cols-2 gap-3">
 
-                {/* Agenda Card */}
-                <Link to="/games?view=agenda" className="glass-card p-4 group hover:border-gaia-yellow/30 transition-all">
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400">
-                            <Calendar size={18} />
-                        </div>
-                        <ChevronRight size={16} className="text-zinc-400 group-hover:text-gaia-yellow transition-colors" />
+                {/* Agenda / Games Action Card */}
+                <Link to="/games?view=agenda" className="relative overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-900 p-5 flex flex-col justify-between h-32 group shadow-xl transition-transform active:scale-[0.98]">
+                    <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-40 transition-opacity">
+                        <Calendar size={64} className="text-white transform rotate-12 translate-x-4 -translate-y-2" />
                     </div>
-                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-1">Agenda</h3>
-                    <p className="text-xs text-zinc-500">
-                        {upcomingGames.length + (nextGame ? 1 : 0)} jogos agendados
-                    </p>
+
+                    <div className="relative z-10 p-2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white mb-auto">
+                        <Calendar size={20} />
+                    </div>
+
+                    <div className="relative z-10">
+                        <h3 className="text-white font-bold text-lg leading-tight">Jogos<br />& Agenda</h3>
+                    </div>
                 </Link>
 
-                {/* Standings Card */}
-                <Link to="/standings" className="glass-card p-4 group hover:border-gaia-yellow/30 transition-all">
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400">
-                            <Trophy size={18} />
-                        </div>
-                        <ChevronRight size={16} className="text-zinc-400 group-hover:text-gaia-yellow transition-colors" />
+                {/* Standings Action Card */}
+                <Link to="/standings" className="relative overflow-hidden rounded-2xl bg-gaia-yellow border border-gaia-yellow p-5 flex flex-col justify-between h-32 group shadow-xl shadow-yellow-500/10 transition-transform active:scale-[0.98]">
+                    <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-40 transition-opacity">
+                        <Trophy size={64} className="text-black transform -rotate-12 translate-x-2 -translate-y-2" />
                     </div>
-                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-1">Classificações</h3>
-                    <p className="text-xs text-zinc-500">
-                        {standings.length} equipas
-                    </p>
+
+                    <div className="relative z-10 p-2 w-10 h-10 rounded-full bg-black/10 flex items-center justify-center text-black mb-auto">
+                        <Trophy size={20} />
+                    </div>
+
+                    <div className="relative z-10">
+                        <h3 className="text-black font-bold text-lg leading-tight">Tabelas<br />& Pontos</h3>
+                    </div>
                 </Link>
             </div>
-
-            {/* Standings Summary */}
-            {
-                standings.length > 0 && (
-                    <div className="glass-card p-4">
-                        <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                                <Trophy size={16} className="text-gaia-yellow" />
-                                Posição do FC Gaia
-                            </h3>
-                            <Link to="/standings" className="text-xs text-gaia-yellow font-bold flex items-center gap-1 hover:underline">
-                                Ver tabelas <ChevronRight size={12} />
-                            </Link>
-                        </div>
-                        <div className="space-y-2">
-                            {standings.map((s, i) => (
-                                <div key={i} className="flex items-center justify-between py-2 border-b border-zinc-100 dark:border-zinc-800 last:border-0">
-                                    <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 truncate max-w-[150px]">
-                                        {s.competicao.replace('Campeonato Distrital', 'Camp. Distrital')}
-                                    </span>
-                                    <div className="flex items-center gap-3">
-                                        <span className={`text-sm font-bold ${s.posicao <= 2 ? 'text-green-600' : s.posicao >= 5 ? 'text-red-500' : 'text-zinc-900 dark:text-white'}`}>
-                                            {s.posicao}º
-                                        </span>
-                                        <span className="text-xs text-zinc-500">{s.pontos} pts</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )
-            }
 
             {/* Recent Results */}
             {
