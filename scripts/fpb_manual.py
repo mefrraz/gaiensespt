@@ -81,13 +81,13 @@ def parse_html(html, epoca):
     games = []
 
     for dw in soup.select(".day-wrapper"):
-        date_el = dw.select_one(".day-header span")
+        date_el = dw.select_one("h3.date")
         date_str = date_el.get_text(strip=True) if date_el else ""
         iso_date = parse_date_pt(date_str)
         if not iso_date:
             continue
 
-        for link in dw.select("a.jogo"):
+        for link in dw.select("a.game-wrapper-a"):
             href = link.get("href", "")
             internal_id = ""
             if "internalID=" in href:
@@ -95,42 +95,47 @@ def parse_html(html, epoca):
             if not internal_id:
                 continue
 
-            state_el = link.select_one(".state")
-            state_text = state_el.get_text(strip=True).upper() if state_el else ""
-            status = "AGENDADO"
-            if "TERMINADO" in state_text:
-                status = "FINALIZADO"
-            elif "DECORRER" in state_text or "LIVE" in state_text:
-                status = "A DECORRER"
+            # Time
+            hour_el = link.select_one(".hour h3")
+            hour_text = hour_el.get_text(strip=True) if hour_el else ""
+            normalized = hour_text.replace("H", ":").strip()
+            hora = normalized if normalized else ""
 
-            home = link.select_one(".team.home")
-            away = link.select_one(".team.away")
-            home_name = home.select_one(".name").get_text(strip=True) if home and home.select_one(".name") else ""
-            away_name = away.select_one(".name").get_text(strip=True) if away and away.select_one(".name") else ""
+            # Teams: first .team-container = home, second = away
+            team_containers = link.select(".team-container")
+            home_el = team_containers[0] if len(team_containers) > 0 else None
+            away_el = team_containers[1] if len(team_containers) > 1 else None
 
-            home_score = None
-            away_score = None
-            if home and home.select_one(".score"):
-                try:
-                    home_score = int(home.select_one(".score").get_text(strip=True))
-                except ValueError:
-                    pass
-            if away and away.select_one(".score"):
-                try:
-                    away_score = int(away.select_one(".score").get_text(strip=True))
-                except ValueError:
-                    pass
+            home_name = ""
+            if home_el:
+                fn = home_el.select_one(".fullName")
+                sigla = home_el.select_one(".sigla")
+                home_name = (fn.get_text(strip=True) if fn else "") or (sigla.get_text(strip=True) if sigla else "")
+            away_name = ""
+            if away_el:
+                fn = away_el.select_one(".fullName")
+                sigla = away_el.select_one(".sigla")
+                away_name = (fn.get_text(strip=True) if fn else "") or (sigla.get_text(strip=True) if sigla else "")
 
-            home_logo = home.select_one("img")["src"] if home and home.select_one("img") else None
-            away_logo = away.select_one("img")["src"] if away and away.select_one("img") else None
+            # Logos
+            home_logo = home_el.select_one(".image-container img")["src"] if home_el and home_el.select_one(".image-container img") else None
+            away_logo = away_el.select_one(".image-container img")["src"] if away_el and away_el.select_one(".image-container img") else None
 
-            comp_el = link.select_one(".meta .competition")
-            competicao = comp_el.get_text(strip=True) if comp_el else ""
+            # Competition: format "Sénior Masculino | 1ª Divisão Masculina"
+            comp_el = link.select_one(".competition span")
+            comp_text = comp_el.get_text(strip=True) if comp_el else ""
+            escalao = ""
+            competicao = ""
+            if "|" in comp_text:
+                parts = comp_text.split("|")
+                escalao = parts[0].strip()
+                competicao = parts[1].strip() if len(parts) > 1 else ""
+            else:
+                competicao = comp_text
 
-            pav_el = link.select_one(".meta .pavilion")
-            local = pav_el.get_text(strip=True) if pav_el else None
-
-            hora = state_text if status == "AGENDADO" else ""
+            # Location
+            loc_el = link.select_one(".location-wrapper b")
+            local = loc_el.get_text(strip=True) if loc_el else None
 
             s = slugify(home_name)
             sa = slugify(away_name)
@@ -143,14 +148,14 @@ def parse_html(html, epoca):
                 "hora": hora,
                 "equipa_casa": home_name,
                 "equipa_fora": away_name,
-                "resultado_casa": home_score if status == "FINALIZADO" else None,
-                "resultado_fora": away_score if status == "FINALIZADO" else None,
-                "escalao": "",
+                "resultado_casa": None,
+                "resultado_fora": None,
+                "escalao": escalao,
                 "competicao": competicao,
                 "local": local,
                 "logotipo_casa": home_logo,
                 "logotipo_fora": away_logo,
-                "status": status,
+                "status": "AGENDADO",
                 "epoca": epoca,
                 "updated_at": "now()",
             })

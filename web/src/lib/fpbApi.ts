@@ -70,44 +70,58 @@ function parseGamesHTML(html: string): Match[] {
 
   const dayWrappers = doc.querySelectorAll('.day-wrapper')
   dayWrappers.forEach(dayWrapper => {
-    const dateEl = dayWrapper.querySelector('.day-header span')
+    const dateEl = dayWrapper.querySelector('h3.date')
     const dateStr = dateEl?.textContent?.trim() || ''
     const isoDate = parseDatePt(dateStr)
     if (!isoDate) return
 
-    const jogoLinks = dayWrapper.querySelectorAll('a.jogo')
-    jogoLinks.forEach((link: Element) => {
+    const gameLinks = dayWrapper.querySelectorAll('a.game-wrapper-a')
+    gameLinks.forEach((link: Element) => {
       const href = link.getAttribute('href') || ''
       const internalId = href.match(/internalID=(\d+)/)?.[1] || ''
       if (!internalId) return
 
-      const stateEl = link.querySelector('.state')
-      const stateText = stateEl?.textContent?.trim().toUpperCase() || ''
-      let status: Match['status'] = 'AGENDADO'
-      if (stateText.includes('TERMINADO')) status = 'FINALIZADO'
-      else if (stateText.includes('DECORRER') || stateText.includes('LIVE')) status = 'A DECORRER'
+      // Time
+      const hourEl = link.querySelector('.hour h3')
+      const hourText = hourEl?.textContent?.trim() || ''
+      const normalizedHour = hourText.replace('H', ':').replace(/\s+/g, '')
+      const hora = normalizedHour.length > 0 ? normalizedHour : ''
 
-      const homeEl = link.querySelector('.team.home')
-      const awayEl = link.querySelector('.team.away')
+      // Teams: first .team-container = home, second = away
+      const teamContainers = link.querySelectorAll('.team-container')
+      const homeTeamEl = teamContainers[0]
+      const awayTeamEl = teamContainers[1]
 
-      const homeName = homeEl?.querySelector('.name')?.textContent?.trim() || ''
-      const awayName = awayEl?.querySelector('.name')?.textContent?.trim() || ''
+      const homeName = homeTeamEl?.querySelector('.fullName')?.textContent?.trim()
+        || homeTeamEl?.querySelector('.sigla')?.textContent?.trim()
+        || ''
+      const awayName = awayTeamEl?.querySelector('.fullName')?.textContent?.trim()
+        || awayTeamEl?.querySelector('.sigla')?.textContent?.trim()
+        || ''
 
-      const homeScore = parseInt(homeEl?.querySelector('.score')?.textContent || '0') || null
-      const awayScore = parseInt(awayEl?.querySelector('.score')?.textContent || '0') || null
+      // Logos
+      const homeLogo = homeTeamEl?.querySelector('.image-container img')?.getAttribute('src') || null
+      const awayLogo = awayTeamEl?.querySelector('.image-container img')?.getAttribute('src') || null
 
-      const homeLogo = homeEl?.querySelector('img')?.getAttribute('src') || null
-      const awayLogo = awayEl?.querySelector('img')?.getAttribute('src') || null
+      // Competition: format "Sénior Masculino | 1ª Divisão Masculina"
+      const compEl = link.querySelector('.competition span')
+      const compText = compEl?.textContent?.trim() || ''
 
-      const compEl = link.querySelector('.meta .competition')
-      const competicao = compEl?.textContent?.trim() || ''
+      let escalao = ''
+      let competicao = ''
+      if (compText.includes('|')) {
+        const parts = compText.split('|')
+        escalao = parts[0]?.trim() || ''
+        competicao = parts[1]?.trim() || ''
+      } else {
+        competicao = compText
+      }
 
-      const pavilionEl = link.querySelector('.meta .pavilion')
-      const local = pavilionEl?.textContent?.trim() || null
+      // Location
+      const locEl = link.querySelector('.location-wrapper b')
+      const local = locEl?.textContent?.trim() || null
 
       const slug = `${isoDate}-${slugify(homeName)}-${slugify(awayName)}`
-
-      const hora = status === 'AGENDADO' ? stateText : ''
 
       games.push({
         id: internalId,
@@ -116,14 +130,14 @@ function parseGamesHTML(html: string): Match[] {
         hora,
         equipa_casa: homeName,
         equipa_fora: awayName,
-        resultado_casa: status === 'FINALIZADO' ? homeScore : null,
-        resultado_fora: status === 'FINALIZADO' ? awayScore : null,
-        escalao: '', // not in the generic get_more_days HTML response
+        resultado_casa: null,
+        resultado_fora: null,
+        escalao,
         competicao,
         local,
         logotipo_casa: homeLogo,
         logotipo_fora: awayLogo,
-        status,
+        status: 'AGENDADO',
         epoca: '' // filled by hook
       })
     })
