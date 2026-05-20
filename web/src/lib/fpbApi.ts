@@ -1,6 +1,6 @@
 import { Match } from '../components/types'
 
-const FPB_PROXY = '/api/fpb/admin-ajax.php'
+const FPB_PROXY = '/api/fpb'
 
 const MONTHS_PT: Record<string, number> = {
   'JAN': 1, 'FEV': 2, 'MAR': 3, 'ABR': 4, 'MAI': 5, 'JUN': 6,

@@ -9,7 +9,7 @@ export default defineConfig({
             '/api/fpb': {
                 target: 'https://www.fpb.pt',
                 changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/api\/fpb/, '/wp-admin')
+                rewrite: (path) => '/wp-admin/admin-ajax.php'
             }
         }
     },
