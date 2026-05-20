@@ -1,135 +1,12 @@
-import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { useState, useEffect } from 'react'
 import { Calendar, Trophy, Filter, Loader2, MapPin, ChevronRight, Clock, RefreshCw } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
-
-// Types
-export type Match = {
-    slug: string
-    data: string
-    hora: string
-    equipa_casa: string
-    equipa_fora: string
-    resultado_casa: number | null
-    resultado_fora: number | null
-    escalao: string
-    competicao: string
-    local: string | null
-    logotipo_casa: string | null
-    logotipo_fora: string | null
-    status: 'AGENDADO' | 'A DECORRER' | 'FINALIZADO'
-    epoca?: string
-}
-
-
-
-// Update schedule (in UTC hours)
-const WEEKDAY_UPDATES = [12, 18, 22] // Mon-Thu
-const FRIDAY_START = 16
-const FRIDAY_END = 24
-const FRIDAY_INTERVAL_MINS = 30
-const WEEKEND_UPDATES_START = 10
-const WEEKEND_UPDATES_END = 24
-const WEEKEND_INTERVAL_MINS = 15
-
-function getNextUpdateTime(): Date {
-    const now = new Date()
-    const dayOfWeek = now.getUTCDay() // 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
-    const isFriday = dayOfWeek === 5
-
-    const currentHour = now.getUTCHours() + now.getUTCMinutes() / 60
-    const totalMins = now.getUTCHours() * 60 + now.getUTCMinutes()
-
-    if (isWeekend) {
-        // Sat-Sun: 10:00-24:00 every 15 min
-        if (currentHour < WEEKEND_UPDATES_START) {
-            const next = new Date(now)
-            next.setUTCHours(WEEKEND_UPDATES_START, 0, 0, 0)
-            return next
-        }
-        if (currentHour >= WEEKEND_UPDATES_END) {
-            // Next day
-            const tomorrow = new Date(now)
-            tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
-            const tomorrowDow = tomorrow.getUTCDay()
-            if (tomorrowDow === 0 || tomorrowDow === 6) {
-                tomorrow.setUTCHours(WEEKEND_UPDATES_START, 0, 0, 0)
-            } else {
-                tomorrow.setUTCHours(WEEKDAY_UPDATES[0], 0, 0, 0)
-            }
-            return tomorrow
-        }
-        // Find next 15-min slot
-        const nextSlotMins = Math.ceil(totalMins / WEEKEND_INTERVAL_MINS) * WEEKEND_INTERVAL_MINS
-        const next = new Date(now)
-        next.setUTCHours(Math.floor(nextSlotMins / 60) % 24, nextSlotMins % 60, 0, 0)
-        return next
-    } else if (isFriday) {
-        // Friday: 16:00-24:00 every 30 min
-        if (currentHour < FRIDAY_START) {
-            const next = new Date(now)
-            next.setUTCHours(FRIDAY_START, 0, 0, 0)
-            return next
-        }
-        if (currentHour >= FRIDAY_END) {
-            // Saturday
-            const tomorrow = new Date(now)
-            tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
-            tomorrow.setUTCHours(WEEKEND_UPDATES_START, 0, 0, 0)
-            return tomorrow
-        }
-        // Find next 30-min slot
-        const nextSlotMins = Math.ceil(totalMins / FRIDAY_INTERVAL_MINS) * FRIDAY_INTERVAL_MINS
-        const next = new Date(now)
-        next.setUTCHours(Math.floor(nextSlotMins / 60) % 24, nextSlotMins % 60, 0, 0)
-        return next
-    } else {
-        // Mon-Thu: 12:00, 18:00, 22:00
-        for (const hour of WEEKDAY_UPDATES) {
-            if (hour > currentHour) {
-                const next = new Date(now)
-                next.setUTCHours(hour, 0, 0, 0)
-                return next
-            }
-        }
-        // Tomorrow
-        const tomorrow = new Date(now)
-        tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
-        const tomorrowDow = tomorrow.getUTCDay()
-        if (tomorrowDow === 5) {
-            tomorrow.setUTCHours(FRIDAY_START, 0, 0, 0)
-        } else if (tomorrowDow === 0 || tomorrowDow === 6) {
-            tomorrow.setUTCHours(WEEKEND_UPDATES_START, 0, 0, 0)
-        } else {
-            tomorrow.setUTCHours(WEEKDAY_UPDATES[0], 0, 0, 0)
-        }
-        return tomorrow
-    }
-}
-
-function formatTimeUntil(target: Date): string {
-    const now = new Date()
-    const diffMs = target.getTime() - now.getTime()
-
-    if (diffMs <= 0) return 'agora'
-
-    const diffMins = Math.floor(diffMs / 60000)
-    const hours = Math.floor(diffMins / 60)
-    const mins = diffMins % 60
-
-    if (hours > 0) {
-        return `${hours}h ${mins}min`
-    }
-    return `${mins}min`
-}
+import { useGames } from '../hooks/useGames'
+import { Match } from '../components/types'
 
 function Games() {
-    const [matches, setMatches] = useState<Match[]>([])
-    const [loading, setLoading] = useState(true)
     const [searchParams, setSearchParams] = useSearchParams()
 
-    // Explicitly typed state
     const [view, setView] = useState<'agenda' | 'results'>(() => {
         const v = searchParams.get('view')
         return v === 'results' ? 'results' : 'agenda'
@@ -137,108 +14,48 @@ function Games() {
 
     const [filterEscalao, setFilterEscalao] = useState<string>('Todos')
     const [escaloes, setEscaloes] = useState<string[]>([])
-    const [lastScrape, setLastScrape] = useState<string>('')
-    const [timeUntilUpdate, setTimeUntilUpdate] = useState<string>('')
+    const [timeAgo, setTimeAgo] = useState<string>('')
 
+    const { games: allGames, loading, lastUpdated } = useGames('2025/2026', 119)
 
-    // Sync URL with view
+    const matches = allGames || []
+
     useEffect(() => {
         setSearchParams({ view })
     }, [view, setSearchParams])
 
-
-    // Fetch last scrape time from metadata
-    const fetchLastScrape = async () => {
-        const { data, error } = await supabase
-            .from('metadata')
-            .select('value')
-            .eq('key', 'last_scrape')
-            .single()
-
-        if (!error && data) {
-            const scrapeDate = new Date(data.value)
-            setLastScrape(scrapeDate.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }))
-        }
-    }
-
-
-
-    // Update countdown every minute
     useEffect(() => {
-        const updateCountdown = () => {
-            const nextUpdate = getNextUpdateTime()
-            setTimeUntilUpdate(formatTimeUntil(nextUpdate))
-        }
+        const uniqueEscaloes = Array.from(new Set(matches.map(m => m.escalao))).filter(Boolean).sort()
+        setEscaloes(uniqueEscaloes)
+    }, [matches])
 
-        updateCountdown()
-        const interval = setInterval(updateCountdown, 60000)
-
-        return () => clearInterval(interval)
-    }, [])
-
-    // Fetch data
-    const fetchMatches = async () => {
-        setLoading(true)
-
-        // Fetch games for CURRENT SEASON ONLY (2025/2026)
-        const { data, error } = await supabase
-            .from('games_2025_2026')
-            .select('*')
-            .order('data', { ascending: view === 'agenda' })
-
-        if (error) {
-            console.error('Error fetching from games', error)
-            setMatches([])
-            setEscaloes([])
-        } else {
-            let sorted = data as Match[]
-            // Client-side sort to be double sure
-            if (view === 'results') {
-                sorted = sorted.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
-            } else {
-                sorted = sorted.sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
+    useEffect(() => {
+        const updateTimeAgo = () => {
+            if (!lastUpdated) {
+                setTimeAgo('')
+                return
             }
-            setMatches(sorted)
-
-            const uniqueEscaloes = Array.from(new Set(sorted.map(m => m.escalao))).filter(Boolean).sort()
-            setEscaloes(uniqueEscaloes)
+            const diffMs = Date.now() - lastUpdated.getTime()
+            const diffMins = Math.floor(diffMs / 60000)
+            if (diffMins < 1) setTimeAgo('agora mesmo')
+            else if (diffMins < 60) setTimeAgo(`há ${diffMins}min`)
+            else {
+                const hours = Math.floor(diffMins / 60)
+                setTimeAgo(`há ${hours}h`)
+            }
         }
-        setLoading(false)
-    }
+        updateTimeAgo()
+        const interval = setInterval(updateTimeAgo, 30000)
+        return () => clearInterval(interval)
+    }, [lastUpdated])
 
-    // Initial fetch and Realtime subscription
-    useEffect(() => {
-        fetchMatches()
-        fetchLastScrape()
-
-        const channel = supabase
-            .channel('public:games')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'games_2025_2026' }, () => {
-                fetchMatches()
-                fetchLastScrape()
-            })
-            .subscribe()
-
-        return () => {
-            supabase.removeChannel(channel)
-        }
-    }, [view])
-
-    // Filter logic
     const filteredMatches = matches.filter(match => {
-
-
-        if (view === 'agenda') {
-            if (match.status === 'FINALIZADO') return false
-        } else {
-            if (match.status !== 'FINALIZADO') return false
-        }
-
+        if (view === 'agenda' && match.status === 'FINALIZADO') return false
+        if (view === 'results' && match.status !== 'FINALIZADO') return false
         if (filterEscalao !== 'Todos' && match.escalao !== filterEscalao) return false
         return true
     })
 
-    // Group by Date
     const groupedMatches = filteredMatches.reduce((groups, match) => {
         const date = match.data
         if (!groups[date]) groups[date] = []
@@ -252,23 +69,15 @@ function Games() {
             : new Date(b).getTime() - new Date(a).getTime()
     })
 
-
-
     const formatDate = (dateStr: string) => {
         const options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'long' }
         const date = new Date(dateStr).toLocaleDateString('pt-PT', options)
         return date.charAt(0).toUpperCase() + date.slice(1)
     }
 
-    const formatTeamName = (name: string, _escalao: string) => {
-        return name.toUpperCase()
-    }
-
     return (
         <div className="max-w-6xl mx-auto space-y-6 pb-24">
-
-            {/* Segment Controller */}
-            <div className="sticky top-20 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-xl p-1.5 rounded-2xl border border-zinc-200 dark:border-white/10 flex gap-1 shadow-xl mx-2 max-w-sm mx-auto mt-4">
+            <div className="sticky top-20 z-40 bg-white/80 dark:bg-black/80 backdrop-blur-xl p-1.5 rounded-2xl border border-zinc-200 dark:border-white/10 flex gap-1 shadow-xl max-w-sm mx-auto mt-4">
                 <button
                     onClick={() => setView('agenda')}
                     className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${view === 'agenda' ? 'bg-gaia-yellow text-black shadow-lg shadow-yellow-500/20' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'}`}
@@ -283,10 +92,8 @@ function Games() {
                     <Trophy size={14} strokeWidth={2.5} />
                     RESULTADOS
                 </button>
-
             </div>
 
-            {/* Filters Row */}
             <div className="px-4 max-w-sm mx-auto flex gap-2">
                 <div className="relative flex-1">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
@@ -303,43 +110,38 @@ function Games() {
                         ))}
                     </select>
                 </div>
-
-
             </div>
 
-            {/* Update Info with Countdown */}
             <div className="px-4 max-w-md mx-auto">
                 <Link to="/about" className="flex items-center justify-between text-[10px] text-zinc-400 uppercase tracking-wide hover:text-gaia-yellow transition-colors group">
                     <div className="flex items-center gap-1.5">
                         <RefreshCw size={10} className="group-hover:animate-spin" />
-                        <span>Atualizado: {lastScrape || '--:--'}</span>
+                        <span>Atualizado: {timeAgo || '--'}</span>
                     </div>
-                    <span className="text-zinc-500 group-hover:text-gaia-yellow">Próxima: {timeUntilUpdate}</span>
                 </Link>
             </div>
 
-
-            {/* Content List */}
-            {
-                loading ? (
-                    <div className="flex justify-center py-32">
-                        <Loader2 className="animate-spin text-gaia-yellow" size={32} />
-                    </div>
-                ) : (
-                    <div className="space-y-8 px-2 md:px-4">
-                        {sortedDates.length === 0 ? (
-                            <div className="text-center py-20 text-zinc-600 font-medium">
-                                {view === 'agenda' ? 'Nenhum jogo agendado.' : 'Nenhum resultado encontrado.'}
-                            </div>
-                        ) : (
-                            sortedDates.map(date => (
-                                <div key={date} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                    <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 mb-3 uppercase tracking-widest pl-2">
-                                        {formatDate(date)}
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {groupedMatches[date].map(match => (
-                                            <Link to={`/game/${match.slug}`} key={match.slug} className="glass-card flex flex-col gap-0 group active:scale-[0.98] hover:border-gaia-yellow/30">
+            {loading ? (
+                <div className="flex justify-center py-32">
+                    <Loader2 className="animate-spin text-gaia-yellow" size={32} />
+                </div>
+            ) : (
+                <div className="space-y-8 px-2 md:px-4">
+                    {sortedDates.length === 0 ? (
+                        <div className="text-center py-20 text-zinc-600 font-medium">
+                            {view === 'agenda' ? 'Nenhum jogo agendado.' : 'Nenhum resultado encontrado.'}
+                        </div>
+                    ) : (
+                        sortedDates.map(date => (
+                            <div key={date} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 mb-3 uppercase tracking-widest pl-2">
+                                    {formatDate(date)}
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {groupedMatches[date].map(match => {
+                                        const matchSlug = match.slug || `${match.data}-${match.equipa_casa.toLowerCase().replace(/\s+/g, '-')}-${match.equipa_fora.toLowerCase().replace(/\s+/g, '-')}`
+                                        return (
+                                            <Link to={`/game/${matchSlug}`} key={matchSlug} className="glass-card flex flex-col gap-0 group active:scale-[0.98] hover:border-gaia-yellow/30">
                                                 <div className="flex justify-between items-center p-4 pb-2 border-b border-zinc-100 dark:border-white/5">
                                                     <div className="flex items-center gap-2 text-gaia-yellow">
                                                         {view === 'agenda' ? (
@@ -368,7 +170,7 @@ function Games() {
                                                                 </div>
                                                             )}
                                                             <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
-                                                                {formatTeamName(match.equipa_casa, match.escalao)}
+                                                                {match.equipa_casa.toUpperCase()}
                                                             </span>
                                                         </div>
                                                         {view === 'results' && match.resultado_casa !== null && (
@@ -387,7 +189,7 @@ function Games() {
                                                                 </div>
                                                             )}
                                                             <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
-                                                                {formatTeamName(match.equipa_fora, match.escalao)}
+                                                                {match.equipa_fora.toUpperCase()}
                                                             </span>
                                                         </div>
                                                         {view === 'results' && match.resultado_fora !== null && (
@@ -417,15 +219,15 @@ function Games() {
                                                     <ChevronRight size={14} className="text-zinc-400 group-hover:text-gaia-yellow transition-colors" />
                                                 </div>
                                             </Link>
-                                        ))}
-                                    </div>
+                                        )
+                                    })}
                                 </div>
-                            ))
-                        )}
-                    </div>
-                )
-            }
-        </div >
+                            </div>
+                        ))
+                    )}
+                </div>
+            )}
+        </div>
     )
 }
 

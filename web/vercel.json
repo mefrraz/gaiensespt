@@ -1,0 +1,8 @@
+{
+    "rewrites": [
+        {
+            "source": "/api/fpb/:path*",
+            "destination": "https://www.fpb.pt/wp-admin/:path*"
+        }
+    ]
+}
