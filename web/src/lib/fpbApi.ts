@@ -59,8 +59,13 @@ export async function fetchFPBGames(
 
   const res = await fetch(`${FPB_PROXY}?${params.toString()}`)
   if (!res.ok) throw new Error(`FPB API error: ${res.status}`)
-  const json = await res.json()
-  return parseGamesHTML(json.result)
+  const text = await res.text()
+  console.log('[fpbApi] Response length:', text.length, 'First 200 chars:', text.substring(0, 200))
+  const json = JSON.parse(text)
+  console.log('[fpbApi] Parsed JSON keys:', Object.keys(json), 'hasmore:', json.hasmore, 'result length:', json.result?.length)
+  const games = parseGamesHTML(json.result)
+  console.log('[fpbApi] Parsed games count:', games.length)
+  return games
 }
 
 function parseGamesHTML(html: string): Match[] {
@@ -69,13 +74,19 @@ function parseGamesHTML(html: string): Match[] {
   const games: Match[] = []
 
   const dayWrappers = doc.querySelectorAll('.day-wrapper')
+  console.log('[fpbApi] day-wrapper count:', dayWrappers.length)
+
   dayWrappers.forEach(dayWrapper => {
     const dateEl = dayWrapper.querySelector('h3.date')
     const dateStr = dateEl?.textContent?.trim() || ''
     const isoDate = parseDatePt(dateStr)
-    if (!isoDate) return
+    if (!isoDate) {
+      console.log('[fpbApi] Failed to parse date:', dateStr)
+      return
+    }
 
     const gameLinks = dayWrapper.querySelectorAll('a.game-wrapper-a')
+    console.log('[fpbApi] Day', isoDate, '- games:', gameLinks.length)
     gameLinks.forEach((link: Element) => {
       const href = link.getAttribute('href') || ''
       const internalId = href.match(/internalID=(\d+)/)?.[1] || ''
@@ -143,5 +154,6 @@ function parseGamesHTML(html: string): Match[] {
     })
   })
 
+  console.log('[fpbApi] Total games parsed:', games.length)
   return games
 }
