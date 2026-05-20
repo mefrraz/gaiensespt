@@ -16,7 +16,7 @@ function slugify(s: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
-export function useGames(season = '2025/2026', clube = 119, competicao?: number) {
+export function useGames(season = '2025/2026', clube = 119) {
   const [games, setGames] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
@@ -26,7 +26,7 @@ export function useGames(season = '2025/2026', clube = 119, competicao?: number)
 
   const refresh = useCallback(async () => {
     try {
-      const freshData = await fetchFPBGames(season, clube, competicao)
+      const freshData = await fetchFPBGames(season, clube)
       const withEpoch = freshData.map(g => {
         const slug = `${g.data}-${slugify(g.equipa_casa)}-${slugify(g.equipa_fora)}`
         return {
@@ -61,7 +61,7 @@ export function useGames(season = '2025/2026', clube = 119, competicao?: number)
       setError(err instanceof Error ? err.message : 'Erro ao carregar jogos')
       throw err
     }
-  }, [season, clube, competicao, tableName])
+  }, [season, clube, tableName])
 
   useEffect(() => {
     let cancelled = false
@@ -115,7 +115,7 @@ export function useGames(season = '2025/2026', clube = 119, competicao?: number)
     return () => {
       cancelled = true
     }
-  }, [season, clube, competicao, tableName, refresh])
+  }, [season, clube, tableName, refresh])
 
   return {
     games,

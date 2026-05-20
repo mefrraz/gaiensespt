@@ -5,23 +5,12 @@ const FPB_PROXY = '/api/fpb'
 const MONTHS_PT: Record<string, number> = {
   'JAN': 1, 'FEV': 2, 'MAR': 3, 'ABR': 4, 'MAI': 5, 'JUN': 6,
   'JUL': 7, 'AGO': 8, 'SET': 9, 'OUT': 10, 'NOV': 11, 'DEZ': 12,
-  'JANEIRO': 1, 'FEVEREIRO': 2, 'MARÇO': 3, 'ABRIL': 4, 'MAIO': 5, 'JUNHO': 6,
-  'JULHO': 7, 'AGOSTO': 8, 'SETEMBRO': 9, 'OUTUBRO': 10, 'NOVEMBRO': 11, 'DEZEMBRO': 12
 }
-
-const WEEKDAYS_PT = [
-  'domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado',
-  'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira',
-  'sábado'
-]
 
 function parseDatePt(dateStr: string): string | null {
   if (!dateStr) return null
   const cleaned = dateStr.replace(/,/g, '').trim().toUpperCase()
-  const parts = cleaned.split(/\s+/).filter(p => {
-    const normalized = p.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    return !WEEKDAYS_PT.includes(normalized)
-  })
+  const parts = cleaned.split(/\s+/)
   if (parts.length < 3) return null
   const day = parseInt(parts[0])
   if (isNaN(day)) return null
@@ -41,26 +30,33 @@ function slugify(s: string): string {
 
 export async function fetchFPBGames(
   epoca: string,
-  clube?: number,
-  competicao?: number,
-  escalao = 'Sénior',
-  genero = 'masculino'
+  clube: number = 119
 ): Promise<Match[]> {
+  const [calHtml, resHtml] = await Promise.all([
+    fetchPage('calendario', clube, epoca),
+    fetchPage('resultados', clube, epoca)
+  ])
+
+  const calGames = parseGamesHTML(calHtml)
+  const resGames = parseGamesHTML(resHtml)
+
+  // Merge: results page games override calendar page games (has scores)
+  const merged = new Map<string, Match>()
+  for (const g of calGames) merged.set(g.id, g)
+  for (const g of resGames) merged.set(g.id, { ...merged.get(g.id), ...g })
+
+  return Array.from(merged.values())
+}
+
+async function fetchPage(page: string, clube: number, epoca: string): Promise<string> {
   const params = new URLSearchParams()
-  params.append('action', 'get_more_days')
+  params.append('page', page)
+  params.append('clube', String(clube))
   params.append('epoca', epoca)
-  params.append('escalao', escalao)
-  params.append('genero', genero)
-  params.append('period[time_option]', 'RECENTES')
-  // RECENTES mode: returns last ~28 days + next ~28 days
-  // No from_date/to_date needed for RECENTES
-  if (clube) params.append('clube', String(clube))
-  if (competicao) params.append('competicao[]', String(competicao))
 
   const res = await fetch(`${FPB_PROXY}?${params.toString()}`)
-  if (!res.ok) throw new Error(`FPB API error: ${res.status}`)
-  const json = await res.json()
-  return parseGamesHTML(json.result)
+  if (!res.ok) throw new Error(`FPB error: ${res.status}`)
+  return res.text()
 }
 
 function parseGamesHTML(html: string): Match[] {
@@ -81,32 +77,21 @@ function parseGamesHTML(html: string): Match[] {
       const internalId = href.match(/internalID=(\d+)/)?.[1] || ''
       if (!internalId) return
 
-      // Time
-      const hourEl = link.querySelector('.hour h3')
-      const hourText = hourEl?.textContent?.trim() || ''
-      const normalizedHour = hourText.replace('H', ':').replace(/\s+/g, '')
-      const hora = normalizedHour.length > 0 ? normalizedHour : ''
-
       // Teams: first .team-container = home, second = away
       const teamContainers = link.querySelectorAll('.team-container')
       const homeTeamEl = teamContainers[0]
       const awayTeamEl = teamContainers[1]
 
-      const homeName = homeTeamEl?.querySelector('.fullName')?.textContent?.trim()
-        || homeTeamEl?.querySelector('.sigla')?.textContent?.trim()
-        || ''
-      const awayName = awayTeamEl?.querySelector('.fullName')?.textContent?.trim()
-        || awayTeamEl?.querySelector('.sigla')?.textContent?.trim()
-        || ''
+      const homeName = (homeTeamEl?.querySelector('.fullName') || homeTeamEl?.querySelector('.sigla'))?.textContent?.trim() || ''
+      const awayName = (awayTeamEl?.querySelector('.fullName') || awayTeamEl?.querySelector('.sigla'))?.textContent?.trim() || ''
 
       // Logos
       const homeLogo = homeTeamEl?.querySelector('.image-container img')?.getAttribute('src') || null
       const awayLogo = awayTeamEl?.querySelector('.image-container img')?.getAttribute('src') || null
 
-      // Competition: format "Sénior Masculino | 1ª Divisão Masculina"
+      // Competition
       const compEl = link.querySelector('.competition span')
       const compText = compEl?.textContent?.trim() || ''
-
       let escalao = ''
       let competicao = ''
       if (compText.includes('|')) {
@@ -121,6 +106,49 @@ function parseGamesHTML(html: string): Match[] {
       const locEl = link.querySelector('.location-wrapper b')
       const local = locEl?.textContent?.trim() || null
 
+      // STATUS & SCORES
+      let status: Match['status'] = 'AGENDADO'
+      let resultado_casa: number | null = null
+      let resultado_fora: number | null = null
+      let hora = ''
+
+      // Check for completed (results_wrapper)
+      const resultsWrapper = link.querySelector('.results_wrapper')
+      if (resultsWrapper) {
+        const scoreEls = resultsWrapper.querySelectorAll('h3.results_text')
+        if (scoreEls.length >= 2) {
+          status = 'FINALIZADO'
+          resultado_casa = parseInt(scoreEls[0].textContent?.trim() || '0') || null
+          resultado_fora = parseInt(scoreEls[1].textContent?.trim() || '0') || null
+        }
+      }
+
+      // Fallback: check for victory_font class
+      if (status === 'AGENDADO' && link.querySelector('.victory_font')) {
+        status = 'FINALIZADO'
+      }
+
+      // Fallback: time text might show score pattern "78-65"
+      const hourEl = link.querySelector('.hour h3')
+      const hourText = hourEl?.textContent?.trim() || ''
+      if (status === 'AGENDADO' && hourText.includes('-') && !hourText.includes('H')) {
+        const parts = hourText.split('-')
+        if (parts.length === 2) {
+          const s1 = parseInt(parts[0].trim())
+          const s2 = parseInt(parts[1].trim())
+          if (!isNaN(s1) && !isNaN(s2)) {
+            status = 'FINALIZADO'
+            resultado_casa = s1
+            resultado_fora = s2
+          }
+        }
+      }
+
+      // Time
+      if (status === 'AGENDADO') {
+        hora = (hourText || '').replace('H', ':').replace(/\s+/g, '')
+      }
+
       const slug = `${isoDate}-${slugify(homeName)}-${slugify(awayName)}`
 
       games.push({
@@ -128,17 +156,17 @@ function parseGamesHTML(html: string): Match[] {
         slug,
         data: isoDate,
         hora,
-        equipa_casa: homeName,
-        equipa_fora: awayName,
-        resultado_casa: null,
-        resultado_fora: null,
-        escalao,
-        competicao,
+        equipa_casa: homeName.trim(),
+        equipa_fora: awayName.trim(),
+        resultado_casa,
+        resultado_fora,
+        escalao: escalao.trim(),
+        competicao: competicao.trim(),
         local,
         logotipo_casa: homeLogo,
         logotipo_fora: awayLogo,
-        status: 'AGENDADO',
-        epoca: '' // filled by hook
+        status,
+        epoca: ''
       })
     })
   })

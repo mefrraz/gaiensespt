@@ -4,17 +4,16 @@ export const config = {
 
 export default async function handler(request: Request) {
     const url = new URL(request.url)
-    const searchParams = url.searchParams
+    const clube = url.searchParams.get('clube') || '119'
+    const epoca = url.searchParams.get('epoca') || '2025/2026'
+    const page = url.searchParams.get('page') || 'calendario'
 
-    const fpbUrl = new URL('https://www.fpb.pt/wp-admin/admin-ajax.php')
-    searchParams.forEach((value, key) => {
-        fpbUrl.searchParams.append(key, value)
-    })
+    const fpbUrl = `https://www.fpb.pt/${page}/clube_${clube}/?epoca=${epoca}&escalao=S%C3%A9nior&genero=masculino`
 
     try {
-        const fpbRes = await fetch(fpbUrl.toString(), {
+        const fpbRes = await fetch(fpbUrl, {
             headers: {
-                'User-Agent': 'FCGaia-Web/1.0 (+https://fcgaia.vercel.app)'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             }
         })
 
@@ -23,12 +22,12 @@ export default async function handler(request: Request) {
         return new Response(text, {
             status: fpbRes.status,
             headers: {
-                'Content-Type': 'application/json; charset=utf-8',
+                'Content-Type': 'text/html; charset=utf-8',
                 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=60'
             }
         })
     } catch (err) {
-        return new Response(JSON.stringify({ error: 'Failed to fetch FPB API' }), {
+        return new Response(JSON.stringify({ error: 'Failed to fetch FPB' }), {
             status: 502,
             headers: { 'Content-Type': 'application/json' }
         })
