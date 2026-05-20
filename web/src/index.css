@@ -6,31 +6,28 @@
   font-family: 'Outfit', sans-serif;
 }
 
-/* Glassmorphism utilities */
-.glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+@layer base {
+  body {
+    @apply bg-zinc-50 dark:bg-gaia-black text-zinc-900 dark:text-white antialiased;
+  }
 }
 
-.glass-card {
-  @apply relative overflow-hidden bg-white dark:bg-[#111] border border-gray-200 dark:border-white/5 rounded-2xl transition-all duration-300 shadow-sm dark:shadow-none;
+@layer components {
+  .glass-card {
+    @apply relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl shadow-sm transition-all duration-200;
+  }
+  .glass-card:hover {
+    @apply border-zinc-300 dark:border-white/20 shadow-md;
+  }
+  .glass-card:active {
+    @apply scale-[0.985];
+  }
 }
 
-.glass-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to bottom right, rgba(0, 0, 0, 0.02), transparent);
-  pointer-events: none;
-}
-
-:is(.dark .glass-card)::before {
-  background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.03), transparent);
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
 }
 
 .match-gradient {

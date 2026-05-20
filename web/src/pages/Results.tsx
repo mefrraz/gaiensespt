@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Filter, MapPin, ChevronRight, TrendingUp, TrendingDown, Minus, Trophy } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Filter, Trophy } from 'lucide-react'
 import { useGames } from '../hooks/useGames'
 import { SkeletonGrid } from '../components/Skeleton'
 import { EmptyState } from '../components/EmptyState'
+import { GameCard } from '../components/GameCard'
 import { Match } from '../components/types'
 
 function Results() {
@@ -11,7 +11,6 @@ function Results() {
     const [escaloes, setEscaloes] = useState<string[]>([])
 
     const { games: allGames, loading, error } = useGames('2025/2026', 119)
-
     const matches = (allGames || []).filter(m => m.status === 'FINALIZADO')
 
     useEffect(() => {
@@ -39,15 +38,9 @@ function Results() {
         return date.charAt(0).toUpperCase() + date.slice(1)
     }
 
-    const isGaiaWin = (match: Match) => {
-        if (match.resultado_casa === null || match.resultado_fora === null) return null
-        const gaiaHome = match.equipa_casa.toUpperCase().includes('GAIA')
-        return gaiaHome ? match.resultado_casa > match.resultado_fora : match.resultado_fora > match.resultado_casa
-    }
-
     return (
         <div className="max-w-6xl mx-auto space-y-4 pb-24">
-            <div className="px-3 pt-4">
+            <div className="px-3 pt-4 animate-fade-in">
                 <h1 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                     <Trophy size={18} className="text-gaia-yellow" />
                     Resultados
@@ -59,15 +52,9 @@ function Results() {
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                         <Filter size={14} />
                     </div>
-                    <select
-                        value={filterEscalao}
-                        onChange={(e) => setFilterEscalao(e.target.value)}
-                        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-300 text-xs font-medium rounded-lg focus:ring-1 focus:ring-gaia-yellow focus:border-gaia-yellow block w-full pl-9 p-2.5 appearance-none shadow-sm"
-                    >
+                    <select value={filterEscalao} onChange={(e) => setFilterEscalao(e.target.value)} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-200 text-xs font-medium rounded-lg focus:ring-2 focus:ring-gaia-yellow/30 focus:border-gaia-yellow block w-full pl-9 p-2.5 appearance-none shadow-sm transition-colors">
                         <option value="Todos">Todos os Escalões</option>
-                        {escaloes.map(e => (
-                            <option key={e} value={e}>{e}</option>
-                        ))}
+                        {escaloes.map(e => <option key={e} value={e}>{e}</option>)}
                     </select>
                 </div>
             </div>
@@ -85,82 +72,15 @@ function Results() {
             {!loading && sortedDates.length > 0 && (
                 <div className="space-y-6 px-2 md:px-4">
                     {sortedDates.map(date => (
-                        <div key={date} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <div key={date} className="animate-slide-up">
                             <div className="flex items-center gap-3 mb-3 px-2">
                                 <h3 className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest">{formatDate(date)}</h3>
                                 <div className="flex-1 h-px bg-zinc-200 dark:bg-white/5" />
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {groupedMatches[date].map(match => {
-                                    const won = isGaiaWin(match)
-                                    const matchSlug = match.slug || `${match.data}-${match.equipa_casa.toLowerCase().replace(/\s+/g, '-')}-${match.equipa_fora.toLowerCase().replace(/\s+/g, '-')}`
-                                    return (
-                                        <Link to={`/game/${matchSlug}`} key={matchSlug} className="glass-card flex flex-col gap-0 group active:scale-[0.98] hover:border-gaia-yellow/30 transition-all duration-200">
-                                            <div className="flex justify-between items-center p-4 pb-2 border-b border-zinc-100 dark:border-white/5">
-                                                <div className="flex items-center gap-2">
-                                                    {won === true && <TrendingUp size={14} className="text-green-500" />}
-                                                    {won === false && <TrendingDown size={14} className="text-red-500" />}
-                                                    {won === null && <Minus size={14} className="text-zinc-400" />}
-                                                    <span className="text-[10px] font-bold text-zinc-500">FIN</span>
-                                                </div>
-                                                <span className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">{match.escalao}</span>
-                                            </div>
-                                            <div className="p-4 flex flex-col gap-3">
-                                                <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa < match.resultado_fora ? 'opacity-60' : ''}`}>
-                                                    <div className="flex items-center gap-3">
-                                                        {match.logotipo_casa ? (
-                                                            <img src={match.logotipo_casa} alt="" className="w-8 h-8 object-contain" />
-                                                        ) : (
-                                                            <div className="w-8 h-8 bg-zinc-100 dark:bg-white/10 rounded-full flex items-center justify-center">
-                                                                <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400">{match.equipa_casa.substring(0, 1)}</span>
-                                                            </div>
-                                                        )}
-                                                        <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
-                                                            {match.equipa_casa.toUpperCase()}
-                                                        </span>
-                                                    </div>
-                                                    {match.resultado_casa !== null && (
-                                                        <span className={`text-xl font-mono font-bold ${match.resultado_casa > (match.resultado_fora || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
-                                                            {match.resultado_casa}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora < match.resultado_casa ? 'opacity-60' : ''}`}>
-                                                    <div className="flex items-center gap-3">
-                                                        {match.logotipo_fora ? (
-                                                            <img src={match.logotipo_fora} alt="" className="w-8 h-8 object-contain" />
-                                                        ) : (
-                                                            <div className="w-8 h-8 bg-zinc-100 dark:bg-white/10 rounded-full flex items-center justify-center">
-                                                                <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400">{match.equipa_fora.substring(0, 1)}</span>
-                                                            </div>
-                                                        )}
-                                                        <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
-                                                            {match.equipa_fora.toUpperCase()}
-                                                        </span>
-                                                    </div>
-                                                    {match.resultado_fora !== null && (
-                                                        <span className={`text-xl font-mono font-bold ${match.resultado_fora > (match.resultado_casa || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
-                                                            {match.resultado_fora}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="px-4 pb-4 pt-0 flex justify-between items-center text-[10px] font-medium text-zinc-600 dark:text-zinc-500 uppercase tracking-wide">
-                                                <div className="flex items-center gap-1.5 truncate max-w-[70%]">
-                                                    {match.local ? (
-                                                        <>
-                                                            <MapPin size={10} className="shrink-0 text-gaia-yellow" />
-                                                            <span className="truncate text-zinc-500">{match.local}</span>
-                                                        </>
-                                                    ) : (
-                                                        <span className="text-zinc-500">{match.competicao}</span>
-                                                    )}
-                                                </div>
-                                                <ChevronRight size={14} className="text-zinc-500 group-hover:text-gaia-yellow transition-colors" />
-                                            </div>
-                                        </Link>
-                                    )
-                                })}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {groupedMatches[date].map(match => (
+                                    <GameCard key={match.id || match.slug} match={match} mode="results" />
+                                ))}
                             </div>
                         </div>
                     ))}
