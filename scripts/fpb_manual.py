@@ -57,7 +57,7 @@ def fetch_and_parse(epoca, clube, competicao=None):
         "genero": "masculino",
         "period[time_option]": "fromInit",
         "period[from_date]": f"{epoca[:4]}/09/01",
-        "period[to_date]": f"20{epoca[5:7]}/07/31",
+        "period[to_date]": f"{epoca[5:]}/07/31",
     }
     if clube:
         params["clube"] = clube
