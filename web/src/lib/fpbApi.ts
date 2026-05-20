@@ -51,9 +51,9 @@ export async function fetchFPBGames(
   params.append('epoca', epoca)
   params.append('escalao', escalao)
   params.append('genero', genero)
-  params.append('period[time_option]', 'fromInit')
-  params.append('period[from_date]', `${epoca.split('/')[0]}/09/01`)
-  params.append('period[to_date]', `${epoca.split('/')[1]}/07/31`)
+  params.append('period[time_option]', 'RECENTES')
+  // RECENTES mode: returns last ~28 days + next ~28 days
+  // No from_date/to_date needed for RECENTES
   if (clube) params.append('clube', String(clube))
   if (competicao) params.append('competicao[]', String(competicao))
 
