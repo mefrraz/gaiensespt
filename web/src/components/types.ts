@@ -13,6 +13,7 @@ export interface Standing {
 
 export type Match = {
     id: string
+    slug: string
     data: string
     hora: string
     equipa_casa: string

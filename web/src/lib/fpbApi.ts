@@ -75,8 +75,8 @@ function parseGamesHTML(html: string): Match[] {
     const isoDate = parseDatePt(dateStr)
     if (!isoDate) return
 
-    const jogoLinks = dayWrappers.querySelectorAll('a.jogo')
-    jogoLinks.forEach(link => {
+    const jogoLinks = dayWrapper.querySelectorAll('a.jogo')
+    jogoLinks.forEach((link: Element) => {
       const href = link.getAttribute('href') || ''
       const internalId = href.match(/internalID=(\d+)/)?.[1] || ''
       if (!internalId) return
@@ -107,11 +107,11 @@ function parseGamesHTML(html: string): Match[] {
 
       const slug = `${isoDate}-${slugify(homeName)}-${slugify(awayName)}`
 
-      const horaEl = link.querySelector('.state.agendado') || stateEl
       const hora = status === 'AGENDADO' ? stateText : ''
 
       games.push({
         id: internalId,
+        slug,
         data: isoDate,
         hora,
         equipa_casa: homeName,

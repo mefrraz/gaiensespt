@@ -15,8 +15,6 @@ function Dashboard() {
     useEffect(() => {
         if (games.length === 0) return
 
-        const today = new Date().toISOString().split('T')[0]
-
         const upcoming = games
             .filter(g => g.status !== 'FINALIZADO')
             .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
