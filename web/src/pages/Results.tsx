@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
-import { Filter, Loader2, MapPin, ChevronRight, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { Filter, MapPin, ChevronRight, TrendingUp, TrendingDown, Minus, Trophy } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useGames } from '../hooks/useGames'
+import { SkeletonGrid } from '../components/Skeleton'
+import { EmptyState } from '../components/EmptyState'
 import { Match } from '../components/types'
 
 function Results() {
     const [filterEscalao, setFilterEscalao] = useState<string>('Todos')
     const [escaloes, setEscaloes] = useState<string[]>([])
 
-    const { games: allGames, loading } = useGames('2025/2026', 119)
+    const { games: allGames, loading, error } = useGames('2025/2026', 119)
 
     const matches = (allGames || []).filter(m => m.status === 'FINALIZADO')
 
@@ -29,9 +31,7 @@ function Results() {
         return groups
     }, {} as Record<string, Match[]>)
 
-    const sortedDates = Object.keys(groupedMatches).sort((a, b) => {
-        return new Date(b).getTime() - new Date(a).getTime()
-    })
+    const sortedDates = Object.keys(groupedMatches).sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
 
     const formatDate = (dateStr: string) => {
         const options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'long' }
@@ -42,21 +42,21 @@ function Results() {
     const isGaiaWin = (match: Match) => {
         if (match.resultado_casa === null || match.resultado_fora === null) return null
         const gaiaHome = match.equipa_casa.toUpperCase().includes('GAIA')
-        if (gaiaHome) {
-            return match.resultado_casa > match.resultado_fora
-        }
-        return match.resultado_fora > match.resultado_casa
+        return gaiaHome ? match.resultado_casa > match.resultado_fora : match.resultado_fora > match.resultado_casa
     }
 
     return (
-        <div className="max-w-6xl mx-auto space-y-6 pb-24">
-            <div className="flex items-center justify-between px-2 pt-2">
-                <h1 className="text-xl font-bold text-zinc-900 dark:text-white">Resultados</h1>
+        <div className="max-w-6xl mx-auto space-y-4 pb-24">
+            <div className="px-3 pt-4">
+                <h1 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                    <Trophy size={18} className="text-gaia-yellow" />
+                    Resultados
+                </h1>
             </div>
 
-            <div className="px-2 max-w-md mx-auto flex gap-2">
-                <div className="relative flex-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+            <div className="px-3 max-w-md mx-auto">
+                <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                         <Filter size={14} />
                     </div>
                     <select
@@ -72,99 +72,98 @@ function Results() {
                 </div>
             </div>
 
-            {loading ? (
-                <div className="flex justify-center py-32">
-                    <Loader2 className="animate-spin text-gaia-yellow" size={32} />
-                </div>
-            ) : (
-                <div className="space-y-8 px-1">
-                    {sortedDates.length === 0 ? (
-                        <div className="text-center py-20 text-zinc-600 font-medium">
-                            Nenhum resultado encontrado.
-                        </div>
-                    ) : (
-                        sortedDates.map(date => (
-                            <div key={date} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-500 mb-3 uppercase tracking-widest pl-2">
-                                    {formatDate(date)}
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {groupedMatches[date].map(match => {
-                                        const won = isGaiaWin(match)
-                                        const matchSlug = match.slug || `${match.data}-${match.equipa_casa.toLowerCase().replace(/\s+/g, '-')}-${match.equipa_fora.toLowerCase().replace(/\s+/g, '-')}`
-                                        return (
-                                            <Link to={`/game/${matchSlug}`} key={matchSlug} className="glass-card flex flex-col gap-0 group active:scale-[0.98] hover:border-gaia-yellow/30">
-                                                <div className="flex justify-between items-center p-4 pb-2 border-b border-zinc-100 dark:border-white/5">
-                                                    <div className="flex items-center gap-2">
-                                                        {won === true && <TrendingUp size={14} className="text-green-500" />}
-                                                        {won === false && <TrendingDown size={14} className="text-red-500" />}
-                                                        {won === null && <Minus size={14} className="text-zinc-400" />}
-                                                        <span className="text-[10px] font-bold text-zinc-400">FIN</span>
-                                                    </div>
-                                                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                                                        {match.escalao}
-                                                    </span>
-                                                </div>
-                                                <div className="p-4 flex flex-col gap-3">
-                                                    <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa < match.resultado_fora ? 'opacity-60 grayscale' : 'opacity-100'}`}>
-                                                        <div className="flex items-center gap-3">
-                                                            {match.logotipo_casa ? (
-                                                                <img src={match.logotipo_casa} alt={match.equipa_casa} className="w-8 h-8 object-contain" />
-                                                            ) : (
-                                                                <div className="w-8 h-8 bg-zinc-100 dark:bg-white/10 rounded-full flex items-center justify-center">
-                                                                    <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{match.equipa_casa.substring(0, 1)}</span>
-                                                                </div>
-                                                            )}
-                                                            <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
-                                                                {match.equipa_casa.toUpperCase()}
-                                                            </span>
-                                                        </div>
-                                                        {match.resultado_casa !== null && (
-                                                            <span className={`text-xl font-mono font-bold ${match.resultado_casa > (match.resultado_fora || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
-                                                                {match.resultado_casa}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora < match.resultado_casa ? 'opacity-60 grayscale' : 'opacity-100'}`}>
-                                                        <div className="flex items-center gap-3">
-                                                            {match.logotipo_fora ? (
-                                                                <img src={match.logotipo_fora} alt={match.equipa_fora} className="w-8 h-8 object-contain" />
-                                                            ) : (
-                                                                <div className="w-8 h-8 bg-zinc-100 dark:bg-white/10 rounded-full flex items-center justify-center">
-                                                                    <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{match.equipa_fora.substring(0, 1)}</span>
-                                                                </div>
-                                                            )}
-                                                            <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
-                                                                {match.equipa_fora.toUpperCase()}
-                                                            </span>
-                                                        </div>
-                                                        {match.resultado_fora !== null && (
-                                                            <span className={`text-xl font-mono font-bold ${match.resultado_fora > (match.resultado_casa || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
-                                                                {match.resultado_fora}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="px-4 pb-4 pt-0 flex justify-between items-center text-[10px] font-medium text-zinc-500 uppercase tracking-wide">
-                                                    <div className="flex items-center gap-1.5 truncate max-w-[70%] text-zinc-400">
-                                                        {match.local ? (
-                                                            <>
-                                                                <MapPin size={10} className="shrink-0 text-gaia-yellow" />
-                                                                <span className="truncate">{match.local}</span>
-                                                            </>
-                                                        ) : (
-                                                            <span>{match.competicao}</span>
-                                                        )}
-                                                    </div>
-                                                    <ChevronRight size={14} className="text-zinc-400 group-hover:text-gaia-yellow transition-colors" />
-                                                </div>
-                                            </Link>
-                                        )
-                                    })}
-                                </div>
+            {loading && <SkeletonGrid count={6} />}
+
+            {!loading && error && matches.length === 0 && (
+                <EmptyState icon="error" title="Erro" subtitle={error} />
+            )}
+
+            {!loading && !error && sortedDates.length === 0 && (
+                <EmptyState view="results" />
+            )}
+
+            {!loading && sortedDates.length > 0 && (
+                <div className="space-y-6 px-2 md:px-4">
+                    {sortedDates.map(date => (
+                        <div key={date} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                            <div className="flex items-center gap-3 mb-3 px-2">
+                                <h3 className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest">{formatDate(date)}</h3>
+                                <div className="flex-1 h-px bg-zinc-200 dark:bg-white/5" />
                             </div>
-                        ))
-                    )}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {groupedMatches[date].map(match => {
+                                    const won = isGaiaWin(match)
+                                    const matchSlug = match.slug || `${match.data}-${match.equipa_casa.toLowerCase().replace(/\s+/g, '-')}-${match.equipa_fora.toLowerCase().replace(/\s+/g, '-')}`
+                                    return (
+                                        <Link to={`/game/${matchSlug}`} key={matchSlug} className="glass-card flex flex-col gap-0 group active:scale-[0.98] hover:border-gaia-yellow/30 transition-all duration-200">
+                                            <div className="flex justify-between items-center p-4 pb-2 border-b border-zinc-100 dark:border-white/5">
+                                                <div className="flex items-center gap-2">
+                                                    {won === true && <TrendingUp size={14} className="text-green-500" />}
+                                                    {won === false && <TrendingDown size={14} className="text-red-500" />}
+                                                    {won === null && <Minus size={14} className="text-zinc-400" />}
+                                                    <span className="text-[10px] font-bold text-zinc-500">FIN</span>
+                                                </div>
+                                                <span className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">{match.escalao}</span>
+                                            </div>
+                                            <div className="p-4 flex flex-col gap-3">
+                                                <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa < match.resultado_fora ? 'opacity-60' : ''}`}>
+                                                    <div className="flex items-center gap-3">
+                                                        {match.logotipo_casa ? (
+                                                            <img src={match.logotipo_casa} alt="" className="w-8 h-8 object-contain" />
+                                                        ) : (
+                                                            <div className="w-8 h-8 bg-zinc-100 dark:bg-white/10 rounded-full flex items-center justify-center">
+                                                                <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400">{match.equipa_casa.substring(0, 1)}</span>
+                                                            </div>
+                                                        )}
+                                                        <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
+                                                            {match.equipa_casa.toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                    {match.resultado_casa !== null && (
+                                                        <span className={`text-xl font-mono font-bold ${match.resultado_casa > (match.resultado_fora || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
+                                                            {match.resultado_casa}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className={`flex items-center justify-between ${match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora < match.resultado_casa ? 'opacity-60' : ''}`}>
+                                                    <div className="flex items-center gap-3">
+                                                        {match.logotipo_fora ? (
+                                                            <img src={match.logotipo_fora} alt="" className="w-8 h-8 object-contain" />
+                                                        ) : (
+                                                            <div className="w-8 h-8 bg-zinc-100 dark:bg-white/10 rounded-full flex items-center justify-center">
+                                                                <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400">{match.equipa_fora.substring(0, 1)}</span>
+                                                            </div>
+                                                        )}
+                                                        <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate max-w-[120px]">
+                                                            {match.equipa_fora.toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                    {match.resultado_fora !== null && (
+                                                        <span className={`text-xl font-mono font-bold ${match.resultado_fora > (match.resultado_casa || 0) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
+                                                            {match.resultado_fora}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="px-4 pb-4 pt-0 flex justify-between items-center text-[10px] font-medium text-zinc-600 dark:text-zinc-500 uppercase tracking-wide">
+                                                <div className="flex items-center gap-1.5 truncate max-w-[70%]">
+                                                    {match.local ? (
+                                                        <>
+                                                            <MapPin size={10} className="shrink-0 text-gaia-yellow" />
+                                                            <span className="truncate text-zinc-500">{match.local}</span>
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-zinc-500">{match.competicao}</span>
+                                                    )}
+                                                </div>
+                                                <ChevronRight size={14} className="text-zinc-500 group-hover:text-gaia-yellow transition-colors" />
+                                            </div>
+                                        </Link>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>

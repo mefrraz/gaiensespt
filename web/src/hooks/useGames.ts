@@ -121,6 +121,7 @@ export function useGames(season = '2025/2026', clube = 119) {
     games,
     loading,
     lastUpdated,
-    error
+    error,
+    refresh
   }
 }

@@ -1,101 +1,110 @@
-# GaiensesPT
+# gaiensespt — FC Gaia Basquetebol
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg) ![Platform](https://img.shields.io/badge/platform-web%20%7C%20mobile-lightgrey)
+App web (PWA) para acompanhar jogos, resultados e classificação do **FC Gaia — Basquetebol**.
 
-**[gaiensespt.vercel.app](https://gaiensespt.vercel.app)**
-
----
-
-## 🏀 Sobre o Projeto
-
-O **GaiensesPT** nasce da paixão pelo **FC Gaia**.
-
-Num mundo onde a informação desportiva local está dispersa, eu (**mefrraz**) senti a necessidade de criar algo que unisse a comunidade. O objetivo era simples: ter **tudo num só sítio**.
-
-Como adepto e atleta, queria saber quando e onde jogam as nossas equipas sem ter de navegar por sites complexos. Como programador, vi a oportunidade de usar a tecnologia para resolver este problema real.
-
-### 🌟 Funcionalidades para o Adepto
-*   **Agenda Digital:** Sabe sempre quando é o próximo jogo.
-*   **Resultados ao Vivo:** Acompanha o placard quase em tempo real ao fim de semana.
-*   **Histórico de Épocas:** Viaja no tempo e consulta classificações de épocas passadas (2022-2025).
-*   **GPS Integrado:** Um clique e o Waze leva-te direto ao pavilhão.
-*   **Instalação Fácil:** Funciona como uma App no teu telemóvel (PWA).
+**Site:** https://gaiensespt.vercel.app
 
 ---
 
-## 🛠 Bastidores (Área Técnica)
+## Stack
 
-> "Como é que um projeto destes se constrói do zero?"
+| Camada | Tecnologia |
+|--------|-----------|
+| Frontend | React 18 + TypeScript + Vite |
+| Estilos | Tailwind CSS |
+| Base de dados | Supabase (PostgreSQL) |
+| Deploy | Vercel (static + Edge Functions) |
+| API externa | [fpb.pt](https://www.fpb.pt) (scraping WordPress) |
+| PWA | vite-plugin-pwa (service worker + cache) |
 
-Este projeto é um exemplo prático de como transformar uma necessidade numa solução escalável, utilizando uma stack moderna e 100% gratuita.
+## Fluxo de Dados
 
-### 🏗 Arquitetura do Sistema
-
-O sistema opera numa arquitetura **Headless**, separando completamente a "inteligência" de dados (Scrapers) da visualização (Frontend).
-
-```mermaid
-graph TD
-    subgraph "Data Automation (GitHub)"
-        A[Site Oficial FPB] -->|Python Scraper| B(Jogos Atuais)
-        A -->|Playwright Engine| C(Classificações Históricas)
-    end
-    
-    subgraph "Data Storage"
-        B -->|Upsert DIÁRIO| D[(Supabase Realtime)]
-        C -->|Upsert MANUAL| D
-    end
-    
-    subgraph "User Experience"
-        D -->|JSON API| E[React Frontend]
-        E -->|UI Render| F[App GaiensesPT]
-    end
+```
+Browser → Vercel Edge Function (/api/fpb)
+         → fetches https://www.fpb.pt (calendário + resultados)
+         → HTML da FPB
+         → parser DOMParser no browser → Match[]
+         → upsert Supabase (cache partilhado entre users)
 ```
 
-### 🧠 Como a Magia Acontece
+- **Primeira visita:** Browser busca da FPB via Edge Function → parser → mostra + guarda em Supabase
+- **Visitas seguintes (≤5min):** Lê de Supabase (rápido)
+- **Visitas seguintes (>5min):** Mostra dados de Supabase + atualiza em background da FPB
 
-#### 1. Ingestão de Dados (Scraping Inteligente)
-Em vez de depender de entradas manuais propensas a erro, o sistema vai buscar a informação à fonte.
-*   **Python (BeautifulSoup):** Para dados leves e rápidos (jogos da época).
-*   **Node.js (Playwright):** Para simular um navegador e extrair tabelas de classificação complexas que requerem interação (dropdowns, seleção de fases) de épocas passadas.
-
-#### 2. Automação Estratégica
-Para garantir dados frescos sem custos de servidor, utilizo **GitHub Actions** com um agendamento inteligente que respeita os limites do "Free Tier":
-*   **Dias Úteis:** Atualiza 3x por dia (manhã, tarde, noite).
-*   **Fim de Semana (Game Time):** Aumenta a frequência para cada **30 minutos** (Sexta à noite, Sábado e Domingo), garantindo que os resultados aparecem assim que o jogo acaba.
-
-#### 3. Frontend Reativo
-A interface foi desenhada em **React** com **TailwindCSS** para ser leve e instantânea. A integração com o **Supabase** permite que, se eu alterar um resultado manualmente na base de dados, a app atualize no telemóvel de todos os utilizadores em milissegundos.
-
-### 📚 Tech Stack
-*   **Core:** React, Vite, TypeScript
-*   **Styling:** TailwindCSS, Lucide Icons
-*   **Backend as a Service:** Supabase (PostgreSQL)
-*   **Automation:** GitHub Actions (Cron Jobs)
-*   **Scrapers:** Python 3.10, Node.js 18
-
----
-
-## 🚀 Como Correr Localmente
-
-Se quiseres explorar o código ou contribuir:
+## Setup Local
 
 ```bash
-# 1. Clonar o projeto
 git clone https://github.com/mefrraz/gaiensespt.git
-
-# 2. Instalar dependências Frontend
-cd web
+cd gaiensespt/web
 npm install
-
-# 3. Configurar Variáveis
-cp .env.example .env
-
-# 4. Iniciar App
+cp .env.example .env   # preencher VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY
 npm run dev
 ```
 
----
+Variáveis de ambiente necessárias (ver Supabase dashboard → Settings → API):
 
-## Créditos
-Desenvolvido com ❤️ por **mefrraz** para a família FC Gaia.
-*Este projeto não tem afiliação oficial com o clube ou federação.*
+```
+VITE_SUPABASE_URL=https://[project].supabase.co
+VITE_SUPABASE_ANON_KEY=[anon public key]
+```
+
+## Estrutura
+
+```
+web/
+  src/
+    lib/
+      fpbApi.ts        — cliente FPB (fetch + parser HTML)
+      supabase.ts      — cliente Supabase
+    hooks/
+      useGames.ts      — hook SWR com cache 5min
+      useTimeAgo.ts    — hook "há X minutos"
+    components/
+      Skeleton.tsx     — loading skeletons
+      EmptyState.tsx   — estado vazio com ícone
+      types.ts         — tipos Match, Standing
+    pages/
+      Dashboard.tsx    — home (próximo jogo, resultados, próximos)
+      Games.tsx        — agenda + resultados (segment: AGENDA/RESULTADOS)
+      Game.tsx         — ficha de jogo individual
+      Standings.tsx    — tabela classificativa
+      About.tsx        — sobre o projeto
+      Install.tsx      — instruções PWA
+  api/
+    fpb.ts             — Vercel Edge Function (proxy para fpb.pt)
+database/
+  schema.sql           — schema principal
+  migrate_seasons.sql  — tabelas por época
+  migrations/          — migrations incrementais
+```
+
+## Deploy
+
+Git push → Vercel auto-deploy.
+
+```bash
+git push origin main
+```
+
+Para deploy manual no dashboard da Vercel:
+1. Ir a https://vercel.com/mefrraz/gaiensespt
+2. Deployments → último commit → Redeploy
+
+## API FPB
+
+A app consome a API pública da Federação Portuguesa de Basquetebol.
+Referência completa: [`fpb_api_reference.md`](./fpb_api_reference.md)
+
+Endpoints usados via Edge Function (proxy):
+- `/api/fpb?page=calendario&clube=119&epoca=2025/2026` — agenda completa
+- `/api/fpb?page=resultados&clube=119&epoca=2025/2026` — resultados
+
+## Rollback
+
+```bash
+git tag              # ver versões disponíveis
+git checkout v0.1.0  # voltar ao estado antes das alterações visuais
+```
+
+Para reverter o deploy na Vercel:
+- Deployments → ⋮ (três pontos) → Promote to Production da tag desejada
