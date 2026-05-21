@@ -77,6 +77,24 @@ export function useGames(season = '2025/2026', clube = 119) {
   // Keep ref in sync
   gamesRef.current = games
 
+  const lastUpdatedRef = useRef<Date | null>(null)
+  lastUpdatedRef.current = lastUpdated
+
+  // Silent refresh when user returns to the page
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const last = lastUpdatedRef.current
+        const staleThreshold = new Date(Date.now() - CACHE_MINUTES * 60000)
+        if (!last || last < staleThreshold) {
+          refresh()
+        }
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [refresh])
+
   useEffect(() => {
     let cancelled = false
 

@@ -26,6 +26,24 @@ function Game() {
             })
     }, [slug])
 
+    // Silent refresh when user returns to the page
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible' && slug) {
+                supabase
+                    .from('games_2025_2026')
+                    .select('*')
+                    .eq('slug', slug)
+                    .single()
+                    .then(({ data, error }) => {
+                        if (!error && data) setMatch(data as Match)
+                    })
+            }
+        }
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }, [slug])
+
     useEffect(() => {
         if (!match) return
         const home = match.equipa_casa
