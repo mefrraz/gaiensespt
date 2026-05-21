@@ -43,7 +43,9 @@ function Game() {
             )
         ).then(results => {
             const all = results.flat()
-            const h2h = all
+            // Deduplicate: same slug appears in multiple season tables
+            const unique = Array.from(new Map(all.map(g => [g.slug, g])).values())
+            const h2h = unique
                 .filter(g =>
                     (g.equipa_casa.toUpperCase().includes(home.toUpperCase()) && g.equipa_fora.toUpperCase().includes(away.toUpperCase())) ||
                     (g.equipa_casa.toUpperCase().includes(away.toUpperCase()) && g.equipa_fora.toUpperCase().includes(home.toUpperCase()))
