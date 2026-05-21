@@ -34,11 +34,11 @@ function Layout() {
                             alt="GaiensesPT Logo"
                             className="h-10 w-auto group-hover:scale-110 transition-transform duration-300 drop-shadow-md"
                         />
-                        <div className="flex flex-col hidden sm:flex">
-                            <span className="font-bold text-lg leading-tight tracking-tight text-zinc-900 dark:text-white">
+                        <div className="flex flex-col">
+                            <span className="font-bold text-sm sm:text-lg leading-tight tracking-tight text-zinc-900 dark:text-white">
                                 GaiensesPT
                             </span>
-                            <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-medium group-hover:text-gaia-yellow transition-colors">
+                            <span className="text-[8px] sm:text-[10px] uppercase tracking-widest text-zinc-500 font-medium group-hover:text-gaia-yellow transition-colors">
                                 FC Gaia Basquetebol
                             </span>
                         </div>

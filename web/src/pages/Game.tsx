@@ -128,7 +128,7 @@ function Game() {
     )
 
     return (
-        <div className="max-w-xl mx-auto pb-24 px-3 space-y-4">
+        <div className="max-w-xl mx-auto pb-24 px-3 space-y-3">
             {/* Header */}
             <div className="flex items-center justify-between pt-3 animate-fade-in">
                 <button onClick={() => window.history.back()} className="p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
@@ -165,23 +165,21 @@ function Game() {
 
                     <div className="flex items-center justify-between gap-4">
                         <TeamBlock name={match.equipa_casa} logo={match.logotipo_casa} />
-                        <div className="flex items-center gap-3 shrink-0">
+                        <div className="flex flex-col items-center gap-1 shrink-0">
                             {isFinished || isLive ? (
-                                <>
-                                    <span className={`text-5xl font-bold font-mono tabular-nums leading-none tracking-tighter ${
+                                <div className="flex items-center gap-1">
+                                    <span className={`text-2xl font-bold font-mono tabular-nums tracking-tighter ${
                                         casaHighlight ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'
-                                    }`}>{match.resultado_casa ?? '--'}</span>
-                                    <span className="text-2xl font-light text-zinc-400">:</span>
-                                    <span className={`text-5xl font-bold font-mono tabular-nums leading-none tracking-tighter ${
+                                    }`}>{match.resultado_casa ?? '-'}</span>
+                                    <span className="text-base font-light text-zinc-400">:</span>
+                                    <span className={`text-2xl font-bold font-mono tabular-nums tracking-tighter ${
                                         foraHighlight ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'
-                                    }`}>{match.resultado_fora ?? '--'}</span>
-                                </>
+                                    }`}>{match.resultado_fora ?? '-'}</span>
+                                </div>
                             ) : (
-                                <>
-                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none tracking-tighter text-zinc-300 dark:text-zinc-700">--</span>
-                                    <span className="text-2xl font-light text-zinc-400">VS</span>
-                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none tracking-tighter text-zinc-300 dark:text-zinc-700">--</span>
-                                </>
+                                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                                    <span className="text-sm font-black text-zinc-400 dark:text-zinc-500">VS</span>
+                                </div>
                             )}
                         </div>
                         <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} />
