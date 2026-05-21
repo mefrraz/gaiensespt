@@ -117,54 +117,48 @@ function Game() {
 
             {/* Hero Card */}
             <div className="glass-card overflow-hidden animate-slide-up">
-                <div className="bg-gradient-to-r from-gaia-yellow/10 via-zinc-50 to-gaia-yellow/10 dark:from-gaia-yellow/5 dark:via-zinc-900 dark:to-gaia-yellow/5 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-gaia-yellow uppercase tracking-wide">{match.escalao}</span>
+                <div className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-gaia-yellow uppercase">{match.escalao}</span>
                     <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase truncate ml-2">{match.competicao}</span>
                 </div>
 
-                <div className="px-6 py-8">
-                    {/* Badge */}
+                <div className="p-6 pt-8 pb-6">
                     {isFinished && (
-                        <div className="flex justify-center mb-6">
-                            <span className={`px-4 py-1.5 rounded-full text-[11px] font-bold shadow-lg ${
+                        <div className="flex justify-center mb-5">
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${
                                 isGaiaWin
-                                    ? 'bg-green-500 text-white shadow-green-500/30'
-                                    : 'bg-red-500 text-white shadow-red-500/30'
+                                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                                    : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
                             }`}>
-                                {isGaiaWin ? '🏆 VITÓRIA' : '❌ DERROTA'}
+                                {isGaiaWin ? 'VITÓRIA' : 'DERROTA'}
                             </span>
                         </div>
                     )}
                     {isLive && (
-                        <div className="flex justify-center mb-6">
-                            <span className="px-4 py-1.5 rounded-full bg-red-500 text-white text-[11px] font-bold animate-pulse shadow-lg shadow-red-500/30">🔴 AO VIVO</span>
+                        <div className="flex justify-center mb-5">
+                            <span className="px-3 py-1 rounded-full bg-red-500 text-white text-[10px] font-bold animate-pulse">AO VIVO</span>
                         </div>
                     )}
 
-                    {/* Teams + Score/VS */}
-                    <div className="flex items-center justify-between gap-3">
-                        <TeamBlock name={match.equipa_casa} logo={match.logotipo_casa} highlight={isFinished && !!isGaiaWin} />
+                    <div className="flex items-center justify-between gap-4">
+                        <TeamBlock name={match.equipa_casa} logo={match.logotipo_casa} />
                         {isFinished || isLive ? (
-                            <div className="flex items-center gap-3 shrink-0 px-5 py-3 rounded-2xl bg-zinc-900 dark:bg-black shadow-inner">
+                            <div className="flex items-center gap-3 shrink-0">
                                 <Score num={match.resultado_casa} highlight={gaiaScore && match.resultado_casa! >= match.resultado_fora!} />
-                                <span className="text-2xl font-light text-zinc-600 dark:text-zinc-700">:</span>
+                                <span className="text-2xl font-light text-zinc-400">:</span>
                                 <Score num={match.resultado_fora} highlight={gaiaScore && match.resultado_fora! >= match.resultado_casa!} />
                             </div>
                         ) : (
                             <div className="flex flex-col items-center gap-1 shrink-0">
-                                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center ring-2 ring-gaia-yellow/20">
-                                    <span className="text-sm font-black text-zinc-400 dark:text-zinc-500">VS</span>
-                                </div>
+                                <span className="text-3xl font-black text-zinc-300 dark:text-zinc-700">VS</span>
                             </div>
                         )}
-                        <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} highlight={isFinished && !isGaiaWin} />
+                        <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} />
                     </div>
 
                     {/* Date */}
-                    <div className="mt-6 flex items-center justify-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                        <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
-                        <span className="capitalize font-medium">{dateFormatted}</span>
-                        <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
+                    <div className="mt-6 flex items-center justify-center text-xs text-zinc-500 dark:text-zinc-400">
+                        <span className="capitalize">{dateFormatted}</span>
                     </div>
                 </div>
             </div>
@@ -250,16 +244,12 @@ function Game() {
     )
 }
 
-function TeamBlock({ name, logo, highlight }: { name: string; logo: string | null; highlight: boolean }) {
+function TeamBlock({ name, logo }: { name: string; logo: string | null }) {
     return (
         <div className="flex-1 flex flex-col items-center text-center gap-2 min-w-0">
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center overflow-hidden shrink-0 ${
-                highlight
-                    ? 'ring-2 ring-gaia-yellow/50 shadow-xl shadow-gaia-yellow/20'
-                    : 'ring-2 ring-gaia-yellow/20 shadow-lg shadow-black/5'
-            }`}>
+            <div className="w-20 h-20 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden ring-2 ring-gaia-yellow/30 shrink-0">
                 {logo ? (
-                    <img src={logo} alt="" className="w-full h-full object-cover scale-125" />
+                    <img src={logo} alt="" className="w-14 h-14 object-contain" />
                 ) : (
                     <span className="text-2xl font-bold text-zinc-500">{name.charAt(0)}</span>
                 )}
@@ -273,8 +263,8 @@ function TeamBlock({ name, logo, highlight }: { name: string; logo: string | nul
 
 function Score({ num, highlight }: { num: number | null; highlight: boolean }) {
     return (
-        <span className={`text-5xl md:text-6xl font-bold font-mono tabular-nums leading-none ${
-            num !== null && highlight ? 'text-gaia-yellow' : 'text-zinc-300'
+        <span className={`text-5xl font-bold font-mono tabular-nums leading-none ${
+            num !== null && highlight ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-500'
         }`}>
             {num ?? '-'}
         </span>
