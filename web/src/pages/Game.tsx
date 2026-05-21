@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { ArrowLeft, MapPin, Calendar, Share2, Trophy, Navigation, TrendingUp, TrendingDown } from 'lucide-react'
+import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 
 function Game() {
@@ -44,8 +45,8 @@ function Game() {
             const all = results.flat()
             const h2h = all
                 .filter(g =>
-                    (g.equipa_casa.includes(home) && g.equipa_fora.includes(away)) ||
-                    (g.equipa_casa.includes(away) && g.equipa_fora.includes(home))
+                    (g.equipa_casa.toUpperCase().includes(home.toUpperCase()) && g.equipa_fora.toUpperCase().includes(away.toUpperCase())) ||
+                    (g.equipa_casa.toUpperCase().includes(away.toUpperCase()) && g.equipa_fora.toUpperCase().includes(home.toUpperCase()))
                 )
                 .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
                 .slice(0, 5)
@@ -74,20 +75,7 @@ function Game() {
                     <div className="h-4 w-24 bg-zinc-200 dark:bg-zinc-800 rounded animate-pulse" />
                     <div className="h-10 w-10 bg-zinc-200 dark:bg-zinc-800 rounded-xl animate-pulse" />
                 </div>
-                <div className="glass-card p-6 animate-pulse">
-                    <div className="h-4 w-20 bg-zinc-200 dark:bg-zinc-700 rounded mx-auto mb-8" />
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex-1 flex flex-col items-center gap-3">
-                            <div className="w-20 h-20 bg-zinc-200 dark:bg-zinc-700 rounded-full" />
-                            <div className="h-4 w-16 bg-zinc-200 dark:bg-zinc-700 rounded" />
-                        </div>
-                        <div className="h-12 w-20 bg-zinc-200 dark:bg-zinc-700 rounded shrink-0" />
-                        <div className="flex-1 flex flex-col items-center gap-3">
-                            <div className="w-20 h-20 bg-zinc-200 dark:bg-zinc-700 rounded-full" />
-                            <div className="h-4 w-16 bg-zinc-200 dark:bg-zinc-700 rounded" />
-                        </div>
-                    </div>
-                </div>
+                <SkeletonHero />
             </div>
         )
     }
