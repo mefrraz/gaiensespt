@@ -90,30 +90,37 @@ export function useGames(season = '2025/2026', clube = 119) {
           .select('*')
           .order('data', { ascending: true })
 
-        if (!cancelled && cached && cached.length > 0) {
-          setGames(cached as Match[])
-          setLastUpdated(new Date(cached[0].updated_at || cached[0].created_at || Date.now()))
-          setLoading(false)
-
+        if (cached && cached.length > 0) {
           const updatedAt = new Date(cached[0].updated_at || cached[0].created_at || 0)
           const staleThreshold = new Date(Date.now() - CACHE_MINUTES * 60000)
+          const isStale = updatedAt < staleThreshold
 
-          if (updatedAt < staleThreshold) {
-            try {
-              await refresh()
-            } catch {
-              // keep cached data on refresh failure
+          if (!isStale) {
+            // Fresh data - show immediately
+            if (!cancelled) {
+              setGames(cached as Match[])
+              setLastUpdated(updatedAt)
+              setLoading(false)
             }
-          }
-        } else {
-          if (!cancelled) {
+          } else if (!cancelled) {
+            // Stale data - try to refresh first, keep loading
             try {
               await refresh()
             } catch {
-              setError('Não foi possível carregar os jogos.')
+              // Refresh failed - show cached as fallback
+              setGames(cached as Match[])
+              setLastUpdated(updatedAt)
             }
             setLoading(false)
           }
+        } else if (!cancelled) {
+          // No cached data - fetch from API
+          try {
+            await refresh()
+          } catch {
+            setError('Não foi possível carregar os jogos.')
+          }
+          setLoading(false)
         }
       } catch (err) {
         console.error('Failed to load from Supabase:', err)

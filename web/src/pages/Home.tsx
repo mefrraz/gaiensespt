@@ -44,15 +44,16 @@ function Home() {
 
     return (
         <div className="max-w-6xl mx-auto space-y-4 pb-24">
-            <div className="px-3 pt-4 animate-fade-in">
+            <div className="px-3 pt-4 animate-fade-in md:hidden">
                 <h1 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                     <Calendar size={18} className="text-gaia-yellow" />
                     Agenda
                 </h1>
             </div>
 
-            <div className="px-3 max-w-md mx-auto">
-                <div className="relative">
+            {/* Filtro + Atualizado */}
+            <div className="px-3 max-w-sm mx-auto flex items-center gap-3">
+                <div className="relative flex-1">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                         <Filter size={14} />
                     </div>
@@ -61,6 +62,10 @@ function Home() {
                         {escaloes.map(e => <option key={e} value={e}>{e}</option>)}
                     </select>
                 </div>
+                <Link to="/about" className="shrink-0 flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-500 hover:text-gaia-yellow transition-colors uppercase tracking-wide group">
+                    <RefreshCw size={10} className="group-hover:animate-spin" />
+                    <span>{timeAgo || '--'}</span>
+                </Link>
             </div>
 
             {error && !loading && (
@@ -72,13 +77,6 @@ function Home() {
                     </div>
                 </div>
             )}
-
-            <div className="px-3 max-w-md mx-auto">
-                <Link to="/about" className="flex items-center text-[10px] text-zinc-500 dark:text-zinc-500 uppercase tracking-wide hover:text-gaia-yellow transition-colors group">
-                    <RefreshCw size={10} className="mr-1.5 group-hover:animate-spin" />
-                    <span>Atualizado: {timeAgo || '--'}</span>
-                </Link>
-            </div>
 
             {loading && <SkeletonGrid count={6} />}
 
