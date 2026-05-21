@@ -3,12 +3,28 @@ __pycache__/
 *.py[cod]
 venv/
 .env
+.venv/
 
 # Node
 node_modules/
 dist/
 .env.local
+.cache/
+
+# Config
+.kilo/
+.vercel/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 
 # OS
 .DS_Store
+Thumbs.db
+Desktop.ini
+
+# Project
 instaposts exemplo/
