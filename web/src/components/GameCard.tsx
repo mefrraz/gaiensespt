@@ -9,11 +9,6 @@ interface GameCardProps {
 
 export function GameCard({ match, mode }: GameCardProps) {
   const slug = match.slug || `${match.data}-${match.equipa_casa.toLowerCase().replace(/\s+/g, '-')}-${match.equipa_fora.toLowerCase().replace(/\s+/g, '-')}`
-  const isFinished = mode === 'results' && match.resultado_casa !== null && match.resultado_fora !== null
-  const isGaiaWin = isFinished && (
-    (match.equipa_casa.toUpperCase().includes('GAIA') && match.resultado_casa! > match.resultado_fora!) ||
-    (match.equipa_fora.toUpperCase().includes('GAIA') && match.resultado_fora! > match.resultado_casa!)
-  )
 
   return (
     <Link to={`/game/${slug}`} className="glass-card overflow-hidden group active:scale-[0.98] transition-all duration-200">
@@ -51,17 +46,18 @@ export function GameCard({ match, mode }: GameCardProps) {
           {/* VS or Score */}
           {mode === 'agenda' ? (
             <div className="flex flex-col items-center gap-1 shrink-0">
-              <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center ring-2 ring-gaia-yellow/20">
+              <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
                 <span className="text-sm font-black text-zinc-400 dark:text-zinc-500">VS</span>
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-1 shrink-0">
-              <span className="text-5xl font-bold font-mono tabular-nums leading-none">
+            <div className="flex items-center gap-3 shrink-0">
+              <span className="text-4xl font-bold font-mono tabular-nums leading-none text-zinc-900 dark:text-white">
                 {match.resultado_casa ?? '-'}
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-wide">
-                {isGaiaWin ? 'VITÓRIA' : match.resultado_fora !== null && match.resultado_casa !== null && match.resultado_fora > match.resultado_casa ? 'DERROTA' : 'FIN'}
+              <span className="text-xl font-light text-zinc-400">:</span>
+              <span className="text-4xl font-bold font-mono tabular-nums leading-none text-zinc-900 dark:text-white">
+                {match.resultado_fora ?? '-'}
               </span>
             </div>
           )}
