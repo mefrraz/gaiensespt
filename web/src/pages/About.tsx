@@ -59,14 +59,14 @@ function About() {
                         <div className="w-6 h-6 rounded-full bg-gaia-yellow/20 flex items-center justify-center text-[11px] font-bold text-gaia-yellow shrink-0 mt-0.5">2</div>
                         <div>
                             <p className="text-sm font-bold text-zinc-900 dark:text-white">Guardamos em cache</p>
-                            <p className="text-xs text-zinc-500 mt-0.5">Os dados ficam guardados temporariamente (5 minutos). O próximo visitante vê os resultados sem esperar.</p>
+                            <p className="text-xs text-zinc-500 mt-0.5">Os dados ficam guardados temporariamente (15 minutos). O próximo visitante vê os resultados sem esperar.</p>
                         </div>
                     </div>
                     <div className="flex items-start gap-3 p-3 bg-zinc-50 dark:bg-white/5 rounded-xl">
                         <div className="w-6 h-6 rounded-full bg-gaia-yellow/20 flex items-center justify-center text-[11px] font-bold text-gaia-yellow shrink-0 mt-0.5">3</div>
                         <div>
                             <p className="text-sm font-bold text-zinc-900 dark:text-white">Sempre atualizado</p>
-                            <p className="text-xs text-zinc-500 mt-0.5">Se os dados tiverem mais de 5 minutos, a app atualiza automaticamente sempre que alguém entra.</p>
+                            <p className="text-xs text-zinc-500 mt-0.5">Se os dados tiverem mais de 15 minutos, a app atualiza automaticamente sempre que alguém entra.</p>
                         </div>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link } from 'react-router-dom'
-import { Sun, Moon, Instagram, Facebook, Info, Calendar, BarChart2, Download } from 'lucide-react'
+import { Sun, Moon, Instagram, Github, Info, Calendar, BarChart2, Download } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
 
@@ -97,7 +97,7 @@ function Layout() {
             </main>
 
             {/* Footer */}
-            <footer className="bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-white/10 py-8">
+            <footer className="bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-white/10 py-8 pb-20 md:pb-8">
                 <div className="max-w-4xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-zinc-500">
                     <div className="flex items-center gap-2">
                         <span className="font-bold text-zinc-900 dark:text-white">GaiensesPT</span>
@@ -108,8 +108,8 @@ function Layout() {
                         <a href="https://www.instagram.com/gaiensespt" target="_blank" rel="noopener noreferrer" className="hover:text-gaia-yellow transition-colors">
                             <Instagram size={20} />
                         </a>
-                        <a href="https://www.facebook.com/fcgaia" target="_blank" rel="noopener noreferrer" className="hover:text-gaia-yellow transition-colors">
-                            <Facebook size={20} />
+                        <a href="https://github.com/mefrraz/gaiensespt" target="_blank" rel="noopener noreferrer" className="hover:text-gaia-yellow transition-colors">
+                            <Github size={20} />
                         </a>
                     </div>
                 </div>
