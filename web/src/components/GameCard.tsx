@@ -15,6 +15,10 @@ function isGaiaWin(match: Match): boolean | null {
     : match.resultado_fora > match.resultado_casa
 }
 
+function hasHora(hora: string | null | undefined): boolean {
+  return !!hora && hora.replace(/[^0-9]/g, '').length > 0
+}
+
 export function GameCard({ match, mode }: GameCardProps) {
   const slug = match.slug || `${match.data}-${match.equipa_casa.toLowerCase().replace(/\s+/g, '-')}-${match.equipa_fora.toLowerCase().replace(/\s+/g, '-')}`
   const won = isGaiaWin(match)
@@ -34,12 +38,14 @@ export function GameCard({ match, mode }: GameCardProps) {
       <div className="flex justify-between items-center p-4 pb-2 border-b border-zinc-100 dark:border-white/5">
         <div className="flex items-center gap-2 min-w-0">
           {mode === 'agenda' ? (
-            <>
-              <Clock size={12} className="text-gaia-yellow shrink-0" strokeWidth={3} />
-              <span className="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300 tracking-wider">
-                {(match.hora || '00:00').slice(0, 5)}
-              </span>
-            </>
+            hasHora(match.hora) ? (
+              <>
+                <Clock size={12} className="text-gaia-yellow shrink-0" strokeWidth={3} />
+                <span className="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300 tracking-wider">
+                  {match.hora!.slice(0, 5)}
+                </span>
+              </>
+            ) : null
           ) : badge && (
             <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${badge.className}`}>
               <badge.icon size={10} />

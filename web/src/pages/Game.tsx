@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, MapPin, Calendar, Share2, Trophy } from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, Share2, Trophy, Navigation } from 'lucide-react'
 import { Match } from '../components/types'
 
 function Game() {
@@ -80,6 +80,7 @@ function Game() {
         (match.equipa_casa.toUpperCase().includes('GAIA') && match.resultado_casa! > match.resultado_fora!) ||
         (match.equipa_fora.toUpperCase().includes('GAIA') && match.resultado_fora! > match.resultado_casa!)
     )
+    const hasHora = match.hora && match.hora.replace(/[^0-9]/g, '').length > 0
 
     return (
         <div className="max-w-xl mx-auto pb-24 px-3 space-y-4">
@@ -96,15 +97,12 @@ function Game() {
 
             {/* Hero Card */}
             <div className="glass-card overflow-hidden animate-slide-up">
-                {/* Escalão + Competição */}
                 <div className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
                     <span className="text-[10px] font-bold text-gaia-yellow uppercase">{match.escalao}</span>
                     <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase truncate ml-2">{match.competicao}</span>
                 </div>
 
-                {/* Scoreboard */}
                 <div className="p-6 pt-8 pb-6">
-                    {/* Badge */}
                     {isFinished && (
                         <div className="flex justify-center mb-5">
                             <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${
@@ -122,7 +120,6 @@ function Game() {
                         </div>
                     )}
 
-                    {/* Teams */}
                     <div className="flex items-center justify-between gap-4">
                         <TeamBlock name={match.equipa_casa} logo={match.logotipo_casa} />
                         {isFinished || isLive ? (
@@ -134,9 +131,11 @@ function Game() {
                         ) : (
                             <div className="flex flex-col items-center gap-1 shrink-0">
                                 <span className="text-3xl font-black text-zinc-300 dark:text-zinc-700">VS</span>
-                                <span className="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300">
-                                    {(match.hora || '00:00').slice(0, 5)}
-                                </span>
+                                {hasHora && (
+                                    <span className="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300">
+                                        {match.hora!.slice(0, 5)}
+                                    </span>
+                                )}
                             </div>
                         )}
                         <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} />
@@ -145,54 +144,62 @@ function Game() {
                     {/* Date/Time */}
                     <div className="mt-6 flex items-center justify-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                         <span className="capitalize">{dateFormatted}</span>
-                        <span className="w-1 h-1 rounded-full bg-zinc-300" />
-                        <span className="font-mono">{(match.hora || '--:--').slice(0, 5)}</span>
+                        {hasHora && (
+                            <>
+                                <span className="w-1 h-1 rounded-full bg-zinc-300" />
+                                <span className="font-mono">{match.hora!.slice(0, 5)}</span>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Location */}
-            <div className="glass-card p-5 flex items-start gap-4 animate-slide-up">
-                <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-gaia-yellow shrink-0">
-                    <MapPin size={20} />
-                </div>
-                <div className="min-w-0">
-                    <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Localização</h4>
-                    {match.local ? (
-                        <>
-                            <p className="text-sm font-medium text-zinc-900 dark:text-white mb-2 break-words">{match.local}</p>
-                            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(match.local)}`}
-                               target="_blank" rel="noopener noreferrer"
-                               className="inline-flex items-center gap-1 text-[10px] font-bold bg-zinc-100 dark:bg-white/10 px-3 py-1.5 rounded-full hover:bg-gaia-yellow hover:text-black transition-colors whitespace-nowrap">
-                                <MapPin size={10} />
-                                Obter Direções
-                            </a>
-                        </>
-                    ) : (
-                        <p className="text-sm text-zinc-500 italic">A definir</p>
-                    )}
+            {/* Location Card */}
+            <div className="glass-card overflow-hidden animate-slide-up">
+                {match.local && (
+                    <div className="h-28 bg-gradient-to-br from-gaia-yellow/10 via-zinc-100 to-zinc-50 dark:from-gaia-yellow/5 dark:via-zinc-900 dark:to-zinc-950 relative flex items-center justify-center border-b border-zinc-100 dark:border-white/5">
+                        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" style={{
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+                        }} />
+                        <Navigation size={32} className="text-gaia-yellow/60 dark:text-gaia-yellow/40" strokeWidth={1.5} />
+                    </div>
+                )}
+                <div className="p-5 flex items-start gap-4">
+                    <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-gaia-yellow shrink-0">
+                        <MapPin size={20} />
+                    </div>
+                    <div className="min-w-0">
+                        <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Localização</h4>
+                        {match.local ? (
+                            <>
+                                <p className="text-sm font-medium text-zinc-900 dark:text-white mb-2 break-words">{match.local}</p>
+                                <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(match.local)}`}
+                                   target="_blank" rel="noopener noreferrer"
+                                   className="inline-flex items-center gap-1.5 text-[10px] font-bold text-gaia-yellow hover:text-black dark:hover:text-white transition-colors group">
+                                    <Navigation size={12} />
+                                    <span className="group-hover:underline">Abrir no Google Maps</span>
+                                </a>
+                            </>
+                        ) : (
+                            <p className="text-sm text-zinc-500 italic">A definir</p>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            {/* Date/Time */}
+            {/* Date/Time Card */}
             <div className="glass-card p-5 flex items-start gap-4 animate-slide-up">
                 <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-gaia-yellow shrink-0">
                     <Calendar size={20} />
                 </div>
                 <div>
-                    <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Data e Hora</h4>
+                    <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Data</h4>
                     <p className="text-sm font-medium text-zinc-900 dark:text-white capitalize">{dateFormatted}</p>
-                    <p className="text-sm text-zinc-500 font-mono">{(match.hora || '00:00').slice(0, 5)}</p>
+                    {hasHora && (
+                        <p className="text-sm text-zinc-500 font-mono">{match.hora!.slice(0, 5)}</p>
+                    )}
                 </div>
             </div>
-
-            {/* Boxscore placeholder */}
-            {isFinished && (
-                <div className="glass-card p-5 animate-slide-up">
-                    <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-3">Estatísticas</h4>
-                    <p className="text-xs text-zinc-500 italic">Em breve: estatísticas detalhadas por jogador.</p>
-                </div>
-            )}
         </div>
     )
 }
