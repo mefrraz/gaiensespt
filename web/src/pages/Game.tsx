@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink, Clock } from 'lucide-react'
+import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink } from 'lucide-react'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 
@@ -163,17 +163,21 @@ function Game() {
 
                     <div className="flex items-center justify-between gap-4">
                         <TeamBlock name={match.equipa_casa} logo={match.logotipo_casa} />
-                        {isFinished || isLive ? (
-                            <div className="flex items-center gap-3 shrink-0">
-                                <Score num={match.resultado_casa} highlight={gaiaScore && match.resultado_casa! >= match.resultado_fora!} />
-                                <span className="text-2xl font-light text-zinc-400">:</span>
-                                <Score num={match.resultado_fora} highlight={gaiaScore && match.resultado_fora! >= match.resultado_casa!} />
-                            </div>
-                        ) : (
-                            <div className="flex flex-col items-center gap-1 shrink-0">
-                                <span className="text-3xl font-black text-zinc-300 dark:text-zinc-700">VS</span>
-                            </div>
-                        )}
+                        <div className="flex items-center gap-3 shrink-0">
+                            {isFinished || isLive ? (
+                                <>
+                                    <Score num={match.resultado_casa} highlight={gaiaScore && match.resultado_casa! >= match.resultado_fora!} />
+                                    <span className="text-2xl font-light text-zinc-400">:</span>
+                                    <Score num={match.resultado_fora} highlight={gaiaScore && match.resultado_fora! >= match.resultado_casa!} />
+                                </>
+                            ) : (
+                                <>
+                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none text-zinc-300 dark:text-zinc-700">-</span>
+                                    <span className="text-2xl font-light text-zinc-400">VS</span>
+                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none text-zinc-300 dark:text-zinc-700">-</span>
+                                </>
+                            )}
+                        </div>
                         <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} />
                     </div>
 
@@ -253,13 +257,13 @@ function Game() {
                 </div>
             )}
 
-            {/* Próximos Confrontos */}
+            {/* Próximos Jogos */}
             {upcomingH2H.length > 0 && (
                 <div className="glass-card overflow-hidden animate-slide-up">
                     <div className="p-4 border-b border-zinc-100 dark:border-white/5">
                         <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-gaia-yellow" />
-                            Próximos Confrontos
+                            Próximos Jogos
                             <span className="text-zinc-500 dark:text-zinc-500 font-medium truncate">FC GAIA vs {match.equipa_fora.toUpperCase().includes('GAIA') ? match.equipa_casa : match.equipa_fora}</span>
                         </h3>
                     </div>
@@ -268,11 +272,10 @@ function Game() {
                             const isGaiaHome = game.equipa_casa.toUpperCase().includes('GAIA')
                             const opponent = isGaiaHome ? game.equipa_fora : game.equipa_casa
                             const shortDate = new Date(game.data).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' })
-                            const time = (game.hora || '').slice(0, 5)
 
                             return (
                                 <Link to={`/game/${game.slug}`} key={game.slug} className="flex items-center gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
-                                    <Clock size={12} className="text-gaia-yellow shrink-0" />
+                                    <TrendingUp size={12} className="text-gaia-yellow shrink-0" />
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs text-zinc-900 dark:text-white truncate group-hover:text-gaia-yellow transition-colors">
                                             <span className="font-bold">FC GAIA</span>
@@ -280,7 +283,7 @@ function Game() {
                                             <span className="text-zinc-500">{opponent}</span>
                                         </p>
                                     </div>
-                                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase shrink-0">{shortDate}{time ? ` · ${time}` : ''}</span>
+                                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase shrink-0">{shortDate}</span>
                                 </Link>
                             )
                         })}
