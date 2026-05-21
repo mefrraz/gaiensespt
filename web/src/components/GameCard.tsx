@@ -1,15 +1,10 @@
 import { Link } from 'react-router-dom'
+import { ExternalLink } from 'lucide-react'
 import { Match } from './types'
 
 interface GameCardProps {
   match: Match
   mode: 'agenda' | 'results'
-}
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr)
-  const formatted = date.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short' })
-  return formatted.charAt(0).toUpperCase() + formatted.slice(1)
 }
 
 export function GameCard({ match, mode }: GameCardProps) {
@@ -19,7 +14,6 @@ export function GameCard({ match, mode }: GameCardProps) {
     (match.equipa_casa.toUpperCase().includes('GAIA') && match.resultado_casa! > match.resultado_fora!) ||
     (match.equipa_fora.toUpperCase().includes('GAIA') && match.resultado_fora! > match.resultado_casa!)
   )
-  const hasHora = match.hora && match.hora.replace(/[^0-9]/g, '').length > 0
 
   return (
     <Link to={`/game/${slug}`} className="glass-card overflow-hidden group active:scale-[0.98] transition-all duration-200">
@@ -86,14 +80,24 @@ export function GameCard({ match, mode }: GameCardProps) {
             </p>
           </div>
         </div>
-
-        {/* Date */}
-        <div className="mt-5 flex items-center justify-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-          <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
-          <span className="capitalize font-medium">{formatDate(match.data)}{hasHora ? ` · ${match.hora!.slice(0, 5)}` : ''}</span>
-          <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
-        </div>
       </div>
+
+      {/* FPB Link */}
+      {match.id && (
+        <div className="px-6 pb-5">
+          <a
+            href={`https://www.fpb.pt/ficha-de-jogo?internalID=${match.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center justify-center gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 hover:text-gaia-yellow transition-colors"
+          >
+            <ExternalLink size={10} />
+            Ver jogo na FPB
+          </a>
+        </div>
+      )}
     </Link>
   )
 }
+
