@@ -146,8 +146,8 @@ function Game() {
                 </div>
 
                 <div className="p-6 pt-8 pb-6">
-                    {isFinished && (
-                        <div className="flex justify-center mb-5">
+                    <div className="flex justify-center mb-5 min-h-[1.5rem]">
+                        {isFinished && (
                             <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${
                                 isGaiaWin
                                     ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
@@ -155,22 +155,20 @@ function Game() {
                             }`}>
                                 {isGaiaWin ? 'VITÓRIA' : 'DERROTA'}
                             </span>
-                        </div>
-                    )}
-                    {isLive && (
-                        <div className="flex justify-center mb-5">
+                        )}
+                        {isLive && (
                             <span className="px-3 py-1 rounded-full bg-red-500 text-white text-[10px] font-bold animate-pulse">AO VIVO</span>
-                        </div>
-                    )}
+                        )}
+                    </div>
 
                     <div className="flex items-center justify-between gap-4">
                         <TeamBlock name={match.equipa_casa} logo={match.logotipo_casa} />
                         <div className="flex items-center gap-3 shrink-0">
                             {isFinished || isLive ? (
                                 <>
-                                    <Score num={match.resultado_casa} highlight={gaiaScore && match.resultado_casa! >= match.resultado_fora!} />
-                                    <span className="text-2xl font-light text-zinc-400 min-w-[2ch] text-center">:</span>
-                                    <Score num={match.resultado_fora} highlight={gaiaScore && match.resultado_fora! >= match.resultado_casa!} />
+                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none text-zinc-300 dark:text-zinc-700">{match.resultado_casa ?? '--'}</span>
+                                    <span className="text-2xl font-light text-zinc-400">:</span>
+                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none text-zinc-300 dark:text-zinc-700">{match.resultado_fora ?? '--'}</span>
                                 </>
                             ) : (
                                 <>
@@ -324,16 +322,6 @@ function TeamBlock({ name, logo }: { name: string; logo: string | null }) {
                 {name.toUpperCase()}
             </p>
         </div>
-    )
-}
-
-function Score({ num, highlight }: { num: number | null; highlight: boolean }) {
-    return (
-        <span className={`text-5xl font-bold font-mono tabular-nums leading-none ${
-            num !== null && highlight ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-500'
-        }`}>
-            {num ?? '-'}
-        </span>
     )
 }
 
