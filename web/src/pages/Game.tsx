@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, MapPin, Calendar, Share2, Trophy, Navigation } from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, Share2, Trophy, Navigation, TrendingUp, TrendingDown } from 'lucide-react'
 import { Match } from '../components/types'
 
 function Game() {
     const { slug } = useParams()
     const [match, setMatch] = useState<Match | null>(null)
+    const [recentGames, setRecentGames] = useState<Match[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -22,6 +23,22 @@ function Game() {
                 setLoading(false)
             })
     }, [slug])
+
+    useEffect(() => {
+        if (!match) return
+        supabase
+            .from('games_2025_2026')
+            .select('*')
+            .or('equipa_casa.ilike.*gaia*,equipa_fora.ilike.*gaia*')
+            .eq('escalao', match.escalao)
+            .neq('slug', slug)
+            .eq('status', 'FINALIZADO')
+            .order('data', { ascending: false })
+            .limit(3)
+            .then(({ data }) => {
+                if (data) setRecentGames(data as Match[])
+            })
+    }, [match, slug])
 
     const shareGame = () => {
         if (!match) return
@@ -131,25 +148,14 @@ function Game() {
                         ) : (
                             <div className="flex flex-col items-center gap-1 shrink-0">
                                 <span className="text-3xl font-black text-zinc-300 dark:text-zinc-700">VS</span>
-                                {hasHora && (
-                                    <span className="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300">
-                                        {match.hora!.slice(0, 5)}
-                                    </span>
-                                )}
                             </div>
                         )}
                         <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} />
                     </div>
 
-                    {/* Date/Time */}
-                    <div className="mt-6 flex items-center justify-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                    {/* Date */}
+                    <div className="mt-6 flex items-center justify-center text-xs text-zinc-500 dark:text-zinc-400">
                         <span className="capitalize">{dateFormatted}</span>
-                        {hasHora && (
-                            <>
-                                <span className="w-1 h-1 rounded-full bg-zinc-300" />
-                                <span className="font-mono">{match.hora!.slice(0, 5)}</span>
-                            </>
-                        )}
                     </div>
                 </div>
             </div>
@@ -200,6 +206,43 @@ function Game() {
                     )}
                 </div>
             </div>
+
+            {/* Últimos Jogos */}
+            {recentGames.length > 0 && (
+                <div className="glass-card overflow-hidden animate-slide-up">
+                    <div className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-white/5 p-3">
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Últimos Jogos — {match.escalao}</span>
+                    </div>
+                    <div className="divide-y divide-zinc-100 dark:divide-white/5">
+                        {recentGames.map((game) => {
+                            const isGaiaHome = game.equipa_casa.toUpperCase().includes('GAIA')
+                            const opponent = isGaiaHome ? game.equipa_fora : game.equipa_casa
+                            const gaiaScore = isGaiaHome ? game.resultado_casa : game.resultado_fora
+                            const oppScore = isGaiaHome ? game.resultado_fora : game.resultado_casa
+                            const won = gaiaScore !== null && oppScore !== null && gaiaScore > oppScore
+                            const shortDate = new Date(game.data).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' })
+
+                            return (
+                                <div key={game.slug} className="flex items-center gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                                    {won ? (
+                                        <TrendingUp size={12} className="text-green-500 shrink-0" />
+                                    ) : (
+                                        <TrendingDown size={12} className="text-red-500 shrink-0" />
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs text-zinc-900 dark:text-white truncate">
+                                            <span className="font-bold">FC GAIA</span>
+                                            <span className="text-zinc-500 mx-1">{gaiaScore}-{oppScore}</span>
+                                            <span className="text-zinc-400 dark:text-zinc-500">{opponent}</span>
+                                        </p>
+                                    </div>
+                                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase shrink-0">{shortDate}</span>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
