@@ -119,6 +119,7 @@ function Game() {
     const isFinished = match.status === 'FINALIZADO'
     const isLive = match.status === 'A DECORRER'
     const gaiaScore = match.resultado_casa !== null && match.resultado_fora !== null
+    const hasHora = match.hora && match.hora.replace(/[^0-9]/g, "").length > 0
     const isGaiaWin = gaiaScore && (
         (match.equipa_casa.toUpperCase().includes('GAIA') && match.resultado_casa! > match.resultado_fora!) ||
         (match.equipa_fora.toUpperCase().includes('GAIA') && match.resultado_fora! > match.resultado_casa!)
@@ -178,9 +179,8 @@ function Game() {
                         <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} />
                     </div>
 
-                    {/* Date + FPB */}
-                    <div className="mt-6 flex flex-col items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                        <span className="capitalize">{dateFormatted}</span>
+                    {/* FPB Link */}
+                    <div className="mt-6 flex justify-center">
                         {match.id && (
                             <a href={`https://www.fpb.pt/ficha-de-jogo?internalID=${match.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 hover:text-gaia-yellow transition-colors">
                                 <ExternalLink size={10} />
@@ -214,7 +214,7 @@ function Game() {
                 </div>
             </div>
 
-            {/* Date/Time Card */}
+            {/* Date Card */}
             <div className="glass-card p-5 flex items-start gap-4 animate-slide-up">
                 <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-gaia-yellow shrink-0">
                     <Calendar size={20} />
@@ -222,6 +222,9 @@ function Game() {
                 <div>
                     <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Data</h4>
                     <p className="text-sm font-medium text-zinc-900 dark:text-white capitalize">{dateFormatted}</p>
+                    {hasHora && (
+                        <p className="text-sm text-zinc-500 font-mono">{match.hora!.slice(0, 5)}</p>
+                    )}
                 </div>
             </div>
 
