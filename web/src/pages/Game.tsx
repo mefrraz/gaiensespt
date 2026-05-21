@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { ArrowLeft, MapPin, Calendar, Share2, Trophy, Navigation, TrendingUp, TrendingDown } from 'lucide-react'
 import { Match } from '../components/types'
@@ -28,21 +28,29 @@ function Game() {
         if (!match) return
         const home = match.equipa_casa
         const away = match.equipa_fora
-        supabase
-            .from('games_2025_2026')
-            .select('*')
-            .eq('escalao', match.escalao)
-            .neq('slug', slug)
-            .eq('status', 'FINALIZADO')
-            .order('data', { ascending: false })
-            .then(({ data }) => {
-                if (!data) return
-                const h2h = data.filter(g =>
+        const seasons = ['2025_2026', '2024_2025', '2023_2024', '2022_2023']
+        Promise.all(
+            seasons.map(s =>
+                supabase
+                    .from(`games_${s}`)
+                    .select('*')
+                    .eq('escalao', match.escalao)
+                    .neq('slug', slug)
+                    .eq('status', 'FINALIZADO')
+                    .order('data', { ascending: false })
+                    .then(({ data }) => data || [])
+            )
+        ).then(results => {
+            const all = results.flat()
+            const h2h = all
+                .filter(g =>
                     (g.equipa_casa.includes(home) && g.equipa_fora.includes(away)) ||
                     (g.equipa_casa.includes(away) && g.equipa_fora.includes(home))
-                ).slice(0, 5)
-                setRecentGames(h2h)
-            })
+                )
+                .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
+                .slice(0, 5)
+            setRecentGames(h2h)
+        })
     }, [match, slug])
 
     const shareGame = () => {
@@ -166,35 +174,25 @@ function Game() {
             </div>
 
             {/* Location Card */}
-            <div className="glass-card overflow-hidden animate-slide-up">
-                {match.local && (
-                    <div className="h-28 bg-gradient-to-br from-gaia-yellow/10 via-zinc-100 to-zinc-50 dark:from-gaia-yellow/5 dark:via-zinc-900 dark:to-zinc-950 relative flex items-center justify-center border-b border-zinc-100 dark:border-white/5">
-                        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" style={{
-                            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-                        }} />
-                        <Navigation size={32} className="text-gaia-yellow/60 dark:text-gaia-yellow/40" strokeWidth={1.5} />
-                    </div>
-                )}
-                <div className="p-5 flex items-start gap-4">
-                    <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-gaia-yellow shrink-0">
-                        <MapPin size={20} />
-                    </div>
-                    <div className="min-w-0">
-                        <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Localização</h4>
-                        {match.local ? (
-                            <>
-                                <p className="text-sm font-medium text-zinc-900 dark:text-white mb-2 break-words">{match.local}</p>
-                                <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(match.local)}`}
-                                   target="_blank" rel="noopener noreferrer"
-                                   className="inline-flex items-center gap-1.5 text-[10px] font-bold text-gaia-yellow hover:text-black dark:hover:text-white transition-colors group">
-                                    <Navigation size={12} />
-                                    <span className="group-hover:underline">Abrir no Google Maps</span>
-                                </a>
-                            </>
-                        ) : (
-                            <p className="text-sm text-zinc-500 italic">A definir</p>
-                        )}
-                    </div>
+            <div className="glass-card p-5 flex items-start gap-4 animate-slide-up">
+                <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-gaia-yellow shrink-0">
+                    <MapPin size={20} />
+                </div>
+                <div className="min-w-0">
+                    <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Localização</h4>
+                    {match.local ? (
+                        <>
+                            <p className="text-sm font-medium text-zinc-900 dark:text-white mb-2 break-words">{match.local}</p>
+                            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(match.local)}`}
+                               target="_blank" rel="noopener noreferrer"
+                               className="inline-flex items-center gap-1.5 text-[10px] font-bold text-gaia-yellow hover:text-black dark:hover:text-white transition-colors group">
+                                <Navigation size={12} />
+                                <span className="group-hover:underline">Abrir no Google Maps</span>
+                            </a>
+                        </>
+                    ) : (
+                        <p className="text-sm text-zinc-500 italic">A definir</p>
+                    )}
                 </div>
             </div>
 
@@ -215,8 +213,12 @@ function Game() {
             {/* Últimos Jogos */}
             {recentGames.length > 0 && (
                 <div className="glass-card overflow-hidden animate-slide-up">
-                    <div className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-white/5 p-3">
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Últimos Jogos — {match.escalao}</span>
+                    <div className="p-4 border-b border-zinc-100 dark:border-white/5">
+                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-gaia-yellow" />
+                            Últimos Jogos <span className="text-zinc-400 dark:text-zinc-500 font-medium">{match.escalao}</span>
+                        </h3>
+                        <p className="text-[10px] text-zinc-500 mt-0.5">Histórico frente a {match.equipa_fora.toUpperCase().includes('GAIA') ? match.equipa_casa : match.equipa_fora}</p>
                     </div>
                     <div className="divide-y divide-zinc-100 dark:divide-white/5">
                         {recentGames.map((game) => {
@@ -228,21 +230,21 @@ function Game() {
                             const shortDate = new Date(game.data).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' })
 
                             return (
-                                <div key={game.slug} className="flex items-center gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                                <Link to={`/game/${game.slug}`} key={game.slug} className="flex items-center gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
                                     {won ? (
                                         <TrendingUp size={12} className="text-green-500 shrink-0" />
                                     ) : (
                                         <TrendingDown size={12} className="text-red-500 shrink-0" />
                                     )}
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs text-zinc-900 dark:text-white truncate">
+                                        <p className="text-xs text-zinc-900 dark:text-white truncate group-hover:text-gaia-yellow transition-colors">
                                             <span className="font-bold">FC GAIA</span>
                                             <span className="text-zinc-500 mx-1">{gaiaScore}-{oppScore}</span>
                                             <span className="text-zinc-400 dark:text-zinc-500">{opponent}</span>
                                         </p>
                                     </div>
                                     <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase shrink-0">{shortDate}</span>
-                                </div>
+                                </Link>
                             )
                         })}
                     </div>
