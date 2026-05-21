@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, MapPin, Calendar, Share2, Trophy, Navigation, TrendingUp, TrendingDown } from 'lucide-react'
+import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink } from 'lucide-react'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 
@@ -140,26 +140,20 @@ function Game() {
 
             {/* Hero Card */}
             <div className="glass-card overflow-hidden animate-slide-up">
-                <div className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-gaia-yellow uppercase">{match.escalao}</span>
-                    <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase truncate ml-2">{match.competicao}</span>
+                <div className="bg-gradient-to-r from-gaia-yellow/10 via-zinc-50 to-gaia-yellow/10 dark:from-gaia-yellow/5 dark:via-zinc-900 dark:to-gaia-yellow/5 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-gaia-yellow uppercase tracking-wide">{match.escalao}</span>
+                    <div className="flex items-center gap-2">
+                        {isLive && <span className="text-red-500 text-[10px] font-bold flex items-center gap-1 animate-pulse"><span className="w-1.5 h-1.5 bg-red-500 rounded-full" />LIVE</span>}
+                        <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase truncate">{match.competicao}</span>
+                    </div>
                 </div>
 
-                <div className="p-6 pt-8 pb-6">
+                <div className="px-6 py-6">
                     {isFinished && (
-                        <div className="flex justify-center mb-5">
-                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${
-                                isGaiaWin
-                                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                                    : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
-                            }`}>
+                        <div className="flex justify-center mb-4">
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${isGaiaWin ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'}`}>
                                 {isGaiaWin ? 'VITÓRIA' : 'DERROTA'}
                             </span>
-                        </div>
-                    )}
-                    {isLive && (
-                        <div className="flex justify-center mb-5">
-                            <span className="px-3 py-1 rounded-full bg-red-500 text-white text-[10px] font-bold animate-pulse">AO VIVO</span>
                         </div>
                     )}
 
@@ -173,52 +167,40 @@ function Game() {
                             </div>
                         ) : (
                             <div className="flex flex-col items-center gap-1 shrink-0">
-                                <span className="text-3xl font-black text-zinc-300 dark:text-zinc-700">VS</span>
+                                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                                    <span className="text-sm font-black text-zinc-400 dark:text-zinc-500">VS</span>
+                                </div>
                             </div>
                         )}
                         <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} />
                     </div>
 
-                    {/* Date */}
-                    <div className="mt-6 flex items-center justify-center text-xs text-zinc-500 dark:text-zinc-400">
-                        <span className="capitalize">{dateFormatted}</span>
+                    {/* Date with lines */}
+                    <div className="mt-5 flex items-center justify-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                        <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
+                        <span className="capitalize font-medium">{dateFormatted}{hasHora ? ` · ${match.hora!.slice(0, 5)}` : ''}</span>
+                        <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
                     </div>
-                </div>
-            </div>
 
-            {/* Location Card */}
-            <div className="glass-card p-5 flex items-start gap-4 animate-slide-up">
-                <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-gaia-yellow shrink-0">
-                    <MapPin size={20} />
-                </div>
-                <div className="min-w-0">
-                    <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Localização</h4>
-                    {match.local ? (
-                        <>
-                            <p className="text-sm font-medium text-zinc-900 dark:text-white mb-2 break-words">{match.local}</p>
-                            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(match.local)}`}
-                               target="_blank" rel="noopener noreferrer"
-                               className="inline-flex items-center gap-1.5 text-[10px] font-bold text-gaia-yellow hover:text-black dark:hover:text-white transition-colors group">
-                                <Navigation size={12} />
-                                <span className="group-hover:underline">Abrir no Google Maps</span>
+                    {/* Location inline */}
+                    {match.local && (
+                        <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+                            <MapPin size={10} className="text-gaia-yellow" />
+                            <span className="truncate max-w-[250px]">{match.local}</span>
+                            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(match.local)}`} target="_blank" rel="noopener noreferrer" className="text-gaia-yellow hover:underline ml-1" onClick={(e) => e.stopPropagation()}>
+                                <Navigation size={10} />
                             </a>
-                        </>
-                    ) : (
-                        <p className="text-sm text-zinc-500 italic">A definir</p>
+                        </div>
                     )}
-                </div>
-            </div>
 
-            {/* Date/Time Card */}
-            <div className="glass-card p-5 flex items-start gap-4 animate-slide-up">
-                <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-gaia-yellow shrink-0">
-                    <Calendar size={20} />
-                </div>
-                <div>
-                    <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Data</h4>
-                    <p className="text-sm font-medium text-zinc-900 dark:text-white capitalize">{dateFormatted}</p>
-                    {hasHora && (
-                        <p className="text-sm text-zinc-500 font-medium">{match.hora!.slice(0, 5)}</p>
+                    {/* FPB Link */}
+                    {match.id && (
+                        <div className="mt-4 flex items-center justify-center">
+                            <a href={`https://www.fpb.pt/ficha-de-jogo?internalID=${match.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 hover:text-gaia-yellow transition-colors">
+                                <ExternalLink size={10} />
+                                Ver jogo na FPB
+                            </a>
+                        </div>
                     )}
                 </div>
             </div>
