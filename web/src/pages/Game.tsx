@@ -26,17 +26,22 @@ function Game() {
 
     useEffect(() => {
         if (!match) return
+        const home = match.equipa_casa
+        const away = match.equipa_fora
         supabase
             .from('games_2025_2026')
             .select('*')
-            .or('equipa_casa.ilike.*gaia*,equipa_fora.ilike.*gaia*')
             .eq('escalao', match.escalao)
             .neq('slug', slug)
             .eq('status', 'FINALIZADO')
             .order('data', { ascending: false })
-            .limit(3)
             .then(({ data }) => {
-                if (data) setRecentGames(data as Match[])
+                if (!data) return
+                const h2h = data.filter(g =>
+                    (g.equipa_casa.includes(home) && g.equipa_fora.includes(away)) ||
+                    (g.equipa_casa.includes(away) && g.equipa_fora.includes(home))
+                ).slice(0, 5)
+                setRecentGames(h2h)
             })
     }, [match, slug])
 
@@ -220,7 +225,7 @@ function Game() {
                             const gaiaScore = isGaiaHome ? game.resultado_casa : game.resultado_fora
                             const oppScore = isGaiaHome ? game.resultado_fora : game.resultado_casa
                             const won = gaiaScore !== null && oppScore !== null && gaiaScore > oppScore
-                            const shortDate = new Date(game.data).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' })
+                            const shortDate = new Date(game.data).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' })
 
                             return (
                                 <div key={game.slug} className="flex items-center gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
