@@ -118,6 +118,8 @@ function Game() {
     const isFinished = match.status === 'FINALIZADO'
     const isLive = match.status === 'A DECORRER'
     const gaiaScore = match.resultado_casa !== null && match.resultado_fora !== null
+    const casaHighlight = gaiaScore && match.resultado_casa! > match.resultado_fora!
+    const foraHighlight = gaiaScore && match.resultado_fora! > match.resultado_casa!
     const dateFormatted = new Date(match.data).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
     const hasHora = match.hora && match.hora.replace(/[^0-9]/g, "").length > 0
     const isGaiaWin = gaiaScore && (
@@ -139,7 +141,7 @@ function Game() {
             </div>
 
             {/* Hero Card */}
-            <div className="glass-card overflow-hidden animate-slide-up">
+            <div className="glass-card overflow-hidden animate-slide-up group hover:border-gaia-yellow/30 transition-all duration-200">
                 <div className="bg-gradient-to-r from-gaia-yellow/10 via-zinc-50 to-gaia-yellow/10 dark:from-gaia-yellow/5 dark:via-zinc-900 dark:to-gaia-yellow/5 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
                     <span className="text-[10px] font-bold text-gaia-yellow uppercase">{match.escalao}</span>
                     <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase truncate ml-2">{match.competicao}</span>
@@ -166,15 +168,19 @@ function Game() {
                         <div className="flex items-center gap-3 shrink-0">
                             {isFinished || isLive ? (
                                 <>
-                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none text-zinc-300 dark:text-zinc-700">{match.resultado_casa ?? '--'}</span>
+                                    <span className={`text-5xl font-bold font-mono tabular-nums leading-none tracking-tighter ${
+                                        casaHighlight ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'
+                                    }`}>{match.resultado_casa ?? '--'}</span>
                                     <span className="text-2xl font-light text-zinc-400">:</span>
-                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none text-zinc-300 dark:text-zinc-700">{match.resultado_fora ?? '--'}</span>
+                                    <span className={`text-5xl font-bold font-mono tabular-nums leading-none tracking-tighter ${
+                                        foraHighlight ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'
+                                    }`}>{match.resultado_fora ?? '--'}</span>
                                 </>
                             ) : (
                                 <>
-                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none text-zinc-300 dark:text-zinc-700">--</span>
+                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none tracking-tighter text-zinc-300 dark:text-zinc-700">--</span>
                                     <span className="text-2xl font-light text-zinc-400">VS</span>
-                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none text-zinc-300 dark:text-zinc-700">--</span>
+                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none tracking-tighter text-zinc-300 dark:text-zinc-700">--</span>
                                 </>
                             )}
                         </div>
