@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink } from 'lucide-react'
+import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink, Clock } from 'lucide-react'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 
@@ -140,67 +140,58 @@ function Game() {
 
             {/* Hero Card */}
             <div className="glass-card overflow-hidden animate-slide-up">
-                <div className="bg-gradient-to-r from-gaia-yellow/10 via-zinc-50 to-gaia-yellow/10 dark:from-gaia-yellow/5 dark:via-zinc-900 dark:to-gaia-yellow/5 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-gaia-yellow uppercase tracking-wide">{match.escalao}</span>
+                <div className="flex justify-between items-center p-4 pb-2 border-b border-zinc-100 dark:border-white/5">
+                    <div className="flex items-center gap-2 min-w-0">
+                        {!isFinished && !isLive && hasHora && (
+                            <>
+                                <Clock size={12} className="text-gaia-yellow shrink-0" strokeWidth={3} />
+                                <span className="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300 tracking-wider">{match.hora!.slice(0, 5)}</span>
+                            </>
+                        )}
+                        {isFinished && (
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isGaiaWin ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'}`}>
+                                {isGaiaWin ? 'VITÓRIA' : 'DERROTA'}
+                            </span>
+                        )}
+                        {isLive && (
+                            <span className="text-red-500 text-[10px] font-bold flex items-center gap-1 animate-pulse">
+                                <span className="w-1.5 h-1.5 bg-red-500 rounded-full" /> LIVE
+                            </span>
+                        )}
+                    </div>
                     <div className="flex items-center gap-2">
-                        {isLive && <span className="text-red-500 text-[10px] font-bold flex items-center gap-1 animate-pulse"><span className="w-1.5 h-1.5 bg-red-500 rounded-full" />LIVE</span>}
-                        <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase truncate">{match.competicao}</span>
+                        <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider truncate">{match.escalao}</span>
                     </div>
                 </div>
 
-                <div className="px-6 py-6">
-                    {isFinished && (
-                        <div className="flex justify-center mb-4">
-                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${isGaiaWin ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'}`}>
-                                {isGaiaWin ? 'VITÓRIA' : 'DERROTA'}
-                            </span>
-                        </div>
+                <div className="p-4 flex flex-col gap-3">
+                    <TeamRow name={match.equipa_casa} logo={match.logotipo_casa} score={isFinished || isLive ? match.resultado_casa : null} dimmed={isFinished && match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_casa < match.resultado_fora} />
+                    {!isFinished && !isLive && (
+                        <div className="text-center text-xs font-bold text-zinc-400 uppercase tracking-wider py-1">VS</div>
                     )}
+                    <TeamRow name={match.equipa_fora} logo={match.logotipo_fora} score={isFinished || isLive ? match.resultado_fora : null} dimmed={isFinished && match.resultado_casa !== null && match.resultado_fora !== null && match.resultado_fora < match.resultado_casa} />
+                </div>
 
-                    <div className="flex items-center justify-between gap-4">
-                        <TeamBlock name={match.equipa_casa} logo={match.logotipo_casa} />
-                        {isFinished || isLive ? (
-                            <div className="flex items-center gap-3 shrink-0">
-                                <Score num={match.resultado_casa} highlight={gaiaScore && match.resultado_casa! >= match.resultado_fora!} />
-                                <span className="text-2xl font-light text-zinc-400">:</span>
-                                <Score num={match.resultado_fora} highlight={gaiaScore && match.resultado_fora! >= match.resultado_casa!} />
-                            </div>
-                        ) : (
-                            <div className="flex flex-col items-center gap-1 shrink-0">
-                                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                                    <span className="text-sm font-black text-zinc-400 dark:text-zinc-500">VS</span>
-                                </div>
-                            </div>
-                        )}
-                        <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} />
+                {/* Bottom bar with date, location, FPB link */}
+                <div className="px-4 pb-4 pt-0 flex flex-col gap-1 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+                    <div className="flex items-center gap-1.5">
+                        <Clock size={10} className="text-gaia-yellow shrink-0" />
+                        <span>{dateFormatted}{hasHora ? ` · ${match.hora!.slice(0, 5)}` : ''}</span>
                     </div>
-
-                    {/* Date with lines */}
-                    <div className="mt-5 flex items-center justify-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                        <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
-                        <span className="capitalize font-medium">{dateFormatted}{hasHora ? ` · ${match.hora!.slice(0, 5)}` : ''}</span>
-                        <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
-                    </div>
-
-                    {/* Location inline */}
                     {match.local && (
-                        <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">
-                            <MapPin size={10} className="text-gaia-yellow" />
-                            <span className="truncate max-w-[250px]">{match.local}</span>
-                            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(match.local)}`} target="_blank" rel="noopener noreferrer" className="text-gaia-yellow hover:underline ml-1" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-1.5">
+                            <MapPin size={10} className="text-gaia-yellow shrink-0" />
+                            <span className="truncate">{match.local}</span>
+                            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(match.local)}`} target="_blank" rel="noopener noreferrer" className="text-gaia-yellow hover:underline shrink-0">
                                 <Navigation size={10} />
                             </a>
                         </div>
                     )}
-
-                    {/* FPB Link */}
                     {match.id && (
-                        <div className="mt-4 flex items-center justify-center">
-                            <a href={`https://www.fpb.pt/ficha-de-jogo?internalID=${match.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 hover:text-gaia-yellow transition-colors">
-                                <ExternalLink size={10} />
-                                Ver jogo na FPB
-                            </a>
-                        </div>
+                        <a href={`https://www.fpb.pt/ficha-de-jogo?internalID=${match.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-zinc-400 dark:text-zinc-500 hover:text-gaia-yellow transition-colors">
+                            <ExternalLink size={10} />
+                            <span>Ver jogo na FPB</span>
+                        </a>
                     )}
                 </div>
             </div>
@@ -279,30 +270,27 @@ function Game() {
     )
 }
 
-function TeamBlock({ name, logo }: { name: string; logo: string | null }) {
+function TeamRow({ name, logo, score, dimmed }: { name: string; logo: string | null; score: number | null; dimmed: boolean }) {
     return (
-        <div className="flex-1 flex flex-col items-center text-center gap-2 min-w-0">
-            <div className="w-20 h-20 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+        <div className={`flex items-center justify-between ${dimmed ? 'opacity-60' : ''}`}>
+            <div className="flex items-center gap-3 min-w-0">
                 {logo ? (
-                    <img src={logo} alt="" className="w-14 h-14 object-contain" />
+                    <img src={logo} alt="" className="w-8 h-8 object-contain rounded-full bg-zinc-50 dark:bg-zinc-800" loading="lazy" />
                 ) : (
-                    <span className="text-2xl font-bold text-zinc-500">{name.charAt(0)}</span>
+                    <div className="w-8 h-8 bg-zinc-100 dark:bg-white/10 rounded-full flex items-center justify-center shrink-0">
+                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{name.charAt(0).toUpperCase()}</span>
+                    </div>
                 )}
+                <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate">
+                    {name.toUpperCase()}
+                </span>
             </div>
-            <p className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate w-full">
-                {name.toUpperCase()}
-            </p>
+            {score !== null && (
+                <span className="text-xl font-mono font-bold text-zinc-900 dark:text-white tabular-nums shrink-0 ml-2">
+                    {score}
+                </span>
+            )}
         </div>
-    )
-}
-
-function Score({ num, highlight }: { num: number | null; highlight: boolean }) {
-    return (
-        <span className={`text-5xl font-bold font-mono tabular-nums leading-none ${
-            num !== null && highlight ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-500'
-        }`}>
-            {num ?? '-'}
-        </span>
     )
 }
 
