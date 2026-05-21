@@ -27,6 +27,8 @@ function Game() {
 
     useEffect(() => {
         if (!match) return
+        const home = match.equipa_casa
+        const away = match.equipa_fora
         const seasons = ['2025_2026', '2024_2025', '2023_2024', '2022_2023']
         Promise.all(
             seasons.map(s =>
@@ -41,15 +43,14 @@ function Game() {
             )
         ).then(results => {
             const all = results.flat()
-            // Get all FC Gaia games (any opponent) in this escalão, sorted by date desc
-            const gaiaGames = all
+            const h2h = all
                 .filter(g =>
-                    g.equipa_casa.toUpperCase().includes('GAIA') ||
-                    g.equipa_fora.toUpperCase().includes('GAIA')
+                    (g.equipa_casa.toUpperCase().includes(home.toUpperCase()) && g.equipa_fora.toUpperCase().includes(away.toUpperCase())) ||
+                    (g.equipa_casa.toUpperCase().includes(away.toUpperCase()) && g.equipa_fora.toUpperCase().includes(home.toUpperCase()))
                 )
                 .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
                 .slice(0, 5)
-            setRecentGames(gaiaGames)
+            setRecentGames(h2h)
         })
     }, [match, slug])
 
@@ -205,7 +206,7 @@ function Game() {
                             <span className="w-1.5 h-1.5 rounded-full bg-gaia-yellow" />
                             Últimos Jogos <span className="text-zinc-400 dark:text-zinc-500 font-medium">{match.escalao}</span>
                         </h3>
-                        <p className="text-[10px] text-zinc-500 mt-0.5">Últimos 5 jogos do FC Gaia ({match.escalao})</p>
+                        <p className="text-[10px] text-zinc-500 mt-0.5">Últimos 5 confrontos — {match.equipa_fora.toUpperCase().includes('GAIA') ? match.equipa_casa : match.equipa_fora}</p>
                     </div>
                     <div className="divide-y divide-zinc-100 dark:divide-white/5">
                         {recentGames.map((game) => {
