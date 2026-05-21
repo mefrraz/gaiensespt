@@ -3,7 +3,7 @@ import { Calendar, Trophy, Filter, RefreshCw, AlertCircle } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useGames } from '../hooks/useGames'
 import { useTimeAgo } from '../hooks/useTimeAgo'
-import { SkeletonGrid } from '../components/Skeleton'
+import { SkeletonBar } from '../components/Skeleton'
 import { EmptyState } from '../components/EmptyState'
 import { GameCard } from '../components/GameCard'
 import { SegmentControl } from '../components/SegmentControl'
@@ -118,7 +118,7 @@ function Games() {
             )}
 
             {/* Loading */}
-            {loading && <SkeletonGrid count={6} />}
+            {loading && <SkeletonBar />}
 
             {/* Error + empty */}
             {!loading && error && matches.length === 0 && (

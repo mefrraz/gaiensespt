@@ -3,7 +3,7 @@ import { Filter, RefreshCw, AlertCircle, Calendar } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useGames } from '../hooks/useGames'
 import { useTimeAgo } from '../hooks/useTimeAgo'
-import { SkeletonGrid } from '../components/Skeleton'
+import { SkeletonBar } from '../components/Skeleton'
 import { EmptyState } from '../components/EmptyState'
 import { GameCard } from '../components/GameCard'
 import { Match } from '../components/types'
@@ -78,7 +78,7 @@ function Home() {
                 </div>
             )}
 
-            {loading && <SkeletonGrid count={6} />}
+            {loading && <SkeletonBar />}
 
             {!loading && error && matches.length === 0 && (
                 <EmptyState icon="error" title="Erro ao carregar" subtitle={error} action={{ label: 'Tentar novamente', onClick: () => refresh() }} />
