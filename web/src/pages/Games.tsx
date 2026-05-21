@@ -47,6 +47,7 @@ function Games() {
         groups[date].push(match)
         return groups
     }, {} as Record<string, Match[]>)
+    Object.values(groupedMatches).forEach(g => g.sort((a, b) => (a.hora || '99:99').localeCompare(b.hora || '99:99')))
 
     const sortedDates = Object.keys(groupedMatches).sort((a, b) => {
         return view === 'agenda'
