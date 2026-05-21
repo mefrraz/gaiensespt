@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Calendar, Trophy, ChevronRight, Clock, MapPin } from 'lucide-react'
 import { useGames } from '../hooks/useGames'
-import { useTimeAgo } from '../hooks/useTimeAgo'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 
@@ -11,8 +10,7 @@ function Dashboard() {
     const [upcomingGames, setUpcomingGames] = useState<Match[]>([])
     const [recentResults, setRecentResults] = useState<Match[]>([])
 
-    const { games: allGames, loading, lastUpdated } = useGames('2025/2026', 119)
-    const timeAgo = useTimeAgo(lastUpdated)
+    const { games: allGames, loading } = useGames('2025/2026', 119)
     const games = allGames || []
 
     useEffect(() => {
@@ -33,7 +31,8 @@ function Dashboard() {
 
     const formatDate = (dateStr: string) => {
         const date = new Date(dateStr)
-        return date.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short' })
+        const formatted = date.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'long' })
+        return formatted.charAt(0).toUpperCase() + formatted.slice(1)
     }
 
     const isGaiaWin = (match: Match) => {
@@ -44,7 +43,7 @@ function Dashboard() {
 
     if (loading) {
         return (
-            <div className="max-w-2xl mx-auto space-y-5 pb-20 px-3">
+            <div className="max-w-xl mx-auto space-y-5 pb-20 px-3">
                 <SkeletonHero />
                 <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse h-32" />
@@ -55,66 +54,37 @@ function Dashboard() {
     }
 
     return (
-        <div className="max-w-2xl mx-auto space-y-5 pb-20 px-3">
-            {/* Header */}
-            <div className="flex items-center justify-between pt-3 animate-fade-in">
-                {nextGame?.logotipo_casa && (
-                    <img src={nextGame.logotipo_casa} alt="" className="h-8 w-8 object-contain" />
-                )}
-                {!nextGame?.logotipo_casa && <div />}
-                {timeAgo && <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">{timeAgo}</span>}
-            </div>
-
+        <div className="max-w-xl mx-auto space-y-5 pb-20 px-3">
             {/* Hero: Next Game */}
             {nextGame && (
                 <Link to={`/game/${nextGame.slug || ''}`} className="block group animate-slide-up">
-                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-5 shadow-md border border-zinc-200 dark:border-white/10 relative overflow-hidden group-hover:border-gaia-yellow/30 transition-all duration-200">
-                        <div className="relative z-10">
-                            <span className="text-xs font-bold text-gaia-yellow uppercase tracking-widest mb-3 block">
-                                Próximo Jogo
-                            </span>
-
-                            <div className="flex items-center justify-between gap-3 mb-4">
-                                <div className="flex-1 text-center">
-                                    <div className="w-12 h-12 mx-auto mb-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden ring-2 ring-gaia-yellow/20">
-                                        {nextGame.logotipo_casa ? (
-                                            <img src={nextGame.logotipo_casa} alt="" className="w-8 h-8 object-contain" />
-                                        ) : (
-                                            <span className="text-lg font-bold text-zinc-500">{nextGame.equipa_casa.charAt(0)}</span>
-                                        )}
+                    <div className="glass-card overflow-hidden group-hover:border-gaia-yellow/30 transition-all duration-200">
+                        <div className="bg-gradient-to-r from-gaia-yellow/10 via-zinc-50 to-gaia-yellow/10 dark:from-gaia-yellow/5 dark:via-zinc-900 dark:to-gaia-yellow/5 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
+                            <span className="text-[10px] font-bold text-gaia-yellow uppercase tracking-wide">{nextGame.escalao || 'Sénior Masculino'}</span>
+                            <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase truncate ml-2">{nextGame.competicao || ''}</span>
+                        </div>
+                        <div className="px-6 py-8">
+                            <div className="flex items-center justify-between gap-4">
+                                <TeamBlock name={nextGame.equipa_casa} logo={nextGame.logotipo_casa} />
+                                <div className="flex flex-col items-center gap-1 shrink-0">
+                                    <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center ring-2 ring-gaia-yellow/20">
+                                        <span className="text-sm font-black text-zinc-400 dark:text-zinc-500">VS</span>
                                     </div>
-                                    <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{nextGame.equipa_casa}</p>
                                 </div>
-                                <div className="flex flex-col items-center shrink-0">
-                                    <span className="text-xl font-black text-zinc-300 dark:text-zinc-600">VS</span>
-                                </div>
-                                <div className="flex-1 text-center">
-                                    <div className="w-12 h-12 mx-auto mb-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden ring-2 ring-gaia-yellow/20">
-                                        {nextGame.logotipo_fora ? (
-                                            <img src={nextGame.logotipo_fora} alt="" className="w-8 h-8 object-contain" />
-                                        ) : (
-                                            <span className="text-lg font-bold text-zinc-500">{nextGame.equipa_fora.charAt(0)}</span>
-                                        )}
-                                    </div>
-                                    <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{nextGame.equipa_fora}</p>
-                                </div>
+                                <TeamBlock name={nextGame.equipa_fora} logo={nextGame.logotipo_fora} />
                             </div>
-
-                            <div className="flex items-center justify-center gap-3 text-xs text-zinc-600 dark:text-zinc-400">
-                                <div className="flex items-center gap-1.5">
-                                    <Clock size={12} className="text-gaia-yellow" />
-                                    <span className="font-medium">{formatDate(nextGame.data)} · {(nextGame.hora || '00:00').slice(0, 5)}</span>
-                                </div>
+                            <div className="mt-6 flex items-center justify-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                                <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
+                                <span className="capitalize font-medium">{formatDate(nextGame.data)} · {(nextGame.hora || '00:00').slice(0, 5)}</span>
+                                <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
                             </div>
-
                             {nextGame.local && (
-                                <div className="flex items-center justify-center gap-1.5 mt-1.5 text-[10px] text-zinc-500">
-                                    <MapPin size={10} />
-                                    <span className="truncate max-w-[200px]">{nextGame.local}</span>
+                                <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+                                    <MapPin size={10} className="text-gaia-yellow" />
+                                    <span className="truncate max-w-[220px]">{nextGame.local}</span>
                                 </div>
                             )}
-
-                            <div className="mt-3 flex items-center justify-center gap-1 text-[10px] text-gaia-yellow font-bold group-hover:gap-2 transition-all">
+                            <div className="mt-4 flex items-center justify-center gap-1 text-xs text-gaia-yellow font-bold group-hover:gap-2 transition-all">
                                 <span>Ver detalhes</span>
                                 <ChevronRight size={14} />
                             </div>
@@ -205,6 +175,23 @@ function Dashboard() {
                     </div>
                 </div>
             )}
+        </div>
+    )
+}
+
+function TeamBlock({ name, logo }: { name: string; logo: string | null }) {
+    return (
+        <div className="flex-1 flex flex-col items-center text-center gap-2 min-w-0">
+            <div className="w-20 h-20 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden ring-2 ring-gaia-yellow/30 shrink-0">
+                {logo ? (
+                    <img src={logo} alt="" className="w-14 h-14 object-contain" />
+                ) : (
+                    <span className="text-2xl font-bold text-zinc-500">{name.charAt(0)}</span>
+                )}
+            </div>
+            <p className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate w-full">
+                {name.toUpperCase()}
+            </p>
         </div>
     )
 }
