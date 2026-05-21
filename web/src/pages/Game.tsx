@@ -123,7 +123,6 @@ function Game() {
         (match.equipa_casa.toUpperCase().includes('GAIA') && match.resultado_casa! > match.resultado_fora!) ||
         (match.equipa_fora.toUpperCase().includes('GAIA') && match.resultado_fora! > match.resultado_casa!)
     )
-    const hasHora = match.hora && match.hora.replace(/[^0-9]/g, '').length > 0
 
     return (
         <div className="max-w-xl mx-auto pb-24 px-3 space-y-4">
@@ -214,24 +213,17 @@ function Game() {
                 <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-gaia-yellow shrink-0">
                     <Calendar size={20} />
                 </div>
-                <div>
+                <div className="min-w-0">
                     <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Data</h4>
                     <p className="text-sm font-medium text-zinc-900 dark:text-white capitalize">{dateFormatted}</p>
-                    {hasHora && (
-                        <p className="text-sm text-zinc-500 font-mono">{match.hora!.slice(0, 5)}</p>
+                    {match.id && (
+                        <a href={`https://www.fpb.pt/ficha-de-jogo?internalID=${match.id}`} target="_blank" rel="noopener noreferrer" className="mt-2 flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 hover:text-gaia-yellow transition-colors">
+                            <ExternalLink size={10} />
+                            Ver jogo na FPB
+                        </a>
                     )}
                 </div>
             </div>
-
-            {/* FPB Link */}
-            {match.id && (
-                <div className="glass-card p-4 animate-slide-up">
-                    <a href={`https://www.fpb.pt/ficha-de-jogo?internalID=${match.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 hover:text-gaia-yellow transition-colors">
-                        <ExternalLink size={10} />
-                        Ver jogo na FPB
-                    </a>
-                </div>
-            )}
 
             {/* Últimos Jogos */}
             {recentGames.length > 0 && (

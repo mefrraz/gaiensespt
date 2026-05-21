@@ -84,10 +84,6 @@ function Dashboard() {
                                     <span className="truncate max-w-[220px]">{nextGame.local}</span>
                                 </div>
                             )}
-                            <div className="mt-4 flex items-center justify-center gap-1 text-xs text-gaia-yellow font-bold group-hover:gap-2 transition-all">
-                                <span>Ver detalhes</span>
-                                <ChevronRight size={14} />
-                            </div>
                         </div>
                     </div>
                 </Link>
