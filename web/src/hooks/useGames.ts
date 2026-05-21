@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { fetchFPBGames } from '../lib/fpbApi'
 import { Match } from '../components/types'
 
-const CACHE_MINUTES = 5
+const CACHE_MINUTES = 15
 
 function getTableName(season: string): string {
   return `games_${season.replace('/', '_')}`

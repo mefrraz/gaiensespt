@@ -58,60 +58,63 @@ function Dashboard() {
         <div className="max-w-2xl mx-auto space-y-5 pb-20 px-3">
             {/* Header */}
             <div className="flex items-center justify-between pt-3 animate-fade-in">
-                <h1 className="text-lg font-bold text-zinc-900 dark:text-white">FC Gaia</h1>
+                {nextGame?.logotipo_casa && (
+                    <img src={nextGame.logotipo_casa} alt="" className="h-8 w-8 object-contain" />
+                )}
+                {!nextGame?.logotipo_casa && <div />}
                 {timeAgo && <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">{timeAgo}</span>}
             </div>
 
             {/* Hero: Next Game */}
             {nextGame && (
                 <Link to={`/game/${nextGame.slug || ''}`} className="block group animate-slide-up">
-                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-md border border-zinc-200 dark:border-white/10 relative overflow-hidden group-hover:border-gaia-yellow/30 transition-all duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-5 shadow-md border border-zinc-200 dark:border-white/10 relative overflow-hidden group-hover:border-gaia-yellow/30 transition-all duration-200">
                         <div className="relative z-10">
-                            <span className="text-xs font-bold text-gaia-yellow uppercase tracking-widest mb-4 block">
+                            <span className="text-xs font-bold text-gaia-yellow uppercase tracking-widest mb-3 block">
                                 Próximo Jogo
                             </span>
 
-                            <div className="flex items-center justify-between gap-4 mb-5">
+                            <div className="flex items-center justify-between gap-3 mb-4">
                                 <div className="flex-1 text-center">
-                                    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden ring-2 ring-gaia-yellow/20">
+                                    <div className="w-12 h-12 mx-auto mb-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden ring-2 ring-gaia-yellow/20">
                                         {nextGame.logotipo_casa ? (
-                                            <img src={nextGame.logotipo_casa} alt="" className="w-10 h-10 object-contain" />
+                                            <img src={nextGame.logotipo_casa} alt="" className="w-8 h-8 object-contain" />
                                         ) : (
-                                            <span className="text-xl font-bold text-zinc-500">{nextGame.equipa_casa.charAt(0)}</span>
+                                            <span className="text-lg font-bold text-zinc-500">{nextGame.equipa_casa.charAt(0)}</span>
                                         )}
                                     </div>
-                                    <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">{nextGame.equipa_casa}</p>
+                                    <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{nextGame.equipa_casa}</p>
                                 </div>
                                 <div className="flex flex-col items-center shrink-0">
-                                    <span className="text-2xl font-black text-zinc-300 dark:text-zinc-600">VS</span>
+                                    <span className="text-xl font-black text-zinc-300 dark:text-zinc-600">VS</span>
                                 </div>
                                 <div className="flex-1 text-center">
-                                    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden ring-2 ring-gaia-yellow/20">
+                                    <div className="w-12 h-12 mx-auto mb-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden ring-2 ring-gaia-yellow/20">
                                         {nextGame.logotipo_fora ? (
-                                            <img src={nextGame.logotipo_fora} alt="" className="w-10 h-10 object-contain" />
+                                            <img src={nextGame.logotipo_fora} alt="" className="w-8 h-8 object-contain" />
                                         ) : (
-                                            <span className="text-xl font-bold text-zinc-500">{nextGame.equipa_fora.charAt(0)}</span>
+                                            <span className="text-lg font-bold text-zinc-500">{nextGame.equipa_fora.charAt(0)}</span>
                                         )}
                                     </div>
-                                    <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">{nextGame.equipa_fora}</p>
+                                    <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{nextGame.equipa_fora}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
+                            <div className="flex items-center justify-center gap-3 text-xs text-zinc-600 dark:text-zinc-400">
                                 <div className="flex items-center gap-1.5">
-                                    <Clock size={14} className="text-gaia-yellow" />
+                                    <Clock size={12} className="text-gaia-yellow" />
                                     <span className="font-medium">{formatDate(nextGame.data)} · {(nextGame.hora || '00:00').slice(0, 5)}</span>
                                 </div>
                             </div>
 
                             {nextGame.local && (
-                                <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-zinc-500">
-                                    <MapPin size={12} />
-                                    <span className="truncate max-w-[220px]">{nextGame.local}</span>
+                                <div className="flex items-center justify-center gap-1.5 mt-1.5 text-[10px] text-zinc-500">
+                                    <MapPin size={10} />
+                                    <span className="truncate max-w-[200px]">{nextGame.local}</span>
                                 </div>
                             )}
 
-                            <div className="mt-4 flex items-center justify-center gap-1 text-xs text-gaia-yellow font-bold group-hover:gap-2 transition-all">
+                            <div className="mt-3 flex items-center justify-center gap-1 text-[10px] text-gaia-yellow font-bold group-hover:gap-2 transition-all">
                                 <span>Ver detalhes</span>
                                 <ChevronRight size={14} />
                             </div>
