@@ -178,9 +178,15 @@ function Game() {
                         <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} />
                     </div>
 
-                    {/* Date */}
-                    <div className="mt-6 flex items-center justify-center text-xs text-zinc-500 dark:text-zinc-400">
+                    {/* Date + FPB */}
+                    <div className="mt-6 flex flex-col items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                         <span className="capitalize">{dateFormatted}</span>
+                        {match.id && (
+                            <a href={`https://www.fpb.pt/ficha-de-jogo?internalID=${match.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 hover:text-gaia-yellow transition-colors">
+                                <ExternalLink size={10} />
+                                Ver jogo na FPB
+                            </a>
+                        )}
                     </div>
                 </div>
             </div>
@@ -213,15 +219,9 @@ function Game() {
                 <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-gaia-yellow shrink-0">
                     <Calendar size={20} />
                 </div>
-                <div className="min-w-0">
+                <div>
                     <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Data</h4>
                     <p className="text-sm font-medium text-zinc-900 dark:text-white capitalize">{dateFormatted}</p>
-                    {match.id && (
-                        <a href={`https://www.fpb.pt/ficha-de-jogo?internalID=${match.id}`} target="_blank" rel="noopener noreferrer" className="mt-2 flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 hover:text-gaia-yellow transition-colors">
-                            <ExternalLink size={10} />
-                            Ver jogo na FPB
-                        </a>
-                    )}
                 </div>
             </div>
 
