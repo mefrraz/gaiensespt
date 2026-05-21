@@ -167,12 +167,12 @@ function Game() {
                         <TeamBlock name={match.equipa_casa} logo={match.logotipo_casa} />
                         <div className="flex flex-col items-center gap-1 shrink-0">
                             {isFinished || isLive ? (
-                                <div className="flex items-center gap-1">
-                                    <span className={`text-2xl font-bold font-mono tabular-nums tracking-tighter ${
+                                <div className="flex items-center gap-1 sm:gap-3">
+                                    <span className={`text-2xl sm:text-5xl font-bold font-mono tabular-nums tracking-tighter ${
                                         casaHighlight ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'
                                     }`}>{match.resultado_casa ?? '-'}</span>
-                                    <span className="text-base font-light text-zinc-400">:</span>
-                                    <span className={`text-2xl font-bold font-mono tabular-nums tracking-tighter ${
+                                    <span className="text-base sm:text-2xl font-light text-zinc-400">:</span>
+                                    <span className={`text-2xl sm:text-5xl font-bold font-mono tabular-nums tracking-tighter ${
                                         foraHighlight ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'
                                     }`}>{match.resultado_fora ?? '-'}</span>
                                 </div>
