@@ -230,9 +230,11 @@ function Game() {
             {/* Últimos Jogos */}
             {recentGames.length > 0 && (
                 <div className="glass-card overflow-hidden animate-slide-up">
-                    <div className="p-4 md:p-5 border-b border-zinc-100 dark:border-white/5">
-                        <h3 className="text-xs md:text-sm font-bold text-zinc-900 dark:text-white">Últimos Confrontos</h3>
-                        <p className="text-xs md:text-sm text-zinc-500 mt-1">{match.equipa_fora.toUpperCase().includes('GAIA') ? match.equipa_casa : match.equipa_fora} — {match.escalao}</p>
+                    <div className="p-4 border-b border-zinc-100 dark:border-white/5">
+                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-gaia-yellow" />
+                            Últimos Jogos
+                        </h3>
                     </div>
                     <div className="divide-y divide-zinc-100 dark:divide-white/5">
                         {recentGames.map((game) => {
@@ -244,17 +246,17 @@ function Game() {
                             const shortDate = new Date(game.data).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' })
 
                             return (
-                                <Link to={`/game/${game.slug}`} key={game.slug} className={`flex items-center gap-4 p-4 md:p-5 transition-colors group border-l-4 ${
+                                <Link to={`/game/${game.slug}`} key={game.slug} className={`flex items-center gap-4 p-4 transition-colors group border-l-4 ${
                                     won ? 'border-l-green-500 hover:bg-green-50/50 dark:hover:bg-green-950/20' : 'border-l-red-500 hover:bg-red-50/50 dark:hover:bg-red-950/20'
                                 }`}>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm md:text-base font-semibold text-zinc-900 dark:text-white truncate group-hover:text-gaia-yellow transition-colors">
+                                        <p className="text-sm font-bold text-zinc-900 dark:text-white truncate group-hover:text-gaia-yellow transition-colors">
                                             FC GAIA
-                                            <span className="text-zinc-500 mx-2">{gaiaScore}-{oppScore}</span>
-                                            <span className="text-zinc-400 dark:text-zinc-500 font-normal">{opponent}</span>
+                                            <span className="text-zinc-500 mx-2 font-bold">{gaiaScore}-{oppScore}</span>
+                                            <span className="text-zinc-400 dark:text-zinc-500 font-medium">{opponent}</span>
                                         </p>
                                     </div>
-                                    <span className="text-xs md:text-sm text-zinc-500 dark:text-zinc-400 shrink-0">{shortDate}</span>
+                                    <span className="text-xs text-zinc-500 dark:text-zinc-400 shrink-0 font-medium">{shortDate}</span>
                                 </Link>
                             )
                         })}
@@ -265,9 +267,8 @@ function Game() {
             {/* Próximos Jogos */}
             {upcomingH2H.length > 0 && (
                 <div className="glass-card overflow-hidden animate-slide-up">
-                    <div className="p-4 md:p-5 border-b border-zinc-100 dark:border-white/5">
-                        <h3 className="text-xs md:text-sm font-bold text-zinc-900 dark:text-white">Próximos Confrontos</h3>
-                        <p className="text-xs md:text-sm text-zinc-500 mt-1">{match.equipa_fora.toUpperCase().includes('GAIA') ? match.equipa_casa : match.equipa_fora} — {match.escalao}</p>
+                    <div className="p-4 border-b border-zinc-100 dark:border-white/5">
+                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white">Próximos Confrontos</h3>
                     </div>
                     <div className="divide-y divide-zinc-100 dark:divide-white/5">
                         {upcomingH2H.map((game) => {
@@ -277,15 +278,15 @@ function Game() {
                             const time = (game.hora || '').slice(0, 5)
 
                             return (
-                                <Link to={`/game/${game.slug}`} key={game.slug} className="flex items-center gap-4 p-4 md:p-5 transition-colors group border-l-4 border-l-gaia-yellow hover:bg-gaia-yellow/5 dark:hover:bg-gaia-yellow/5">
+                                <Link to={`/game/${game.slug}`} key={game.slug} className="flex items-center gap-4 p-4 transition-colors group border-l-4 border-l-gaia-yellow hover:bg-gaia-yellow/5 dark:hover:bg-gaia-yellow/5">
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm md:text-base font-semibold text-zinc-900 dark:text-white truncate group-hover:text-gaia-yellow transition-colors">
+                                        <p className="text-sm font-bold text-zinc-900 dark:text-white truncate group-hover:text-gaia-yellow transition-colors">
                                             FC GAIA
-                                            <span className="text-zinc-400 mx-2 font-normal">vs</span>
-                                            <span className="text-zinc-500">{opponent}</span>
+                                            <span className="text-zinc-400 mx-2 font-medium">vs</span>
+                                            <span className="text-zinc-500 font-medium">{opponent}</span>
                                         </p>
                                     </div>
-                                    <span className="text-xs md:text-sm text-zinc-500 dark:text-zinc-400 shrink-0">{shortDate}{time ? ` · ${time}` : ''}</span>
+                                    <span className="text-xs text-zinc-500 dark:text-zinc-400 shrink-0 font-medium">{shortDate}{time ? ` · ${time}` : ''}</span>
                                 </Link>
                             )
                         })}
