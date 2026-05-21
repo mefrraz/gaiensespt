@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink } from 'lucide-react'
+import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink, Calendar } from 'lucide-react'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 
@@ -118,6 +118,8 @@ function Game() {
     const isFinished = match.status === 'FINALIZADO'
     const isLive = match.status === 'A DECORRER'
     const gaiaScore = match.resultado_casa !== null && match.resultado_fora !== null
+    const dateFormatted = new Date(match.data).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    const hasHora = match.hora && match.hora.replace(/[^0-9]/g, "").length > 0
     const isGaiaWin = gaiaScore && (
         (match.equipa_casa.toUpperCase().includes('GAIA') && match.resultado_casa! > match.resultado_fora!) ||
         (match.equipa_fora.toUpperCase().includes('GAIA') && match.resultado_fora! > match.resultado_casa!)
@@ -167,14 +169,14 @@ function Game() {
                             {isFinished || isLive ? (
                                 <>
                                     <Score num={match.resultado_casa} highlight={gaiaScore && match.resultado_casa! >= match.resultado_fora!} />
-                                    <span className="text-2xl font-light text-zinc-400">:</span>
+                                    <span className="text-2xl font-light text-zinc-400 min-w-[2ch] text-center">:</span>
                                     <Score num={match.resultado_fora} highlight={gaiaScore && match.resultado_fora! >= match.resultado_casa!} />
                                 </>
                             ) : (
                                 <>
-                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none text-zinc-300 dark:text-zinc-700">-</span>
+                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none text-zinc-300 dark:text-zinc-700">--</span>
                                     <span className="text-2xl font-light text-zinc-400">VS</span>
-                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none text-zinc-300 dark:text-zinc-700">-</span>
+                                    <span className="text-5xl font-bold font-mono tabular-nums leading-none text-zinc-300 dark:text-zinc-700">--</span>
                                 </>
                             )}
                         </div>
@@ -212,6 +214,20 @@ function Game() {
                         </>
                     ) : (
                         <p className="text-sm text-zinc-500 italic">A definir</p>
+                    )}
+                </div>
+            </div>
+
+            {/* Date Card */}
+            <div className="glass-card p-5 flex items-start gap-4 animate-slide-up">
+                <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-gaia-yellow shrink-0">
+                    <Calendar size={20} />
+                </div>
+                <div>
+                    <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Data</h4>
+                    <p className="text-sm font-medium text-zinc-900 dark:text-white capitalize">{dateFormatted}</p>
+                    {hasHora && (
+                        <p className="text-sm font-medium text-zinc-500">{match.hora!.slice(0, 5)}</p>
                     )}
                 </div>
             </div>
