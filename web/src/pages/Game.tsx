@@ -117,7 +117,7 @@ function Game() {
 
             {/* Hero Card */}
             <div className="glass-card overflow-hidden animate-slide-up">
-                <div className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
+                <div className="bg-gradient-to-r from-gaia-yellow/10 via-zinc-50 to-gaia-yellow/10 dark:from-gaia-yellow/5 dark:via-zinc-900 dark:to-gaia-yellow/5 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
                     <span className="text-[10px] font-bold text-gaia-yellow uppercase">{match.escalao}</span>
                     <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase truncate ml-2">{match.competicao}</span>
                 </div>
@@ -150,15 +150,19 @@ function Game() {
                             </div>
                         ) : (
                             <div className="flex flex-col items-center gap-1 shrink-0">
-                                <span className="text-3xl font-black text-zinc-300 dark:text-zinc-700">VS</span>
+                                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center ring-2 ring-gaia-yellow/20">
+                                    <span className="text-sm font-black text-zinc-400 dark:text-zinc-500">VS</span>
+                                </div>
                             </div>
                         )}
                         <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} />
                     </div>
 
                     {/* Date */}
-                    <div className="mt-6 flex items-center justify-center text-xs text-zinc-500 dark:text-zinc-400">
-                        <span className="capitalize">{dateFormatted}</span>
+                    <div className="mt-6 flex items-center justify-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                        <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
+                        <span className="capitalize font-medium">{dateFormatted}</span>
+                        <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
                     </div>
                 </div>
             </div>
