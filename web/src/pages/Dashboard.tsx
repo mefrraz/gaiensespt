@@ -163,7 +163,7 @@ function Dashboard() {
                                             <span className={won === false ? 'font-bold' : ''}>{match.equipa_fora}</span>
                                         </p>
                                     </div>
-                                    <span className="text-sm font-mono font-bold text-zinc-700 dark:text-zinc-300 tabular-nums">
+                                    <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300 tabular-nums">
                                         {match.resultado_casa}-{match.resultado_fora}
                                     </span>
                                     <ChevronRight size={12} className="text-zinc-400 group-hover:text-gaia-yellow shrink-0" />

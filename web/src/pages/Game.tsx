@@ -218,7 +218,7 @@ function Game() {
                     <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Data</h4>
                     <p className="text-sm font-medium text-zinc-900 dark:text-white capitalize">{dateFormatted}</p>
                     {hasHora && (
-                        <p className="text-sm text-zinc-500 font-mono">{match.hora!.slice(0, 5)}</p>
+                        <p className="text-sm text-zinc-500 font-medium">{match.hora!.slice(0, 5)}</p>
                     )}
                 </div>
             </div>
@@ -229,9 +229,9 @@ function Game() {
                     <div className="p-4 border-b border-zinc-100 dark:border-white/5">
                         <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-gaia-yellow" />
-                            Últimos Jogos <span className="text-zinc-400 dark:text-zinc-500 font-medium">{match.escalao}</span>
+                            Últimos Jogos
+                            <span className="text-zinc-500 dark:text-zinc-500 font-medium truncate">FC GAIA vs {match.equipa_fora.toUpperCase().includes('GAIA') ? match.equipa_casa : match.equipa_fora}</span>
                         </h3>
-                        <p className="text-[10px] text-zinc-500 mt-0.5">Últimos 5 confrontos — {match.equipa_fora.toUpperCase().includes('GAIA') ? match.equipa_casa : match.equipa_fora}</p>
                     </div>
                     <div className="divide-y divide-zinc-100 dark:divide-white/5">
                         {recentGames.map((game) => {
