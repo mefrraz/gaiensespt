@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Filter, Trophy } from 'lucide-react'
 import { useGames } from '../hooks/useGames'
-import { SkeletonBar } from '../components/Skeleton'
+import { SkeletonGameGrid } from '../components/Skeleton'
 import { EmptyState } from '../components/EmptyState'
 import { GameCard } from '../components/GameCard'
 import { Match } from '../components/types'
@@ -60,7 +60,7 @@ function Results() {
                 </div>
             </div>
 
-            {loading && <SkeletonBar />}
+            {loading && <SkeletonGameGrid days={2} count={3} />}
 
             {!loading && error && matches.length === 0 && (
                 <EmptyState icon="error" title="Erro" subtitle={error} />
