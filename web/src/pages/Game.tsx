@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, MapPin, Calendar, Share2, Trophy, Navigation } from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, Share2, Trophy, Navigation, TrendingUp, TrendingDown } from 'lucide-react'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 
@@ -140,7 +140,7 @@ function Game() {
 
             {/* Hero Card */}
             <div className="glass-card overflow-hidden animate-slide-up">
-                <div className="bg-gradient-to-r from-gaia-yellow/10 via-zinc-50 to-gaia-yellow/10 dark:from-gaia-yellow/5 dark:via-zinc-900 dark:to-gaia-yellow/5 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
+                <div className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
                     <span className="text-[10px] font-bold text-gaia-yellow uppercase">{match.escalao}</span>
                     <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase truncate ml-2">{match.competicao}</span>
                 </div>
@@ -173,19 +173,15 @@ function Game() {
                             </div>
                         ) : (
                             <div className="flex flex-col items-center gap-1 shrink-0">
-                                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center ring-2 ring-gaia-yellow/20">
-                                    <span className="text-sm font-black text-zinc-400 dark:text-zinc-500">VS</span>
-                                </div>
+                                <span className="text-3xl font-black text-zinc-300 dark:text-zinc-700">VS</span>
                             </div>
                         )}
                         <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} />
                     </div>
 
                     {/* Date */}
-                    <div className="mt-6 flex items-center justify-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                        <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
-                        <span className="capitalize font-medium">{dateFormatted}</span>
-                        <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
+                    <div className="mt-6 flex items-center justify-center text-xs text-zinc-500 dark:text-zinc-400">
+                        <span className="capitalize">{dateFormatted}</span>
                     </div>
                 </div>
             </div>
@@ -233,8 +229,9 @@ function Game() {
                     <div className="p-4 border-b border-zinc-100 dark:border-white/5">
                         <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-gaia-yellow" />
-                            Últimos Jogos
+                            Últimos Jogos <span className="text-zinc-400 dark:text-zinc-500 font-medium">{match.escalao}</span>
                         </h3>
+                        <p className="text-[10px] text-zinc-500 mt-0.5">Últimos 5 confrontos — {match.equipa_fora.toUpperCase().includes('GAIA') ? match.equipa_casa : match.equipa_fora}</p>
                     </div>
                     <div className="divide-y divide-zinc-100 dark:divide-white/5">
                         {recentGames.map((game) => {
@@ -246,17 +243,20 @@ function Game() {
                             const shortDate = new Date(game.data).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' })
 
                             return (
-                                <Link to={`/game/${game.slug}`} key={game.slug} className={`flex items-center gap-4 p-4 transition-colors group border-l-4 ${
-                                    won ? 'border-l-green-500 hover:bg-green-50/50 dark:hover:bg-green-950/20' : 'border-l-red-500 hover:bg-red-50/50 dark:hover:bg-red-950/20'
-                                }`}>
+                                <Link to={`/game/${game.slug}`} key={game.slug} className="flex items-center gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
+                                    {won ? (
+                                        <TrendingUp size={12} className="text-green-500 shrink-0" />
+                                    ) : (
+                                        <TrendingDown size={12} className="text-red-500 shrink-0" />
+                                    )}
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-bold text-zinc-900 dark:text-white truncate group-hover:text-gaia-yellow transition-colors">
-                                            FC GAIA
-                                            <span className="text-zinc-500 mx-2 font-bold">{gaiaScore}-{oppScore}</span>
-                                            <span className="text-zinc-400 dark:text-zinc-500 font-medium">{opponent}</span>
+                                        <p className="text-xs text-zinc-900 dark:text-white truncate group-hover:text-gaia-yellow transition-colors">
+                                            <span className="font-bold">FC GAIA</span>
+                                            <span className="text-zinc-500 mx-1">{gaiaScore}-{oppScore}</span>
+                                            <span className="text-zinc-400 dark:text-zinc-500">{opponent}</span>
                                         </p>
                                     </div>
-                                    <span className="text-xs text-zinc-500 dark:text-zinc-400 shrink-0 font-medium">{shortDate}</span>
+                                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase shrink-0">{shortDate}</span>
                                 </Link>
                             )
                         })}
@@ -264,7 +264,7 @@ function Game() {
                 </div>
             )}
 
-            {/* Próximos Jogos */}
+            {/* Próximos Confrontos */}
             {upcomingH2H.length > 0 && (
                 <div className="glass-card overflow-hidden animate-slide-up">
                     <div className="p-4 border-b border-zinc-100 dark:border-white/5">
@@ -278,15 +278,15 @@ function Game() {
                             const time = (game.hora || '').slice(0, 5)
 
                             return (
-                                <Link to={`/game/${game.slug}`} key={game.slug} className="flex items-center gap-4 p-4 transition-colors group border-l-4 border-l-gaia-yellow hover:bg-gaia-yellow/5 dark:hover:bg-gaia-yellow/5">
+                                <Link to={`/game/${game.slug}`} key={game.slug} className="flex items-center gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-bold text-zinc-900 dark:text-white truncate group-hover:text-gaia-yellow transition-colors">
-                                            FC GAIA
-                                            <span className="text-zinc-400 mx-2 font-medium">vs</span>
-                                            <span className="text-zinc-500 font-medium">{opponent}</span>
+                                        <p className="text-xs text-zinc-900 dark:text-white truncate group-hover:text-gaia-yellow transition-colors">
+                                            <span className="font-bold">FC GAIA</span>
+                                            <span className="text-zinc-400 mx-1">vs</span>
+                                            <span className="text-zinc-500">{opponent}</span>
                                         </p>
                                     </div>
-                                    <span className="text-xs text-zinc-500 dark:text-zinc-400 shrink-0 font-medium">{shortDate}{time ? ` · ${time}` : ''}</span>
+                                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase shrink-0">{shortDate}{time ? ` · ${time}` : ''}</span>
                                 </Link>
                             )
                         })}
