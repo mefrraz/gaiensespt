@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, MapPin, Calendar, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink } from 'lucide-react'
+import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink, Clock } from 'lucide-react'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 
@@ -115,11 +115,9 @@ function Game() {
         )
     }
 
-    const dateFormatted = new Date(match.data).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
     const isFinished = match.status === 'FINALIZADO'
     const isLive = match.status === 'A DECORRER'
     const gaiaScore = match.resultado_casa !== null && match.resultado_fora !== null
-    const hasHora = match.hora && match.hora.replace(/[^0-9]/g, "").length > 0
     const isGaiaWin = gaiaScore && (
         (match.equipa_casa.toUpperCase().includes('GAIA') && match.resultado_casa! > match.resultado_fora!) ||
         (match.equipa_fora.toUpperCase().includes('GAIA') && match.resultado_fora! > match.resultado_casa!)
@@ -214,20 +212,6 @@ function Game() {
                 </div>
             </div>
 
-            {/* Date Card */}
-            <div className="glass-card p-5 flex items-start gap-4 animate-slide-up">
-                <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-gaia-yellow shrink-0">
-                    <Calendar size={20} />
-                </div>
-                <div>
-                    <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Data</h4>
-                    <p className="text-sm font-medium text-zinc-900 dark:text-white capitalize">{dateFormatted}</p>
-                    {hasHora && (
-                        <p className="text-sm font-medium text-zinc-500">{match.hora!.slice(0, 5)}</p>
-                    )}
-                </div>
-            </div>
-
             {/* Últimos Jogos */}
             {recentGames.length > 0 && (
                 <div className="glass-card overflow-hidden animate-slide-up">
@@ -273,7 +257,11 @@ function Game() {
             {upcomingH2H.length > 0 && (
                 <div className="glass-card overflow-hidden animate-slide-up">
                     <div className="p-4 border-b border-zinc-100 dark:border-white/5">
-                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white">Próximos Confrontos</h3>
+                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-gaia-yellow" />
+                            Próximos Confrontos
+                            <span className="text-zinc-500 dark:text-zinc-500 font-medium truncate">FC GAIA vs {match.equipa_fora.toUpperCase().includes('GAIA') ? match.equipa_casa : match.equipa_fora}</span>
+                        </h3>
                     </div>
                     <div className="divide-y divide-zinc-100 dark:divide-white/5">
                         {upcomingH2H.map((game) => {
@@ -284,6 +272,7 @@ function Game() {
 
                             return (
                                 <Link to={`/game/${game.slug}`} key={game.slug} className="flex items-center gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
+                                    <Clock size={12} className="text-gaia-yellow shrink-0" />
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs text-zinc-900 dark:text-white truncate group-hover:text-gaia-yellow transition-colors">
                                             <span className="font-bold">FC GAIA</span>
