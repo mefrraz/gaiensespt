@@ -140,7 +140,7 @@ function Game() {
 
             {/* Hero Card */}
             <div className="glass-card overflow-hidden animate-slide-up">
-                <div className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
+                <div className="bg-gradient-to-r from-gaia-yellow/10 via-zinc-50 to-gaia-yellow/10 dark:from-gaia-yellow/5 dark:via-zinc-900 dark:to-gaia-yellow/5 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
                     <span className="text-[10px] font-bold text-gaia-yellow uppercase">{match.escalao}</span>
                     <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase truncate ml-2">{match.competicao}</span>
                 </div>
@@ -223,7 +223,7 @@ function Game() {
                     <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Data</h4>
                     <p className="text-sm font-medium text-zinc-900 dark:text-white capitalize">{dateFormatted}</p>
                     {hasHora && (
-                        <p className="text-sm text-zinc-500 font-mono">{match.hora!.slice(0, 5)}</p>
+                        <p className="text-sm font-medium text-zinc-500">{match.hora!.slice(0, 5)}</p>
                     )}
                 </div>
             </div>
@@ -305,7 +305,7 @@ function Game() {
 function TeamBlock({ name, logo }: { name: string; logo: string | null }) {
     return (
         <div className="flex-1 flex flex-col items-center text-center gap-2 min-w-0">
-            <div className="w-20 h-20 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden ring-2 ring-gaia-yellow/30 shrink-0">
+            <div className="w-20 h-20 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
                 {logo ? (
                     <img src={logo} alt="" className="w-14 h-14 object-contain" />
                 ) : (
