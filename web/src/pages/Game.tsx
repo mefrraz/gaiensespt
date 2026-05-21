@@ -30,6 +30,7 @@ function Game() {
         const home = match.equipa_casa
         const away = match.equipa_fora
         const seasons = ['2025_2026', '2024_2025', '2023_2024', '2022_2023']
+        console.log('[Game] Buscando H2H:', { home, away, escalao: match.escalao, slug })
         Promise.all(
             seasons.map(s =>
                 supabase
@@ -39,17 +40,28 @@ function Game() {
                     .neq('slug', slug)
                     .eq('status', 'FINALIZADO')
                     .order('data', { ascending: false })
-                    .then(({ data }) => data || [])
+                    .then(({ data, error }) => {
+                        if (error) console.error(`[Game] Erro em ${s}:`, error)
+                        console.log(`[Game] ${s}: ${(data || []).length} jogos FINALIZADOS no escalão "${match.escalao}"`)
+                        return (data || []) as Match[]
+                    })
             )
         ).then(results => {
             const all = results.flat()
+            console.log(`[Game] Total jogos FINALIZADOS (escalão): ${all.length}`)
             const h2h = all
-                .filter(g =>
-                    (g.equipa_casa.toUpperCase().includes(home.toUpperCase()) && g.equipa_fora.toUpperCase().includes(away.toUpperCase())) ||
-                    (g.equipa_casa.toUpperCase().includes(away.toUpperCase()) && g.equipa_fora.toUpperCase().includes(home.toUpperCase()))
-                )
+                .filter(g => {
+                    const match1 = g.equipa_casa.toUpperCase().includes(home.toUpperCase()) && g.equipa_fora.toUpperCase().includes(away.toUpperCase())
+                    const match2 = g.equipa_casa.toUpperCase().includes(away.toUpperCase()) && g.equipa_fora.toUpperCase().includes(home.toUpperCase())
+                    return match1 || match2
+                })
                 .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
                 .slice(0, 5)
+            console.log(`[Game] H2H após filtro: ${h2h.length} jogos`)
+            if (h2h.length === 0 && all.length > 0) {
+                console.log(`[Game] H2H vazio mas há ${all.length} jogos no escalão. Home="${home}" Away="${away}"`)
+                console.log(`[Game] Amostra de equipas:`, all.slice(0, 3).map(g => `${g.equipa_casa} vs ${g.equipa_fora}`))
+            }
             setRecentGames(h2h)
         })
     }, [match, slug])
