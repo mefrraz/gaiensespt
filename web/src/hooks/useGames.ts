@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { fetchFPBGames } from '../lib/fpbApi'
 import { Match } from '../components/types'
@@ -21,6 +21,7 @@ export function useGames(season = '2025/2026', clube = 119) {
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const gamesRef = useRef<Match[]>([])
 
   const tableName = getTableName(season)
 
@@ -49,6 +50,16 @@ export function useGames(season = '2025/2026', clube = 119) {
         }
       })
 
+      // Compare with current data to avoid unnecessary updates
+      const current = gamesRef.current
+      if (current.length > 0 && withEpoch.length > 0) {
+        const currentKey = current.map(g => `${g.id}|${g.resultado_casa}|${g.resultado_fora}`).sort().join(',')
+        const freshKey = withEpoch.map(g => `${g.id}|${g.resultado_casa}|${g.resultado_fora}`).sort().join(',')
+        if (currentKey === freshKey) {
+          return // nothing changed, skip update
+        }
+      }
+
       await supabase.from(tableName).upsert(
         withEpoch.map(g => ({ ...g, updated_at: new Date().toISOString() })),
         { onConflict: 'slug' }
@@ -62,6 +73,9 @@ export function useGames(season = '2025/2026', clube = 119) {
       throw err
     }
   }, [season, clube, tableName])
+
+  // Keep ref in sync
+  gamesRef.current = games
 
   useEffect(() => {
     let cancelled = false
