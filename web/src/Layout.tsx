@@ -9,6 +9,8 @@ function Layout() {
     const location = useLocation()
     const navigate = useNavigate()
     const touchStartX = useRef(0)
+    const [animDir, setAnimDir] = useState<'left' | 'right' | null>(null)
+    const animRef = useRef<ReturnType<typeof setTimeout>>()
 
     const pages = ['/', '/games', '/standings']
     const isSwipePage = pages.includes(location.pathname)
@@ -22,13 +24,25 @@ function Layout() {
         if (!isSwipePage) return
         const deltaX = e.changedTouches[0].clientX - touchStartX.current
         if (Math.abs(deltaX) > 50) {
-            if (deltaX > 0 && currentIndex > 0) {
-                navigate(pages[currentIndex - 1])
-            } else if (deltaX < 0 && currentIndex < pages.length - 1) {
-                navigate(pages[currentIndex + 1])
+            const dir = deltaX > 0 ? 'right' : 'left'
+            if (dir === 'right' && currentIndex > 0) {
+                setAnimDir('right')
+                clearTimeout(animRef.current)
+                animRef.current = setTimeout(() => navigate(pages[currentIndex - 1]), 150)
+            } else if (dir === 'left' && currentIndex < pages.length - 1) {
+                setAnimDir('left')
+                clearTimeout(animRef.current)
+                animRef.current = setTimeout(() => navigate(pages[currentIndex + 1]), 150)
             }
         }
     }
+
+    useEffect(() => {
+        if (animDir) {
+            const t = setTimeout(() => setAnimDir(null), 50)
+            return () => clearTimeout(t)
+        }
+    }, [location.pathname])
 
     useEffect(() => {
         if (theme === 'dark') {
@@ -115,8 +129,15 @@ function Layout() {
             </nav>
 
             {/* Main Content */}
-            <main className="flex-grow p-4 md:p-8 pb-24" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-                <Outlet />
+            <main className="flex-grow p-4 md:p-8 pb-24 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+                <div
+                    key={location.pathname}
+                    className={`transition-all duration-100 ease-out ${
+                        animDir ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+                    }`}
+                >
+                    <Outlet />
+                </div>
             </main>
 
             {/* Footer */}

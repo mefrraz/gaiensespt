@@ -63,14 +63,6 @@ function Games() {
 
     return (
         <div className="max-w-6xl mx-auto space-y-4 pb-24">
-            {/* Header */}
-            <div className="px-3 pt-4 animate-fade-in md:hidden">
-                <h1 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                    {view === 'agenda' ? <Calendar size={18} className="text-gaia-yellow" /> : <Trophy size={18} className="text-gaia-yellow" />}
-                    {view === 'agenda' ? 'Agenda' : 'Resultados'}
-                </h1>
-            </div>
-
             {/* Segment */}
             <div className="px-3 mt-2">
                 <SegmentControl
