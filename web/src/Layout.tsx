@@ -120,7 +120,7 @@ function Layout() {
             </main>
 
             {/* Footer */}
-            <footer className="bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-white/10 py-8 pb-24 md:pb-8">
+            <footer className="hidden md:block bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-white/10 py-8">
                 <div className="max-w-4xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-zinc-500">
                     <div className="flex items-center gap-2">
                         <span className="font-bold text-zinc-900 dark:text-white">GaiensesPT</span>
