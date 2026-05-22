@@ -27,7 +27,7 @@ export function GameCard({ match, mode }: GameCardProps) {
   const badge = mode === 'agenda'
     ? null
     : won === true
-      ? { icon: TrendingUp, label: 'VIT├ôRIA', className: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' }
+      ? { icon: TrendingUp, label: 'VITÓRIA', className: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' }
       : won === false
         ? { icon: TrendingDown, label: 'DERROTA', className: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' }
         : { icon: Minus, label: 'FIN', className: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500' }
@@ -41,7 +41,7 @@ export function GameCard({ match, mode }: GameCardProps) {
             hasHora(match.hora) ? (
               <>
                 <Clock size={12} className="text-gaia-yellow shrink-0" strokeWidth={3} />
-                <span className="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300 tracking-wider">
+                <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 tracking-wider">
                   {match.hora!.slice(0, 5)}
                 </span>
               </>

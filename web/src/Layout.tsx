@@ -1,11 +1,34 @@
-import { useState, useEffect } from 'react'
-import { Outlet, Link } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { Sun, Moon, Instagram, Github, Info, Calendar, BarChart2, Download } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
 
 function Layout() {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
+    const location = useLocation()
+    const navigate = useNavigate()
+    const touchStartX = useRef(0)
+
+    const pages = ['/', '/games', '/standings']
+    const isSwipePage = pages.includes(location.pathname)
+    const currentIndex = pages.indexOf(location.pathname)
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.touches[0].clientX
+    }
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        if (!isSwipePage) return
+        const deltaX = e.changedTouches[0].clientX - touchStartX.current
+        if (Math.abs(deltaX) > 50) {
+            if (deltaX > 0 && currentIndex > 0) {
+                navigate(pages[currentIndex - 1])
+            } else if (deltaX < 0 && currentIndex < pages.length - 1) {
+                navigate(pages[currentIndex + 1])
+            }
+        }
+    }
 
     useEffect(() => {
         if (theme === 'dark') {
@@ -92,12 +115,12 @@ function Layout() {
             </nav>
 
             {/* Main Content */}
-            <main className="flex-grow p-4 md:p-8 pb-24">
+            <main className="flex-grow p-4 md:p-8 pb-24" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
                 <Outlet />
             </main>
 
             {/* Footer */}
-            <footer className="bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-white/10 py-8 pb-20 md:pb-8">
+            <footer className="bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-white/10 py-8 pb-24 md:pb-8">
                 <div className="max-w-4xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-zinc-500">
                     <div className="flex items-center gap-2">
                         <span className="font-bold text-zinc-900 dark:text-white">GaiensesPT</span>
