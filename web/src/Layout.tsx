@@ -9,8 +9,9 @@ function Layout() {
     const location = useLocation()
     const navigate = useNavigate()
     const touchStartX = useRef(0)
-    const [animDir, setAnimDir] = useState<'left' | 'right' | null>(null)
-    const animRef = useRef<ReturnType<typeof setTimeout>>()
+    const touchStartY = useRef(0)
+    const contentRef = useRef<HTMLDivElement>(null)
+    const isSwiping = useRef(false)
 
     const pages = ['/', '/games', '/standings']
     const isSwipePage = pages.includes(location.pathname)
@@ -18,31 +19,57 @@ function Layout() {
 
     const handleTouchStart = (e: React.TouchEvent) => {
         touchStartX.current = e.touches[0].clientX
+        touchStartY.current = e.touches[0].clientY
+        isSwiping.current = false
+    }
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (!isSwipePage || !contentRef.current || !touchStartX.current) return
+        const deltaX = e.touches[0].clientX - touchStartX.current
+        const deltaY = e.touches[0].clientY - touchStartY.current
+
+        if (!isSwiping.current) {
+            if (Math.abs(deltaY) > Math.abs(deltaX) || Math.abs(deltaX) < 10) return
+            isSwiping.current = true
+        }
+
+        if (deltaX > 0 && currentIndex <= 0) {
+            contentRef.current.style.transform = `translateX(${deltaX * 0.2}px)`
+            contentRef.current.style.transition = 'none'
+            return
+        }
+        if (deltaX < 0 && currentIndex >= pages.length - 1) {
+            contentRef.current.style.transform = `translateX(${deltaX * 0.2}px)`
+            contentRef.current.style.transition = 'none'
+            return
+        }
+
+        contentRef.current.style.transform = `translateX(${deltaX}px)`
+        contentRef.current.style.transition = 'none'
     }
 
     const handleTouchEnd = (e: React.TouchEvent) => {
-        if (!isSwipePage) return
+        if (!isSwipePage || !contentRef.current || !touchStartX.current) return
         const deltaX = e.changedTouches[0].clientX - touchStartX.current
+        touchStartX.current = 0
+        isSwiping.current = false
+
         if (Math.abs(deltaX) > 50) {
-            const dir = deltaX > 0 ? 'right' : 'left'
-            if (dir === 'right' && currentIndex > 0) {
-                setAnimDir('right')
-                clearTimeout(animRef.current)
-                animRef.current = setTimeout(() => navigate(pages[currentIndex - 1]), 150)
-            } else if (dir === 'left' && currentIndex < pages.length - 1) {
-                setAnimDir('left')
-                clearTimeout(animRef.current)
-                animRef.current = setTimeout(() => navigate(pages[currentIndex + 1]), 150)
+            const direction = deltaX > 0 ? 1 : -1
+            const targetIndex = direction > 0 ? currentIndex - 1 : currentIndex + 1
+            if (targetIndex < 0 || targetIndex >= pages.length) {
+                contentRef.current.style.transition = 'transform 0.25s ease-out'
+                contentRef.current.style.transform = 'translateX(0px)'
+                return
             }
+            contentRef.current.style.transition = 'transform 0.15s ease-out'
+            contentRef.current.style.transform = `translateX(${direction * window.innerWidth}px)`
+            setTimeout(() => navigate(pages[targetIndex]), 150)
+        } else {
+            contentRef.current.style.transition = 'transform 0.25s ease-out'
+            contentRef.current.style.transform = 'translateX(0px)'
         }
     }
-
-    useEffect(() => {
-        if (animDir) {
-            const t = setTimeout(() => setAnimDir(null), 50)
-            return () => clearTimeout(t)
-        }
-    }, [location.pathname])
 
     useEffect(() => {
         if (theme === 'dark') {
@@ -129,13 +156,8 @@ function Layout() {
             </nav>
 
             {/* Main Content */}
-            <main className="flex-grow p-4 md:p-8 pb-24 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-                <div
-                    key={location.pathname}
-                    className={`transition-all duration-100 ease-out ${
-                        animDir ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-                    }`}
-                >
+            <main className="flex-grow p-4 md:p-8 pb-24 overflow-hidden overscroll-x-none" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+                <div ref={contentRef} key={location.pathname}>
                     <Outlet />
                 </div>
             </main>
