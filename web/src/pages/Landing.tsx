@@ -6,7 +6,6 @@ import { GameCard } from '../components/GameCard'
 import { useClub, type Club } from '../lib/ClubContext'
 import { type Match } from '../components/types'
 
-/** Normalize string: remove accents, lowercase, trim */
 function normalize(s: string): string {
     return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
 }
@@ -32,7 +31,6 @@ function Landing() {
     const navigate = useNavigate()
     const { clubs, loadClubs, favoriteClub } = useClub()
 
-    // Pre-normalize all club names for fast search
     const normalizedClubs = useMemo(() =>
         clubs.map(c => ({
             ...c,
@@ -100,111 +98,110 @@ function Landing() {
 
     return (
         <div className="pb-24">
-            {/* Hero Section — with search, intuitive CTA */}
-            <div className="bg-dribly-blue dark:bg-dribly-blue-dark">
-                <div className="max-w-5xl mx-auto px-4 pt-12 md:pt-16 pb-12 md:pb-16 text-center">
-                    {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white/90 text-[11px] font-bold uppercase tracking-wider mb-5 border border-white/10">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                        Época 2025/2026
+            {/* Header — clean, centered, no solid color block */}
+            <div className="max-w-2xl mx-auto px-4 pt-12 md:pt-20 pb-8 text-center">
+                {/* Badge */}
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 text-dribly-purple text-[11px] font-bold uppercase tracking-wider mb-6">
+                    <span className="w-1.5 h-1.5 rounded-full bg-dribly-purple animate-pulse" />
+                    Época 2025/2026
+                </div>
+
+                <h1 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight mb-3">
+                    Basquetebol Português
+                </h1>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto leading-relaxed mb-8">
+                    Pesquisa o teu clube e acompanha resultados, jogos e classificações.
+                </p>
+
+                {/* Search Bar — main focal point */}
+                <div className="max-w-lg mx-auto relative animate-slide-up" ref={dropdownRef}>
+                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                        <Search size={20} className="text-zinc-400" />
                     </div>
+                    <input
+                        ref={inputRef}
+                        type="text"
+                        value={query}
+                        onChange={e => setQuery(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        onFocus={() => query.trim() && setShowDropdown(true)}
+                        placeholder="Pesquisar clube..."
+                        className="w-full pl-12 pr-4 py-4 glass-card text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none shadow-lg transition-all"
+                    />
 
-                    <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-2 leading-tight">
-                        Basquetebol<br />Português ao Vivo
-                    </h1>
-                    <p className="text-sm md:text-base text-white/70 max-w-md mx-auto leading-relaxed mb-8">
-                        Pesquisa o teu clube e acompanha todos os resultados e jogos.
-                    </p>
-
-                    {/* Search Bar — obvious, centered, prominent */}
-                    <div className="max-w-lg mx-auto relative animate-slide-up" ref={dropdownRef}>
-                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                            <Search size={20} className="text-zinc-400" />
+                    {showDropdown && results.length > 0 && (
+                        <div className="absolute top-full mt-2 left-0 right-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50 text-left max-h-80 overflow-y-auto">
+                            {results.map((club, i) => (
+                                <button
+                                    key={club.slug}
+                                    onClick={() => selectClub(club)}
+                                    className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ${
+                                        selectedIdx === i ? 'bg-dribly-purple/10 dark:bg-dribly-purple/20' : 'hover:bg-zinc-50 dark:hover:bg-white/5'
+                                    }`}
+                                >
+                                    <div className="w-9 h-9 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0">
+                                        <span className="text-xs font-bold text-dribly-purple">{club.name.charAt(0).toUpperCase()}</span>
+                                    </div>
+                                    <span className="text-sm font-medium text-zinc-900 dark:text-white truncate">{club.name}</span>
+                                </button>
+                            ))}
                         </div>
-                        <input
-                            ref={inputRef}
-                            type="text"
-                            value={query}
-                            onChange={e => setQuery(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            onFocus={() => query.trim() && setShowDropdown(true)}
-                            placeholder="Pesquisar clube..."
-                            className="w-full pl-12 pr-4 py-4 bg-white dark:bg-zinc-900 border border-transparent rounded-2xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none shadow-2xl shadow-black/20 transition-all focus:ring-2 focus:ring-white/30"
-                        />
-
-                        {showDropdown && results.length > 0 && (
-                            <div className="absolute top-full mt-2 left-0 right-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50 text-left">
-                                {results.map((club, i) => (
-                                    <button
-                                        key={club.slug}
-                                        onClick={() => selectClub(club)}
-                                        className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ${
-                                            selectedIdx === i ? 'bg-dribly-blue/10 dark:bg-dribly-blue/20' : 'hover:bg-zinc-50 dark:hover:bg-white/5'
-                                        }`}
-                                    >
-                                        <div className="w-9 h-9 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0">
-                                            {club.logo_url ? (
-                                                <img src={club.logo_url} alt="" className="w-6 h-6 object-contain" />
-                                            ) : (
-                                                <span className="text-xs font-bold text-zinc-500">{club.name.charAt(0)}</span>
-                                            )}
-                                        </div>
-                                        <span className="text-sm font-medium text-zinc-900 dark:text-white truncate">{club.name}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Favorite shortcut */}
-                    {favoriteClub && (
-                        <Link
-                            to={`/clube/${favoriteClub.slug}/home`}
-                            className="inline-flex items-center gap-2 mt-5 px-4 py-2 rounded-full bg-white/10 text-white text-xs font-bold border border-white/10 hover:bg-white/20 transition-all group"
-                        >
-                            <HomeIcon size={14} />
-                            <span>Continuar com {favoriteClub.name}</span>
-                            <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                        </Link>
                     )}
                 </div>
+
+                {/* Favorite shortcut */}
+                {favoriteClub && (
+                    <Link
+                        to={`/clube/${favoriteClub.slug}/home`}
+                        className="inline-flex items-center gap-2 mt-5 px-4 py-2 rounded-full bg-dribly-purple/5 dark:bg-dribly-purple/10 text-dribly-purple text-xs font-bold border border-dribly-purple/20 hover:bg-dribly-purple/10 dark:hover:bg-dribly-purple/20 transition-all group"
+                    >
+                        <HomeIcon size={14} />
+                        <span>Continuar com {favoriteClub.name}</span>
+                        <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                    </Link>
+                )}
+            </div>
+
+            {/* Divider */}
+            <div className="max-w-2xl mx-auto px-4">
+                <div className="h-px bg-zinc-200 dark:bg-white/10" />
             </div>
 
             {/* Stats Bar */}
-            <div className="bg-white dark:bg-zinc-950 border-b border-zinc-100 dark:border-white/5">
-                <div className="max-w-5xl mx-auto px-4 py-5 flex items-center justify-around md:justify-center md:gap-20">
-                    <span className="text-xs text-zinc-500"><strong className="text-zinc-900 dark:text-white">197</strong> Clubes</span>
-                    <span className="text-xs text-zinc-500"><strong className="text-zinc-900 dark:text-white">411</strong> Competições</span>
-                    <span className="text-xs text-zinc-500"><strong className="text-zinc-900 dark:text-white">24</strong> Associações</span>
-                </div>
+            <div className="max-w-2xl mx-auto px-4 py-5 flex items-center justify-center gap-8 md:gap-16">
+                <span className="text-xs text-zinc-500"><strong className="text-zinc-900 dark:text-white font-bold">79</strong> Clubes</span>
+                <span className="text-xs text-zinc-500"><strong className="text-zinc-900 dark:text-white font-bold">411</strong> Competições</span>
+                <span className="text-xs text-zinc-500"><strong className="text-zinc-900 dark:text-white font-bold">24</strong> Associações</span>
             </div>
 
             {/* Jogos em Destaque */}
-            <div className="py-8 bg-zinc-50/50 dark:bg-zinc-950/50">
-                <div className="mb-4 px-4">
+            <div className="py-8">
+                <div className="max-w-2xl mx-auto px-4 mb-4">
                     <h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-dribly-blue animate-pulse" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-dribly-purple animate-pulse" />
                         Jogos em Destaque
                     </h2>
                 </div>
 
-                {gamesLoading ? (
-                    <div className="flex gap-3 overflow-hidden px-4">
-                        {[1, 2, 3].map(i => (
-                            <div key={i} className="min-w-[280px] h-44 rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse shrink-0" />
-                        ))}
-                    </div>
-                ) : games.length === 0 ? (
-                    <p className="text-xs text-zinc-400 text-center py-8">Nenhum jogo em destaque de momento.</p>
-                ) : (
-                    <div className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-none">
-                        {games.map(match => (
-                            <div key={match.slug || match.id} className="min-w-[280px] shrink-0">
-                                <GameCard match={match} mode="agenda" />
-                            </div>
-                        ))}
-                    </div>
-                )}
+                <div className="max-w-2xl mx-auto px-4">
+                    {gamesLoading ? (
+                        <div className="flex gap-3 overflow-hidden">
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="min-w-[280px] h-44 rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse shrink-0" />
+                            ))}
+                        </div>
+                    ) : games.length === 0 ? (
+                        <p className="text-xs text-zinc-400 text-center py-8">Nenhum jogo em destaque de momento.</p>
+                    ) : (
+                        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
+                            {games.map(match => (
+                                <div key={match.slug || match.id} className="min-w-[280px] shrink-0">
+                                    <GameCard match={match} mode="agenda" />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     )
