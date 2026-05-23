@@ -141,7 +141,7 @@ function Game() {
             <div className="max-w-xl mx-auto px-3 py-32 text-center">
                 <Trophy size={40} className="mx-auto text-zinc-300 dark:text-zinc-700 mb-4" strokeWidth={1} />
                 <p className="text-sm text-zinc-500 mb-4">Jogo não encontrado</p>
-                <button onClick={() => window.history.back()} className="text-xs font-bold text-gaia-yellow hover:underline">Voltar</button>
+                <button onClick={() => window.history.back()} className="text-xs font-bold text-violet-600 hover:underline">Voltar</button>
             </div>
         )
     }
@@ -167,15 +167,15 @@ function Game() {
                     <ArrowLeft size={22} />
                 </button>
                 <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500">FICHA DE JOGO</span>
-                <button onClick={shareGame} className={`p-2 -mr-2 transition-colors ${copied ? 'text-green-500' : 'text-zinc-500 hover:text-gaia-yellow'}`}>
+                <button onClick={shareGame} className={`p-2 -mr-2 transition-colors ${copied ? 'text-green-500' : 'text-zinc-500 hover:text-violet-600'}`}>
                     {copied ? <Check size={18} /> : <Share2 size={18} />}
                 </button>
             </div>
 
             {/* Hero Card */}
-            <div className="glass-card overflow-hidden animate-slide-up group hover:border-gaia-yellow/30 transition-all duration-200">
-                <div className="bg-gradient-to-r from-gaia-yellow/10 via-zinc-50 to-gaia-yellow/10 dark:from-gaia-yellow/5 dark:via-zinc-900 dark:to-gaia-yellow/5 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-gaia-yellow uppercase">{match.escalao}</span>
+            <div className="glass-card overflow-hidden animate-slide-up group hover:border-violet-600/30 transition-all duration-200">
+                <div className="bg-gradient-to-r from-violet-600/10 via-zinc-50 to-violet-600/10 dark:from-violet-600/5 dark:via-zinc-900 dark:to-violet-600/5 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-violet-600 uppercase">{match.escalao}</span>
                     <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase truncate ml-2">{match.competicao}</span>
                 </div>
 
@@ -222,7 +222,7 @@ function Game() {
                     {/* FPB Link */}
                     <div className="mt-6 flex justify-center">
                         {match.id && (
-                            <a href={`https://www.fpb.pt/ficha-de-jogo?internalID=${match.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 hover:text-gaia-yellow transition-colors">
+                            <a href={`https://www.fpb.pt/ficha-de-jogo?internalID=${match.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 hover:text-violet-600 transition-colors">
                                 <ExternalLink size={10} />
                                 Ver jogo na FPB
                             </a>
@@ -233,7 +233,7 @@ function Game() {
 
             {/* Location Card */}
             <div className="glass-card p-5 flex items-start gap-4 animate-slide-up">
-                <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-gaia-yellow shrink-0">
+                <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-violet-600 shrink-0">
                     <MapPin size={20} />
                 </div>
                 <div className="min-w-0">
@@ -243,7 +243,7 @@ function Game() {
                             <p className="text-sm font-medium text-zinc-900 dark:text-white mb-2 break-words">{match.local}</p>
                             <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(match.local)}`}
                                target="_blank" rel="noopener noreferrer"
-                               className="inline-flex items-center gap-1.5 text-[10px] font-bold text-gaia-yellow hover:text-black dark:hover:text-white transition-colors group">
+                               className="inline-flex items-center gap-1.5 text-[10px] font-bold text-violet-600 hover:text-black dark:hover:text-white transition-colors group">
                                 <Navigation size={12} />
                                 <span className="group-hover:underline">Abrir no Google Maps</span>
                             </a>
@@ -256,7 +256,7 @@ function Game() {
 
             {/* Date Card */}
             <div className="glass-card p-5 flex items-start gap-4 animate-slide-up">
-                <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-gaia-yellow shrink-0">
+                <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-violet-600 shrink-0">
                     <Calendar size={20} />
                 </div>
                 <div>
@@ -273,7 +273,7 @@ function Game() {
                 <div className="glass-card overflow-hidden animate-slide-up">
                     <div className="p-4 border-b border-zinc-100 dark:border-white/5">
                         <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-gaia-yellow" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-violet-600" />
                             Últimos Jogos
                             <span className="text-zinc-500 dark:text-zinc-500 font-medium truncate">FC GAIA vs {match.equipa_fora.toUpperCase().includes('GAIA') ? match.equipa_casa : match.equipa_fora}</span>
                         </h3>
@@ -298,7 +298,7 @@ function Game() {
                                         <TrendingDown size={12} className="text-red-500 shrink-0" />
                                     )}
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs text-zinc-900 dark:text-white truncate group-hover:text-gaia-yellow transition-colors">
+                                        <p className="text-xs text-zinc-900 dark:text-white truncate group-hover:text-violet-600 transition-colors">
                                             <span className="font-bold">FC GAIA</span>
                                             <span className="text-zinc-500 mx-1">{gaiaScore}-{oppScore}</span>
                                             <span className="text-zinc-400 dark:text-zinc-500">{opponent}</span>
@@ -317,7 +317,7 @@ function Game() {
                 <div className="glass-card overflow-hidden animate-slide-up">
                     <div className="p-4 border-b border-zinc-100 dark:border-white/5">
                         <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-gaia-yellow" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-violet-600" />
                             Próximos Jogos
                             <span className="text-zinc-500 dark:text-zinc-500 font-medium truncate">FC GAIA vs {match.equipa_fora.toUpperCase().includes('GAIA') ? match.equipa_casa : match.equipa_fora}</span>
                         </h3>
@@ -330,9 +330,9 @@ function Game() {
 
                             return (
                                 <Link to={`/game/${game.slug}`} key={game.slug} className="flex items-center gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
-                                    <TrendingUp size={12} className="text-gaia-yellow shrink-0" />
+                                    <TrendingUp size={12} className="text-violet-600 shrink-0" />
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs text-zinc-900 dark:text-white truncate group-hover:text-gaia-yellow transition-colors">
+                                        <p className="text-xs text-zinc-900 dark:text-white truncate group-hover:text-violet-600 transition-colors">
                                             <span className="font-bold">FC GAIA</span>
                                             <span className="text-zinc-400 mx-1">vs</span>
                                             <span className="text-zinc-500">{opponent}</span>

@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Clock, MapPin, ChevronRight, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { Match } from './types'
 
@@ -34,7 +34,7 @@ export function GameCard({ match, mode, clubSlug }: GameCardProps) {
   const badge = mode === 'agenda'
     ? null
     : won === true
-      ? { icon: TrendingUp, label: 'VITÓRIA', className: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' }
+      ? { icon: TrendingUp, label: 'VIT�RIA', className: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' }
       : won === false
         ? { icon: TrendingDown, label: 'DERROTA', className: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' }
         : won === 'draw'
@@ -49,7 +49,7 @@ export function GameCard({ match, mode, clubSlug }: GameCardProps) {
           {mode === 'agenda' ? (
             hasHora(match.hora) ? (
               <>
-                <Clock size={12} className="text-gaia-yellow shrink-0" strokeWidth={3} />
+                <Clock size={12} className="text-violet-600 shrink-0" strokeWidth={3} />
                 <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 tracking-wider">
                   {match.hora!.slice(0, 5)}
                 </span>
@@ -86,14 +86,14 @@ export function GameCard({ match, mode, clubSlug }: GameCardProps) {
         <div className="flex items-center gap-1.5 truncate max-w-[70%]">
           {match.local ? (
             <>
-              <MapPin size={10} className="shrink-0 text-gaia-yellow" />
+              <MapPin size={10} className="shrink-0 text-violet-600" />
               <span className="truncate text-zinc-500">{match.local}</span>
             </>
           ) : (
             <span className="truncate text-zinc-500">{match.competicao}</span>
           )}
         </div>
-        <ChevronRight size={14} className="text-zinc-400 group-hover:text-gaia-yellow transition-colors" />
+        <ChevronRight size={14} className="text-zinc-400 group-hover:text-violet-600 transition-colors" />
       </div>
     </Link>
   )
