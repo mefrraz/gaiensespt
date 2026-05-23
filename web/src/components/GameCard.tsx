@@ -5,6 +5,7 @@ import { Match } from './types'
 interface GameCardProps {
   match: Match
   mode: 'agenda' | 'results'
+  clubSlug?: string
 }
 
 function isGaiaWin(match: Match): boolean | 'draw' | null {
@@ -20,10 +21,15 @@ function hasHora(hora: string | null | undefined): boolean {
   return !!hora && hora.replace(/[^0-9]/g, '').length > 0
 }
 
-export function GameCard({ match, mode }: GameCardProps) {
-  const slug = match.slug || `${match.data}-${match.equipa_casa.toLowerCase().replace(/\s+/g, '-')}-${match.equipa_fora.toLowerCase().replace(/\s+/g, '-')}`
+function makeGameSlug(match: Match): string {
+    return match.slug || `${match.data}-${match.equipa_casa.toLowerCase().replace(/\s+/g, '-')}-${match.equipa_fora.toLowerCase().replace(/\s+/g, '-')}`
+}
+
+export function GameCard({ match, mode, clubSlug }: GameCardProps) {
+  const slug = makeGameSlug(match)
   const won = isGaiaWin(match)
   const isLive = match.status === 'A DECORRER'
+  const gameUrl = clubSlug ? `/clube/${clubSlug}/jogo/${slug}` : `/game/${slug}`
 
   const badge = mode === 'agenda'
     ? null
@@ -36,7 +42,7 @@ export function GameCard({ match, mode }: GameCardProps) {
           : { icon: Minus, label: 'FIN', className: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500' }
 
   return (
-    <Link to={`/game/${slug}`} className="glass-card flex flex-col group active:scale-[0.98]">
+    <Link to={gameUrl} className="glass-card flex flex-col group active:scale-[0.98]">
       {/* Top bar */}
       <div className="flex justify-between items-center p-4 pb-2 border-b border-zinc-100 dark:border-white/5">
         <div className="flex items-center gap-2 min-w-0">
