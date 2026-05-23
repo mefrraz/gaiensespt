@@ -9,6 +9,8 @@ export type GameData = {
     refresh: () => Promise<void>
 }
 
+/** Exported type for useGameData hook consumers */
+
 export const GameDataContext = createContext<GameData | null>(null)
 
 export function useGameData(): GameData {
