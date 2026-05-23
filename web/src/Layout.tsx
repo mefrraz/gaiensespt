@@ -25,113 +25,134 @@ function Layout() {
         localStorage.setItem('theme', theme)
     }, [theme])
 
-    const toggleTheme = () => {
-        setTheme(theme === 'dark' ? 'light' : 'dark')
-    }
+    const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark')
 
     function isActive(path: string) {
         if (path === '/') return location.pathname === '/'
         return location.pathname.startsWith(path)
     }
 
-    const linkBase = 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-xs font-bold'
-    const linkActive = 'bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white shadow-sm'
-    const linkInactive = 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5'
+    const navPill = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all'
+    const navPillActive = 'bg-dribly-blue text-white shadow-md shadow-blue-500/20'
+    const navPillInactive = 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-700 dark:hover:text-zinc-200'
+    const navIcon = 'p-2 rounded-full transition-colors'
 
     return (
         <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 transition-colors duration-300 flex flex-col font-sans">
 
             {/* Navbar */}
             <nav className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-white/10 shadow-sm">
-                <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div className="max-w-5xl mx-auto px-4 h-16 flex items-center gap-3">
 
                     {/* Logo & Brand */}
-                    <Link to="/" className="flex items-center gap-3 group shrink-0">
+                    <Link to="/" className="flex items-center gap-2.5 group shrink-0 mr-1">
                         <img
-                            src="/logo.png"
-                            alt="Dribly Logo"
-                            className="h-10 w-auto group-hover:scale-110 transition-transform duration-300 drop-shadow-md"
+                            src="/logo.svg"
+                            alt="Dribly"
+                            className="h-9 w-auto group-hover:scale-110 transition-transform duration-300"
                         />
-                        <div className="flex flex-col">
-                            <span className="font-bold text-sm sm:text-lg leading-tight tracking-tight text-zinc-900 dark:text-white">
+                        <div className="hidden sm:flex flex-col">
+                            <span className="font-bold text-sm leading-tight tracking-tight text-zinc-900 dark:text-white">
                                 Dribly
                             </span>
-                            <span className="text-[8px] sm:text-[10px] uppercase tracking-widest text-zinc-500 font-medium group-hover:text-dribly-blue transition-colors">
-                                Basquetebol Português
+                            <span className="text-[8px] uppercase tracking-widest text-zinc-400 font-medium group-hover:text-dribly-blue transition-colors">
+                                Basquetebol PT
                             </span>
                         </div>
                     </Link>
 
+                    {/* Spacer - pushes actions to right */}
+                    <div className="flex-1" />
+
                     {/* Actions */}
-                    <div className="flex items-center gap-1 md:gap-2">
-                        {/* Search button */}
+                    <div className="flex items-center gap-1">
+                        {/* Search chip — shows club name if selected */}
                         <button
                             onClick={() => setSearchOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 transition-all"
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                                activeClub
+                                    ? 'border-dribly-blue/30 bg-dribly-blue/5 dark:bg-dribly-blue/10 text-dribly-blue hover:border-dribly-blue/50'
+                                    : 'border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/5'
+                            }`}
                         >
-                            <Search size={16} />
-                            <span className="hidden sm:inline">Pesquisar</span>
+                            <Search size={14} />
+                            {activeClub ? (
+                                <span className="max-w-[100px] truncate hidden sm:inline">{activeClub.name}</span>
+                            ) : (
+                                <span className="hidden sm:inline">Pesquisar</span>
+                            )}
                         </button>
 
-                        {/* Meu Clube */}
+                        {/* Meu Clube — only if club selected */}
                         {activeClub && (
                             <Link
                                 to={`/clube/${activeClub.slug}/home`}
-                                className={`${linkBase} ${isActive(`/clube/${activeClub.slug}`) ? linkActive : linkInactive}`}
+                                className={`${navPill} hidden sm:flex ${isActive(`/clube/${activeClub.slug}/home`) ? navPillActive : navPillInactive}`}
                             >
-                                <Home size={16} />
+                                <Home size={14} />
                                 <span>Meu Clube</span>
                             </Link>
                         )}
 
-                        {/* Jogos */}
+                        {/* Jogos — only if club selected */}
                         {activeClub && (
                             <Link
                                 to={`/clube/${activeClub.slug}/games`}
-                                className={`${linkBase} ${isActive(`/clube/${activeClub.slug}/games`) ? linkActive : linkInactive}`}
+                                className={`${navPill} hidden sm:flex ${isActive(`/clube/${activeClub.slug}/games`) ? navPillActive : navPillInactive}`}
                             >
-                                <Calendar size={16} />
+                                <Calendar size={14} />
                                 <span>Jogos</span>
                             </Link>
                         )}
 
-                        <Link to="/standings" className={`${linkBase} ${isActive('/standings') ? linkActive : linkInactive}`}>
-                            <BarChart2 size={16} />
+                        {/* Classificações */}
+                        <Link
+                            to="/standings"
+                            className={`${navPill} hidden sm:flex ${isActive('/standings') ? navPillActive : navPillInactive}`}
+                        >
+                            <BarChart2 size={14} />
                             <span>Classificações</span>
                         </Link>
 
-                        <div className="w-px h-6 bg-zinc-200 dark:bg-white/10 mx-1 hidden sm:block"></div>
+                        {/* Icon-only actions */}
+                        <div className="hidden sm:flex items-center gap-0.5 ml-1">
+                            <Link to="/about" className={`${navIcon} ${isActive('/about') ? 'text-dribly-blue bg-dribly-blue/10' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5'}`}
+                                aria-label="Sobre">
+                                <Info size={17} />
+                            </Link>
+                            <Link to="/install" className={`${navIcon} text-dribly-blue hover:bg-dribly-blue/10 transition-colors`}
+                                aria-label="Instalar">
+                                <Download size={17} />
+                            </Link>
+                            <button onClick={toggleTheme} className={`${navIcon} text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5`}
+                                aria-label="Tema">
+                                {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+                            </button>
+                        </div>
 
-                        <Link to="/about" className={`p-2 rounded-full transition-colors flex ${isActive('/about') ? 'bg-zinc-100 dark:bg-white/10 text-zinc-800 dark:text-white' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/10'}`}
-                            aria-label="Sobre"><Info size={18} /></Link>
-
-                        <Link
-                            to="/install"
-                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-dribly-blue transition-colors flex"
-                            aria-label="Instalar"
-                        >
-                            <Download size={18} />
-                        </Link>
-
-                        <button
-                            onClick={toggleTheme}
-                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-400 transition-colors"
-                            aria-label="Toggle Theme"
-                        >
-                            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                        </button>
+                        {/* Mobile-only compact actions */}
+                        <div className="flex sm:hidden items-center gap-0.5">
+                            <Link to="/standings" className={`${navIcon} ${isActive('/standings') ? 'text-dribly-blue' : 'text-zinc-400'}`}
+                                aria-label="Classificações">
+                                <BarChart2 size={18} />
+                            </Link>
+                            <button onClick={toggleTheme} className={`${navIcon} text-zinc-400`}
+                                aria-label="Tema">
+                                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </nav>
 
             {/* Main Content */}
-            <main className="flex-grow p-4 md:p-8 pb-24">
+            <main className="flex-grow pb-24">
                 <Outlet />
             </main>
 
             {/* Footer */}
             <footer className="hidden md:block bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-white/10 py-8">
-                <div className="max-w-4xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-zinc-500">
+                <div className="max-w-5xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-zinc-500">
                     <div className="flex items-center gap-2">
                         <span className="font-bold text-zinc-900 dark:text-white">Dribly</span>
                         <span className="text-zinc-400">•</span>
