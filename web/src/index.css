@@ -4,6 +4,7 @@
 
 :root {
   font-family: 'Outfit', sans-serif;
+  --club-color: #2563EB;
 }
 
 @layer base {

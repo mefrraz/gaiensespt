@@ -4,6 +4,36 @@ import { Users, ChevronRight, TrendingUp, TrendingDown, Minus } from 'lucide-rea
 import { useGames } from '../../hooks/useGames'
 import { SkeletonGameGrid } from '../../components/Skeleton'
 import { type Club } from '../../lib/ClubContext'
+import { type Match } from '../../components/types'
+
+/** Extract the team identifier from a full team name that includes the club name.
+ *  e.g. "FC Gaia Sub14 A" → "Sub14 A", "FC Gaia Séniores" → "Séniores"
+ *  Falls back to escalão if extraction fails.
+ */
+function extractTeamId(fullTeamName: string, clubName: string, fallbackEscalao: string): string {
+    const upperTeam = fullTeamName.toUpperCase()
+    const upperClub = clubName.toUpperCase()
+    // Remove the club name (with surrounding spaces/special chars)
+    let suffix = upperTeam
+        .replace(new RegExp(upperClub.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '')
+        .replace(/^[\s\-–—/]+/, '')
+        .replace(/[\s\-–—/]+$/, '')
+        .trim()
+    if (!suffix || suffix.length < 2) suffix = fallbackEscalao || fullTeamName
+    return suffix
+}
+
+interface TeamEntry {
+    teamId: string
+    escalao: string
+    wins: number
+    losses: number
+    draws: number
+    total: number
+    pct: number | null
+    lastResult: 'W' | 'L' | 'D' | null
+    lastGame: Match | null
+}
 
 function ClubTeams() {
     const { club } = useOutletContext<{ club: Club }>()
@@ -12,19 +42,32 @@ function ClubTeams() {
     const clubNameUpper = club.name.toUpperCase()
 
     const teams = useMemo(() => {
-        const escaloes = Array.from(new Set(games.map(g => g.escalao))).filter(Boolean).sort()
-        return escaloes.map(escalao => {
-            const teamGames = games.filter(g => g.escalao === escalao)
+        const teamMap = new Map<string, Match[]>()
+        games.forEach(g => {
+            let fullTeamName = ''
+            if (g.equipa_casa.toUpperCase().includes(clubNameUpper)) {
+                fullTeamName = g.equipa_casa
+            } else if (g.equipa_fora.toUpperCase().includes(clubNameUpper)) {
+                fullTeamName = g.equipa_fora
+            }
+            if (!fullTeamName) return
+            const teamId = extractTeamId(fullTeamName, club.name, g.escalao || '')
+            if (!teamMap.has(teamId)) teamMap.set(teamId, [])
+            teamMap.get(teamId)!.push(g)
+        })
+
+        const entries: TeamEntry[] = []
+        teamMap.forEach((teamGames, teamId) => {
+            const escalao = teamGames[0]?.escalao || ''
             const finished = teamGames.filter(g => g.status === 'FINALIZADO')
-            const lastGame = finished.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())[0]
+            const lastGame = finished.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())[0] || null
 
             let wins = 0, losses = 0, draws = 0
             finished.forEach(g => {
                 const clubHome = g.equipa_casa.toUpperCase().includes(clubNameUpper)
                 if (g.resultado_casa === null || g.resultado_fora === null) return
                 if (g.resultado_casa === g.resultado_fora) { draws++; return }
-                const clubWon = clubHome ? g.resultado_casa > g.resultado_fora : g.resultado_fora > g.resultado_casa
-                if (clubWon) wins++
+                if (clubHome ? g.resultado_casa > g.resultado_fora : g.resultado_fora > g.resultado_casa) wins++
                 else losses++
             })
 
@@ -39,9 +82,12 @@ function ClubTeams() {
                 else lastResult = 'L'
             }
 
-            return { escalao, wins, losses, draws, total, pct, lastResult, lastGame }
+            entries.push({ teamId, escalao, wins, losses, draws, total, pct, lastResult, lastGame })
         })
-    }, [games, clubNameUpper])
+
+        entries.sort((a, b) => a.teamId.localeCompare(b.teamId))
+        return entries
+    }, [games, clubNameUpper, club.name])
 
     if (loading) {
         return (
@@ -65,13 +111,13 @@ function ClubTeams() {
         <div className="max-w-xl mx-auto space-y-3 pb-20 px-3">
             <div className="pt-2 pb-1">
                 <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Equipas de {club.name}</h2>
-                <p className="text-xs text-zinc-500 mt-1">{teams.length} escalões encontrados</p>
+                <p className="text-xs text-zinc-500 mt-1">{teams.length} equipas encontradas</p>
             </div>
 
             {teams.map(team => (
                 <Link
-                    key={team.escalao}
-                    to={`/clube/${club.slug}/team/${encodeURIComponent(team.escalao)}`}
+                    key={team.teamId}
+                    to={`/clube/${club.slug}/team/${encodeURIComponent(team.teamId)}`}
                     className="glass-card p-5 flex items-center justify-between gap-4 group animate-slide-up"
                 >
                     <div className="flex items-center gap-4 min-w-0">
@@ -88,7 +134,7 @@ function ClubTeams() {
                         </div>
                         <div className="min-w-0">
                             <h3 className="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-dribly-blue transition-colors truncate">
-                                {team.escalao}
+                                {team.teamId}
                             </h3>
                             <div className="flex items-center gap-3 text-xs text-zinc-500 mt-1">
                                 {team.total > 0 && (

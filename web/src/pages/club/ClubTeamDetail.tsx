@@ -1,12 +1,27 @@
 import { useMemo } from 'react'
 import { Link, useParams, useOutletContext } from 'react-router-dom'
-import { ArrowLeft, TrendingUp, TrendingDown, Minus, Clock, ChevronRight } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useGames } from '../../hooks/useGames'
 import { SkeletonGameGrid } from '../../components/Skeleton'
-import { type Club } from '../../lib/ClubContext'
+import { GameCard } from '../../components/GameCard'
+import { type Club, useClubColor } from '../../lib/ClubContext'
+import { type Match } from '../../components/types'
+
+function extractTeamId(fullTeamName: string, clubName: string, fallbackEscalao: string): string {
+    const upperTeam = fullTeamName.toUpperCase()
+    const upperClub = clubName.toUpperCase()
+    let suffix = upperTeam
+        .replace(new RegExp(upperClub.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '')
+        .replace(/^[\s\-–—/]+/, '')
+        .replace(/[\s\-–—/]+$/, '')
+        .trim()
+    if (!suffix || suffix.length < 2) suffix = fallbackEscalao || fullTeamName
+    return suffix
+}
 
 function ClubTeamDetail() {
     const { club } = useOutletContext<{ club: Club }>()
+    const clubColor = useClubColor()
     const { escalao } = useParams<{ escalao: string }>()
     const decoded = decodeURIComponent(escalao || '')
     const { games: allGames, loading } = useGames('2025/2026', club.id, club.name)
@@ -14,8 +29,14 @@ function ClubTeamDetail() {
     const clubNameUpper = club.name.toUpperCase()
 
     const teamGames = useMemo(() =>
-        games.filter(g => g.escalao === decoded),
-    [games, decoded])
+        games.filter(g => {
+            let fullTeamName = ''
+            if (g.equipa_casa.toUpperCase().includes(clubNameUpper)) fullTeamName = g.equipa_casa
+            else if (g.equipa_fora.toUpperCase().includes(clubNameUpper)) fullTeamName = g.equipa_fora
+            if (!fullTeamName) return false
+            return extractTeamId(fullTeamName, club.name, g.escalao || '') === decoded
+        }),
+    [games, decoded, clubNameUpper, club.name])
 
     const finished = useMemo(() =>
         teamGames.filter(g => g.status === 'FINALIZADO').sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()),
@@ -50,6 +71,25 @@ function ClubTeamDetail() {
     })
     const total = wins + losses + draws
 
+    // Group games by date for the grid layout
+    const upcomingByDate = useMemo(() => {
+        const groups: Record<string, Match[]> = {}
+        upcoming.forEach(g => {
+            if (!groups[g.data]) groups[g.data] = []
+            groups[g.data].push(g)
+        })
+        return Object.entries(groups).sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
+    }, [upcoming])
+
+    const finishedByDate = useMemo(() => {
+        const groups: Record<string, Match[]> = {}
+        finished.forEach(g => {
+            if (!groups[g.data]) groups[g.data] = []
+            groups[g.data].push(g)
+        })
+        return Object.entries(groups).sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime())
+    }, [finished])
+
     const formatDate = (dateStr: string) => {
         const date = new Date(dateStr)
         const formatted = date.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'long' })
@@ -58,14 +98,14 @@ function ClubTeamDetail() {
 
     if (loading) {
         return (
-            <div className="max-w-xl mx-auto px-3 pt-4">
+            <div className="max-w-6xl mx-auto px-3 pt-4">
                 <SkeletonGameGrid days={2} count={3} />
             </div>
         )
     }
 
     return (
-        <div className="max-w-xl mx-auto space-y-4 pb-20 px-3">
+        <div className="max-w-6xl mx-auto pb-20 px-3 space-y-6">
             <div className="flex items-center justify-between pt-3">
                 <Link to={`/clube/${club.slug}/team`} className="p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
                     <ArrowLeft size={22} />
@@ -74,7 +114,7 @@ function ClubTeamDetail() {
                 <div className="w-10" />
             </div>
 
-            {/* Header */}
+            {/* Header Card */}
             <div className="glass-card p-5 animate-slide-up">
                 <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-2xl bg-dribly-blue/10 dark:bg-dribly-blue/20 flex items-center justify-center shrink-0">
@@ -86,7 +126,6 @@ function ClubTeamDetail() {
                     </div>
                 </div>
 
-                {/* Stats */}
                 {total > 0 && (
                     <div className="grid grid-cols-3 gap-3 mt-5 pt-5 border-t border-zinc-100 dark:border-white/5">
                         <div className="text-center">
@@ -104,7 +143,6 @@ function ClubTeamDetail() {
                     </div>
                 )}
 
-                {/* Form */}
                 {form.length > 0 && (
                     <div className="flex items-center gap-2 mt-4 pt-4 border-t border-zinc-100 dark:border-white/5">
                         <span className="text-[10px] font-bold text-zinc-500 uppercase">Forma:</span>
@@ -121,91 +159,60 @@ function ClubTeamDetail() {
                 )}
             </div>
 
-            {/* Upcoming Games */}
-            {upcoming.length > 0 && (
-                <div className="space-y-2 animate-slide-up">
-                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white px-1">Próximos Jogos</h3>
-                    <div className="space-y-2">
-                        {upcoming.map(match => {
-                            const slug = match.slug || ''
-                            const opponent = match.equipa_casa.toUpperCase().includes(clubNameUpper) ? match.equipa_fora : match.equipa_casa
-                            return (
-                                <Link to={`/game/${slug}?clube=${club.slug}`} key={slug} className="flex items-center gap-3 p-3 glass-card hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
-                                    <Clock size={12} className="text-dribly-blue shrink-0" />
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-xs text-zinc-900 dark:text-white truncate">
-                                            <span className="font-bold">{club.name.toUpperCase()}</span>
-                                            <span className="text-zinc-400 mx-1">vs</span>
-                                            <span>{opponent}</span>
-                                        </p>
-                                    </div>
-                                    <span className="text-xs text-zinc-500">{formatDate(match.data)}</span>
-                                    <ChevronRight size={12} className="text-zinc-400 group-hover:text-dribly-blue shrink-0" />
-                                </Link>
-                            )
-                        })}
-                    </div>
+            {/* Upcoming Games — GameCard grid */}
+            {upcomingByDate.length > 0 && (
+                <div className="space-y-4 animate-slide-up">
+                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Próximos Jogos</h3>
+                    {upcomingByDate.map(([date, dayGames]) => (
+                        <div key={date}>
+                            <div className="flex items-center gap-3 mb-3">
+                                <h4 className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest">{formatDate(date)}</h4>
+                                <div className="flex-1 h-px bg-zinc-200 dark:bg-white/5" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {dayGames.map(match => (
+                                    <GameCard
+                                        key={match.id || match.slug}
+                                        match={match}
+                                        mode="agenda"
+                                        clubName={club.name}
+                                        clubSlug={club.slug}
+                                        clubColor={clubColor}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
 
-            {/* Recent Results */}
-            {finished.length > 0 && (
-                <div className="space-y-2 animate-slide-up">
-                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white px-1">Últimos Resultados</h3>
-                    <div className="space-y-2">
-                        {finished.slice(0, 10).map(match => {
-                            const clubHome = match.equipa_casa.toUpperCase().includes(clubNameUpper)
-                            const opponent = clubHome ? match.equipa_fora : match.equipa_casa
-                            const clubScore = clubHome ? match.resultado_casa : match.resultado_fora
-                            const oppScore = clubHome ? match.resultado_fora : match.resultado_casa
-                            const won = clubScore !== null && oppScore !== null && clubScore > oppScore
-                            const draw = clubScore !== null && oppScore !== null && clubScore === oppScore
-                            const slug = match.slug || ''
-                            return (
-                                <Link to={`/game/${slug}?clube=${club.slug}`} key={slug} className="flex items-center gap-3 p-3 glass-card hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
-                                    {clubScore !== null && oppScore !== null ? (
-                                        draw ? <Minus size={14} className="text-blue-500 shrink-0" />
-                                        : won ? <TrendingUp size={14} className="text-green-500 shrink-0" />
-                                        : <TrendingDown size={14} className="text-red-500 shrink-0" />
-                                    ) : (
-                                        <Minus size={14} className="text-zinc-300 shrink-0" />
-                                    )}
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-xs text-zinc-900 dark:text-white truncate">
-                                            <span className="font-bold">{club.name.toUpperCase()}</span>
-                                            <span className="text-zinc-500 mx-1">{clubScore}-{oppScore}</span>
-                                            <span className="text-zinc-400 dark:text-zinc-500">{opponent}</span>
-                                        </p>
-                                    </div>
-                                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase shrink-0">{formatDate(match.data)}</span>
-                                    <ChevronRight size={12} className="text-zinc-400 group-hover:text-dribly-blue shrink-0" />
-                                </Link>
-                            )
-                        })}
-                    </div>
+            {/* Finished Games — GameCard grid */}
+            {finishedByDate.length > 0 && (
+                <div className="space-y-4 animate-slide-up">
+                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Últimos Resultados</h3>
+                    {finishedByDate.map(([date, dayGames]) => (
+                        <div key={date}>
+                            <div className="flex items-center gap-3 mb-3">
+                                <h4 className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest">{formatDate(date)}</h4>
+                                <div className="flex-1 h-px bg-zinc-200 dark:bg-white/5" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {dayGames.map(match => (
+                                    <GameCard
+                                        key={match.id || match.slug}
+                                        match={match}
+                                        mode="results"
+                                        clubName={club.name}
+                                        clubSlug={club.slug}
+                                        clubColor={clubColor}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
-
-            {/* Team Roster Placeholder */}
-            <div className="glass-card p-6 animate-slide-up text-center">
-                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-3">
-                    <UsersIcon size={24} className="text-zinc-400" />
-                </div>
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-1">Plantel</h3>
-                <p className="text-xs text-zinc-500">A informação do plantel estará disponível em breve.</p>
-            </div>
         </div>
-    )
-}
-
-function UsersIcon({ size, className }: { size: number; className?: string }) {
-    return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-        </svg>
     )
 }
 

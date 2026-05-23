@@ -7,6 +7,7 @@ interface GameCardProps {
   mode: 'agenda' | 'results'
   clubName?: string
   clubSlug?: string
+  clubColor?: string
 }
 
 function isClubWin(match: Match, clubName: string): boolean | 'draw' | null {
@@ -23,11 +24,12 @@ function hasHora(hora: string | null | undefined): boolean {
   return !!hora && hora.replace(/[^0-9]/g, '').length > 0
 }
 
-export function GameCard({ match, mode, clubName, clubSlug }: GameCardProps) {
+export function GameCard({ match, mode, clubName, clubSlug, clubColor }: GameCardProps) {
   const slug = match.slug || `${match.data}-${match.equipa_casa.toLowerCase().replace(/\s+/g, '-')}-${match.equipa_fora.toLowerCase().replace(/\s+/g, '-')}`
   const won = clubName ? isClubWin(match, clubName) : null
   const isLive = match.status === 'A DECORRER'
   const linkSlug = clubSlug ? `/game/${slug}?clube=${clubSlug}` : `/game/${slug}`
+  const accent = clubColor || '#2563EB'
 
   const badge = mode === 'agenda'
     ? null
@@ -39,8 +41,6 @@ export function GameCard({ match, mode, clubName, clubSlug }: GameCardProps) {
           ? { icon: Minus, label: 'EMPATE', className: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' }
           : { icon: Minus, label: 'FIN', className: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500' }
 
-  const accentColor = 'text-dribly-blue'
-
   return (
     <Link to={linkSlug} className="glass-card flex flex-col group active:scale-[0.98]">
       {/* Top bar */}
@@ -49,7 +49,7 @@ export function GameCard({ match, mode, clubName, clubSlug }: GameCardProps) {
           {mode === 'agenda' ? (
             hasHora(match.hora) ? (
               <>
-                <Clock size={12} className={`${accentColor} shrink-0`} strokeWidth={3} />
+                <Clock size={12} className="shrink-0" style={{ color: accent }} strokeWidth={3} />
                 <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 tracking-wider">
                   {match.hora!.slice(0, 5)}
                 </span>
@@ -86,14 +86,14 @@ export function GameCard({ match, mode, clubName, clubSlug }: GameCardProps) {
         <div className="flex items-center gap-1.5 truncate max-w-[70%]">
           {match.local ? (
             <>
-              <MapPin size={10} className={`shrink-0 ${accentColor}`} />
+              <MapPin size={10} className="shrink-0" style={{ color: accent }} />
               <span className="truncate text-zinc-500">{match.local}</span>
             </>
           ) : (
             <span className="truncate text-zinc-500">{match.competicao}</span>
           )}
         </div>
-        <ChevronRight size={14} className={`text-zinc-400 group-hover:${accentColor} transition-colors`} />
+        <ChevronRight size={14} className="text-zinc-400 group-hover:text-dribly-blue transition-colors" />
       </div>
     </Link>
   )

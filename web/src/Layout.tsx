@@ -4,13 +4,14 @@ import { Sun, Moon, Instagram, Github, Info, BarChart2, Search, Home, Calendar, 
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
 import { SearchModal } from './components/SearchModal'
-import { useClub } from './lib/ClubContext'
+import { useClub, useClubColor } from './lib/ClubContext'
 
 function Layout() {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
     const [searchOpen, setSearchOpen] = useState(false)
     const location = useLocation()
     const { favoriteClub, selectedClub } = useClub()
+    const clubColor = useClubColor()
 
     const activeClub = selectedClub || favoriteClub
 
@@ -33,7 +34,6 @@ function Layout() {
     }
 
     const navPill = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all'
-    const navPillActive = 'bg-dribly-blue text-white shadow-md shadow-blue-500/20'
     const navPillInactive = 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-700 dark:hover:text-zinc-200'
     const navIcon = 'p-2 rounded-full transition-colors'
 
@@ -44,12 +44,16 @@ function Layout() {
             <nav className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-white/10 shadow-sm">
                 <div className="max-w-5xl mx-auto px-4 h-16 flex items-center gap-3">
 
-                    {/* Logo & Brand — simple circle logo */}
+                    {/* Logo & Brand */}
                     <Link to="/" className="flex items-center gap-2.5 group shrink-0 mr-1">
-                        <div className="w-9 h-9 rounded-full bg-dribly-blue flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-md shadow-blue-500/20">
+                        <div
+                            className="w-9 h-9 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-md"
+                            style={{ backgroundColor: activeClub ? clubColor : '#2563EB', boxShadow: `0 4px 12px ${activeClub ? clubColor : '#2563EB'}40` }}
+                        >
                             <span className="text-white font-black text-base">D</span>
                         </div>
-                        <span className="hidden sm:inline font-bold text-sm text-zinc-900 dark:text-white group-hover:text-dribly-blue transition-colors">
+                        <span className="hidden sm:inline font-bold text-sm text-zinc-900 dark:text-white transition-colors"
+                            style={activeClub ? {} : { color: '' }}>
                             Dribly
                         </span>
                     </Link>
@@ -62,25 +66,27 @@ function Layout() {
                         {/* Search chip */}
                         <button
                             onClick={() => setSearchOpen(true)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border"
+                            style={
                                 activeClub
-                                    ? 'border-dribly-blue/30 bg-dribly-blue/5 dark:bg-dribly-blue/10 text-dribly-blue hover:border-dribly-blue/50'
-                                    : 'border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/5'
-                            }`}
+                                    ? { borderColor: clubColor + '40', backgroundColor: clubColor + '10', color: clubColor }
+                                    : { borderColor: '', color: '' }
+                            }
                         >
                             <Search size={14} />
                             {activeClub ? (
                                 <span className="max-w-[100px] truncate hidden sm:inline">{activeClub.name}</span>
                             ) : (
-                                <span className="hidden sm:inline">Pesquisar</span>
+                                <span className="hidden sm:inline text-zinc-500 dark:text-zinc-400">Pesquisar</span>
                             )}
                         </button>
 
-                        {/* Início (club home) */}
+                        {/* Início */}
                         {activeClub && (
                             <Link
                                 to={`/clube/${activeClub.slug}/home`}
-                                className={`${navPill} hidden sm:flex ${isActive(`/clube/${activeClub.slug}/home`) ? navPillActive : navPillInactive}`}
+                                className={`${navPill} hidden sm:flex ${isActive(`/clube/${activeClub.slug}/home`) ? '' : navPillInactive}`}
+                                style={isActive(`/clube/${activeClub.slug}/home`) ? { backgroundColor: clubColor, color: '#fff', boxShadow: `0 4px 12px ${clubColor}40` } : {}}
                             >
                                 <Home size={14} />
                                 <span>Início</span>
@@ -91,7 +97,8 @@ function Layout() {
                         {activeClub && (
                             <Link
                                 to={`/clube/${activeClub.slug}/games`}
-                                className={`${navPill} hidden sm:flex ${isActive(`/clube/${activeClub.slug}/games`) ? navPillActive : navPillInactive}`}
+                                className={`${navPill} hidden sm:flex ${isActive(`/clube/${activeClub.slug}/games`) ? '' : navPillInactive}`}
+                                style={isActive(`/clube/${activeClub.slug}/games`) ? { backgroundColor: clubColor, color: '#fff', boxShadow: `0 4px 12px ${clubColor}40` } : {}}
                             >
                                 <Calendar size={14} />
                                 <span>Jogos</span>
@@ -102,7 +109,8 @@ function Layout() {
                         {activeClub && (
                             <Link
                                 to={`/clube/${activeClub.slug}/team`}
-                                className={`${navPill} hidden sm:flex ${isActive(`/clube/${activeClub.slug}/team`) ? navPillActive : navPillInactive}`}
+                                className={`${navPill} hidden sm:flex ${isActive(`/clube/${activeClub.slug}/team`) ? '' : navPillInactive}`}
+                                style={isActive(`/clube/${activeClub.slug}/team`) ? { backgroundColor: clubColor, color: '#fff', boxShadow: `0 4px 12px ${clubColor}40` } : {}}
                             >
                                 <Users size={14} />
                                 <span>Equipas</span>
@@ -112,7 +120,8 @@ function Layout() {
                         {/* Classificações */}
                         <Link
                             to="/standings"
-                            className={`${navPill} hidden sm:flex ${isActive('/standings') ? navPillActive : navPillInactive}`}
+                            className={`${navPill} hidden sm:flex ${isActive('/standings') ? '' : navPillInactive}`}
+                            style={isActive('/standings') ? { backgroundColor: activeClub ? clubColor : '#2563EB', color: '#fff', boxShadow: `0 4px 12px ${activeClub ? clubColor : '#2563EB'}40` } : {}}
                         >
                             <BarChart2 size={14} />
                             <span>Classificações</span>
@@ -121,7 +130,8 @@ function Layout() {
                         {/* Sobre */}
                         <Link
                             to="/about"
-                            className={`${navPill} hidden sm:flex ${isActive('/about') ? navPillActive : navPillInactive}`}
+                            className={`${navPill} hidden sm:flex ${isActive('/about') ? '' : navPillInactive}`}
+                            style={isActive('/about') ? { backgroundColor: activeClub ? clubColor : '#2563EB', color: '#fff', boxShadow: `0 4px 12px ${activeClub ? clubColor : '#2563EB'}40` } : {}}
                         >
                             <Info size={14} />
                             <span>Sobre</span>
@@ -135,11 +145,13 @@ function Layout() {
 
                         {/* Mobile-only compact actions */}
                         <div className="flex sm:hidden items-center gap-0.5">
-                            <Link to="/standings" className={`${navIcon} ${isActive('/standings') ? 'text-dribly-blue' : 'text-zinc-400'}`}
+                            <Link to="/standings" className={`${navIcon} ${isActive('/standings') ? '' : 'text-zinc-400'}`}
+                                style={isActive('/standings') ? { color: clubColor } : {}}
                                 aria-label="Classificações">
                                 <BarChart2 size={18} />
                             </Link>
-                            <Link to="/about" className={`${navIcon} ${isActive('/about') ? 'text-dribly-blue' : 'text-zinc-400'}`}
+                            <Link to="/about" className={`${navIcon} ${isActive('/about') ? '' : 'text-zinc-400'}`}
+                                style={isActive('/about') ? { color: clubColor } : {}}
                                 aria-label="Sobre">
                                 <Info size={18} />
                             </Link>
@@ -152,7 +164,7 @@ function Layout() {
                 </div>
             </nav>
 
-            {/* Main Content — with top spacing so navbar doesn't glue to content */}
+            {/* Main Content */}
             <main className="flex-grow pt-4 md:pt-6 pb-24">
                 <Outlet />
             </main>
@@ -166,11 +178,12 @@ function Layout() {
                         <span>&copy; {new Date().getFullYear()}</span>
                     </div>
                     <div className="flex gap-4">
-                        <a href="https://www.instagram.com/gaiensespt" target="_blank" rel="noopener noreferrer" className="hover:text-dribly-blue transition-colors">
-                            <Instagram size={20} />
+                        <a href="https://www.instagram.com/gaiensespt" target="_blank" rel="noopener noreferrer" className="transition-colors"
+                            style={{ ':hover': { color: clubColor } } as React.CSSProperties}>
+                            <Instagram size={20} className="hover:text-[var(--club-color)] transition-colors" />
                         </a>
-                        <a href="https://github.com/mefrraz/gaiensespt" target="_blank" rel="noopener noreferrer" className="hover:text-dribly-blue transition-colors">
-                            <Github size={20} />
+                        <a href="https://github.com/mefrraz/gaiensespt" target="_blank" rel="noopener noreferrer" className="transition-colors">
+                            <Github size={20} className="hover:text-[var(--club-color)] transition-colors" />
                         </a>
                     </div>
                 </div>

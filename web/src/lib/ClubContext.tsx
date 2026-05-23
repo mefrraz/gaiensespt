@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react'
 import { supabase } from './supabase'
 
 export interface Club {
@@ -7,7 +7,29 @@ export interface Club {
     slug: string
     search_name: string
     logo_url: string | null
+    primary_color?: string | null
 }
+
+const CLUB_COLOR_PALETTE = [
+    '#2563EB', // blue
+    '#7C3AED', // purple
+    '#DB2777', // pink
+    '#DC2626', // red
+    '#CA8A04', // amber
+    '#16A34A', // green
+    '#0891B2', // cyan
+    '#4F46E5', // indigo
+    '#9333EA', // violet
+    '#EA580C', // orange
+    '#059669', // emerald
+    '#0D9488', // teal
+]
+
+function getPaletteColor(clubId: number): string {
+    return CLUB_COLOR_PALETTE[clubId % CLUB_COLOR_PALETTE.length]
+}
+
+const DEFAULT_COLOR = '#2563EB'
 
 interface ClubContextType {
     selectedClub: Club | null
@@ -17,6 +39,7 @@ interface ClubContextType {
     clubs: Club[]
     loadClubs: () => Promise<void>
     getClubBySlug: (slug: string) => Promise<Club | null>
+    clubColor: string
 }
 
 const ClubContext = createContext<ClubContextType | null>(null)
@@ -28,11 +51,24 @@ export function ClubProvider({ children }: { children: ReactNode }) {
     const [favoriteClub, setFavoriteClubState] = useState<Club | null>(null)
     const [clubs, setClubs] = useState<Club[]>([])
 
+    const activeClub = selectedClub || favoriteClub
+
+    const clubColor = useMemo(() => {
+        if (!activeClub) return DEFAULT_COLOR
+        if (activeClub.primary_color) return activeClub.primary_color
+        return getPaletteColor(activeClub.id)
+    }, [activeClub])
+
+    // Set CSS custom property on document root when color changes
+    useEffect(() => {
+        document.documentElement.style.setProperty('--club-color', clubColor)
+    }, [clubColor])
+
     const loadClubs = useCallback(async () => {
         if (clubs.length > 0) return
         const { data } = await supabase
             .from('clubs')
-            .select('id, name, slug, search_name, logo_url')
+            .select('id, name, slug, search_name, logo_url, primary_color')
             .order('name')
         if (data) setClubs(data as Club[])
     }, [clubs.length])
@@ -42,7 +78,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
         if (cached) return cached
         const { data } = await supabase
             .from('clubs')
-            .select('id, name, slug, search_name, logo_url')
+            .select('id, name, slug, search_name, logo_url, primary_color')
             .eq('slug', slug)
             .single()
         if (data) {
@@ -80,6 +116,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
             clubs,
             loadClubs,
             getClubBySlug,
+            clubColor,
         }}>
             {children}
         </ClubContext.Provider>
@@ -90,4 +127,10 @@ export function useClub(): ClubContextType {
     const ctx = useContext(ClubContext)
     if (!ctx) throw new Error('useClub must be used within ClubProvider')
     return ctx
+}
+
+/** Shorthand for just the club color */
+export function useClubColor(): string {
+    const { clubColor } = useClub()
+    return clubColor
 }
