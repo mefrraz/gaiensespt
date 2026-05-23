@@ -32,7 +32,7 @@ function Layout() {
         return location.pathname.startsWith(path)
     }
 
-    const navPill = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all'
+    const navPill = 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all'
     const navPillActive = 'bg-dribly-purple text-white shadow-sm'
     const navPillInactive = 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-700 dark:hover:text-zinc-200'
     const navIcon = 'p-2 rounded-full transition-colors'
@@ -40,76 +40,71 @@ function Layout() {
     return (
         <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 transition-colors duration-300 flex flex-col font-sans">
 
-            {/* Navbar — transparent on scroll via backdrop-blur */}
             <nav className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-white/10 shadow-sm">
-                <div className="max-w-5xl mx-auto px-4 h-16 flex items-center gap-2">
+                <div className="max-w-5xl mx-auto px-4 h-14 sm:h-16 flex items-center gap-2 sm:gap-3">
 
-                    {/* Logo — icon + "dribly." text */}
-                    <Link to="/" className="flex items-center gap-2.5 group shrink-0 mr-1">
-                        <div className="w-9 h-9 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                    {/* Logo — bigger, always visible with text */}
+                    <Link to="/" className="flex items-center gap-2 sm:gap-2.5 group shrink-0 mr-1">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
                             <img src="/logo.svg" alt="Dribly" className="w-full h-full object-contain" />
                         </div>
-                        <span className="hidden sm:flex items-baseline font-bold text-sm text-zinc-900 dark:text-zinc-100">
-                            dribly<span className="text-dribly-purple">.</span>
+                        <span className="flex items-baseline font-bold text-sm sm:text-base text-zinc-900 dark:text-zinc-100">
+                            Dribly<span className="text-dribly-purple">.</span>
                         </span>
                     </Link>
 
-                    {/* LEFT navigation */}
-                    <div className="flex items-center gap-1 ml-1">
+                    {/* LEFT navigation — desktop only pills */}
+                    <div className="hidden sm:flex items-center gap-1 ml-1">
                         <Link to="/" className={`${navPill} ${isActive('/') && !activeClub ? navPillActive : navPillInactive}`}>
                             <Home size={14} />
-                            <span className="hidden sm:inline">Início</span>
+                            Início
                         </Link>
                         {activeClub && (
                             <Link to={`/clube/${activeClub.slug}/home`} className={`${navPill} ${isActive(`/clube/${activeClub.slug}/home`) ? navPillActive : navPillInactive}`}>
                                 <Home size={14} />
-                                <span className="hidden sm:inline">Meu Clube</span>
+                                Meu Clube
                             </Link>
                         )}
                         {activeClub && (
                             <Link to={`/clube/${activeClub.slug}/games`} className={`${navPill} ${isActive(`/clube/${activeClub.slug}/games`) ? navPillActive : navPillInactive}`}>
                                 <Calendar size={14} />
-                                <span className="hidden sm:inline">Jogos</span>
+                                Jogos
                             </Link>
                         )}
                         <Link to="/standings" className={`${navPill} ${isActive('/standings') ? navPillActive : navPillInactive}`}>
                             <BarChart2 size={14} />
-                            <span className="hidden sm:inline">Classificações</span>
+                            Classificações
                         </Link>
                     </div>
 
-                    {/* Spacer */}
                     <div className="flex-1" />
 
                     {/* RIGHT side */}
                     <div className="flex items-center gap-1">
+                        {/* Search chip — visible on both mobile and desktop */}
                         <button onClick={() => setSearchOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/5">
+                            className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/5">
                             <Search size={14} />
                             {activeClub ? (
-                                <span className="max-w-[100px] truncate hidden sm:inline">{activeClub.name}</span>
+                                <span className="max-w-[80px] sm:max-w-[100px] truncate hidden sm:inline">{activeClub.name}</span>
                             ) : (
                                 <span className="hidden sm:inline">Pesquisar</span>
                             )}
                         </button>
-                        <Link to="/about" className={`${navPill} ${isActive('/about') ? navPillActive : navPillInactive}`}>
+
+                        {/* Sobre — pill on desktop, icon on mobile */}
+                        <Link to="/about" className={`hidden sm:flex ${navPill} ${isActive('/about') ? navPillActive : navPillInactive}`}>
                             <Info size={14} />
-                            <span className="hidden sm:inline">Sobre</span>
+                            Sobre
                         </Link>
+                        <Link to="/about" className={`sm:hidden ${navIcon} ${isActive('/about') ? 'text-dribly-purple bg-dribly-purple/10' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5'}`} aria-label="Sobre">
+                            <Info size={18} />
+                        </Link>
+
+                        {/* Theme toggle */}
                         <button onClick={toggleTheme} className={`${navIcon} text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5`} aria-label="Tema">
                             {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
                         </button>
-                        <div className="flex sm:hidden items-center gap-0.5">
-                            <Link to="/standings" className={`${navIcon} ${isActive('/standings') ? 'text-dribly-purple' : 'text-zinc-400'}`} aria-label="Classificações">
-                                <BarChart2 size={18} />
-                            </Link>
-                            <Link to="/about" className={`${navIcon} ${isActive('/about') ? 'text-dribly-purple' : 'text-zinc-400'}`} aria-label="Sobre">
-                                <Info size={18} />
-                            </Link>
-                            <button onClick={toggleTheme} className={`${navIcon} text-zinc-400`} aria-label="Tema">
-                                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                            </button>
-                        </div>
                     </div>
                 </div>
             </nav>

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Calendar, BarChart2, Search } from 'lucide-react'
+import { Home, Calendar, BarChart2, Building2 } from 'lucide-react'
 import { useClub } from '../lib/ClubContext'
 
 function BottomNav() {
@@ -22,23 +22,23 @@ function BottomNav() {
             <div className="flex items-center justify-around h-16">
                 <Link
                     to="/"
-                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive('/') && !isActive(`/clube/${activeClub?.slug}`) ? 'text-dribly-blue' : 'text-zinc-400 dark:text-zinc-500'}`}
+                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive('/') && !isActive(`/clube/${activeClub?.slug}`) ? 'text-dribly-purple' : 'text-zinc-400 dark:text-zinc-500'}`}
                 >
-                    <Search size={18} strokeWidth={isActive('/') ? 2.5 : 2} />
+                    <Building2 size={18} strokeWidth={isActive('/') ? 2.5 : 2} />
                     <span className="text-[10px] font-medium">Início</span>
                 </Link>
 
                 <Link
                     to={clubHomePath}
-                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive(`/clube/${activeClub?.slug}/home`) ? 'text-dribly-blue' : 'text-zinc-400 dark:text-zinc-500'}`}
+                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive(`/clube/${activeClub?.slug}/home`) ? 'text-dribly-purple' : 'text-zinc-400 dark:text-zinc-500'}`}
                 >
                     <Home size={18} strokeWidth={isActive(`/clube/${activeClub?.slug}/home`) ? 2.5 : 2} />
-                    <span className="text-[10px] font-medium">Clube</span>
+                    <span className="text-[10px] font-medium">Meu Clube</span>
                 </Link>
 
                 <Link
                     to={clubGamesPath}
-                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive(`/clube/${activeClub?.slug}/games`) ? 'text-dribly-blue' : 'text-zinc-400 dark:text-zinc-500'}`}
+                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive(`/clube/${activeClub?.slug}/games`) ? 'text-dribly-purple' : 'text-zinc-400 dark:text-zinc-500'}`}
                 >
                     <Calendar size={18} strokeWidth={isActive(`/clube/${activeClub?.slug}/games`) ? 2.5 : 2} />
                     <span className="text-[10px] font-medium">Jogos</span>
@@ -46,10 +46,10 @@ function BottomNav() {
 
                 <Link
                     to="/standings"
-                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive('/standings') ? 'text-dribly-blue' : 'text-zinc-400 dark:text-zinc-500'}`}
+                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive('/standings') ? 'text-dribly-purple' : 'text-zinc-400 dark:text-zinc-500'}`}
                 >
                     <BarChart2 size={18} strokeWidth={isActive('/standings') ? 2.5 : 2} />
-                    <span className="text-[10px] font-medium">Tabelas</span>
+                    <span className="text-[10px] font-medium">Classificações</span>
                 </Link>
             </div>
         </div>
