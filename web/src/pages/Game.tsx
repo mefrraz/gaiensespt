@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink, Calendar, Minus } from 'lucide-react'
+import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink, Calendar, Minus, Check } from 'lucide-react'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 
@@ -11,6 +11,7 @@ function Game() {
     const [recentGames, setRecentGames] = useState<Match[]>([])
     const [upcomingH2H, setUpcomingH2H] = useState<Match[]>([])
     const [loading, setLoading] = useState(true)
+    const [copied, setCopied] = useState(false)
 
     useEffect(() => {
         if (!slug) return
@@ -97,16 +98,28 @@ function Game() {
             })
     }, [match, slug])
 
-    const shareGame = () => {
+    const shareGame = async () => {
         if (!match) return
+        const hasScore = match.resultado_casa !== null && match.resultado_fora !== null
+        const scoreText = hasScore ? `${match.resultado_casa} - ${match.resultado_fora}` : 'vs'
+        const emoji = hasScore
+            ? (match.resultado_casa! > match.resultado_fora! ? '✅' : match.resultado_casa! === match.resultado_fora! ? '🤝' : '❌')
+            : '🏀'
+
+        const shareData = {
+            title: `FC Gaia ${scoreText} ${match.equipa_fora.toUpperCase().includes('GAIA') ? match.equipa_casa : match.equipa_fora}`,
+            text: `${emoji} ${match.equipa_casa} ${scoreText} ${match.equipa_fora}\n📅 ${new Date(match.data).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}\n🏆 ${match.competicao}\n\n🔗 ${window.location.href}`,
+            url: window.location.href
+        }
+
         if (navigator.share) {
-            navigator.share({
-                title: `FC Gaia vs ${match.equipa_fora}`,
-                text: `${match.equipa_casa} vs ${match.equipa_fora} — ${match.resultado_casa ?? '?'} : ${match.resultado_fora ?? '?'}`,
-                url: window.location.href
-            })
+            try {
+                await navigator.share(shareData)
+            } catch { /* user cancelled */ }
         } else {
-            navigator.clipboard.writeText(window.location.href)
+            await navigator.clipboard.writeText(shareData.text)
+            setCopied(true)
+            setTimeout(() => setCopied(false), 2000)
         }
     }
 
@@ -154,8 +167,8 @@ function Game() {
                     <ArrowLeft size={22} />
                 </button>
                 <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500">FICHA DE JOGO</span>
-                <button onClick={shareGame} className="p-2 -mr-2 text-zinc-500 hover:text-gaia-yellow transition-colors">
-                    <Share2 size={18} />
+                <button onClick={shareGame} className={`p-2 -mr-2 transition-colors ${copied ? 'text-green-500' : 'text-zinc-500 hover:text-gaia-yellow'}`}>
+                    {copied ? <Check size={18} /> : <Share2 size={18} />}
                 </button>
             </div>
 
