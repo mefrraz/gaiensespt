@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink, Calendar } from 'lucide-react'
+import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink, Calendar, Minus } from 'lucide-react'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 
@@ -140,10 +140,11 @@ function Game() {
     const foraHighlight = gaiaScore && match.resultado_fora! > match.resultado_casa!
     const dateFormatted = new Date(match.data).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
     const hasHora = match.hora && match.hora.replace(/[^0-9]/g, "").length > 0
-    const isGaiaWin = gaiaScore && (
+    const isGaiaWin = !gaiaScore ? null : (
         (match.equipa_casa.toUpperCase().includes('GAIA') && match.resultado_casa! > match.resultado_fora!) ||
         (match.equipa_fora.toUpperCase().includes('GAIA') && match.resultado_fora! > match.resultado_casa!)
     )
+    const isDraw = gaiaScore && match.resultado_casa === match.resultado_fora
 
     return (
         <div className="max-w-xl mx-auto pb-24 px-3 space-y-3">
@@ -169,11 +170,13 @@ function Game() {
                     <div className="flex justify-center mb-5 min-h-[1.5rem]">
                         {isFinished && (
                             <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${
-                                isGaiaWin
-                                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                                    : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+                                isDraw
+                                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                                    : isGaiaWin
+                                        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                                        : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
                             }`}>
-                                {isGaiaWin ? 'VITÓRIA' : 'DERROTA'}
+                                {isDraw ? 'EMPATE' : isGaiaWin ? 'VITÓRIA' : 'DERROTA'}
                             </span>
                         )}
                         {isLive && (
@@ -269,12 +272,15 @@ function Game() {
                             const gaiaScore = isGaiaHome ? game.resultado_casa : game.resultado_fora
                             const oppScore = isGaiaHome ? game.resultado_fora : game.resultado_casa
                             const won = gaiaScore !== null && oppScore !== null && gaiaScore > oppScore
+                            const draw = gaiaScore !== null && oppScore !== null && gaiaScore === oppScore
                             const shortDate = new Date(game.data).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' })
 
                             return (
                                 <Link to={`/game/${game.slug}`} key={game.slug} className="flex items-center gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
                                     {won ? (
                                         <TrendingUp size={12} className="text-green-500 shrink-0" />
+                                    ) : draw ? (
+                                        <Minus size={12} className="text-blue-500 shrink-0" />
                                     ) : (
                                         <TrendingDown size={12} className="text-red-500 shrink-0" />
                                     )}

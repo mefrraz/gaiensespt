@@ -40,10 +40,14 @@ export async function fetchFPBGames(
   const calGames = parseGamesHTML(calHtml)
   const resGames = parseGamesHTML(resHtml)
 
-  // Merge: results page games override calendar page games (has scores)
+  // Merge: results page games override calendar page games (only if scores exist)
   const merged = new Map<string, Match>()
   for (const g of calGames) merged.set(g.id, g)
-  for (const g of resGames) merged.set(g.id, { ...merged.get(g.id), ...g })
+  for (const g of resGames) {
+    if (g.resultado_casa !== null && g.resultado_fora !== null) {
+      merged.set(g.id, { ...merged.get(g.id), ...g })
+    }
+  }
 
   return Array.from(merged.values())
 }
@@ -121,11 +125,6 @@ function parseGamesHTML(html: string): Match[] {
           resultado_casa = parseInt(scoreEls[0].textContent?.trim() || '0') || null
           resultado_fora = parseInt(scoreEls[1].textContent?.trim() || '0') || null
         }
-      }
-
-      // Fallback: check for victory_font class
-      if (status === 'AGENDADO' && link.querySelector('.victory_font')) {
-        status = 'FINALIZADO'
       }
 
       // Fallback: time text might show score pattern "78-65"

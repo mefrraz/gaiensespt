@@ -7,8 +7,9 @@ interface GameCardProps {
   mode: 'agenda' | 'results'
 }
 
-function isGaiaWin(match: Match): boolean | null {
+function isGaiaWin(match: Match): boolean | 'draw' | null {
   if (match.resultado_casa === null || match.resultado_fora === null) return null
+  if (match.resultado_casa === match.resultado_fora) return 'draw'
   const gaiaHome = match.equipa_casa.toUpperCase().includes('GAIA')
   return gaiaHome
     ? match.resultado_casa > match.resultado_fora
@@ -30,7 +31,9 @@ export function GameCard({ match, mode }: GameCardProps) {
       ? { icon: TrendingUp, label: 'VITÓRIA', className: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' }
       : won === false
         ? { icon: TrendingDown, label: 'DERROTA', className: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' }
-        : { icon: Minus, label: 'FIN', className: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500' }
+        : won === 'draw'
+          ? { icon: Minus, label: 'EMPATE', className: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' }
+          : { icon: Minus, label: 'FIN', className: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500' }
 
   return (
     <Link to={`/game/${slug}`} className="glass-card flex flex-col group active:scale-[0.98]">
