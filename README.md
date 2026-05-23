@@ -13,9 +13,10 @@ App web (PWA) para acompanhar jogos, resultados e classificação do **FC Gaia �
 | Frontend | React 18 + TypeScript + Vite |
 | Estilos | Tailwind CSS |
 | Base de dados | Supabase (PostgreSQL) |
+| Estado partilhado | GameDataContext + localStorage cache |
 | Deploy | Vercel (static + Edge Functions) |
 | API externa | [fpb.pt](https://www.fpb.pt) (scraping WordPress) |
-| PWA | vite-plugin-pwa (service worker + cache) |
+| PWA | vite-plugin-pwa (service worker + cache 15min) |
 
 ## Fluxo de Dados
 
@@ -28,8 +29,8 @@ Browser → Vercel Edge Function (/api/fpb)
 ```
 
 - **Primeira visita:** Browser busca da FPB via Edge Function → parser → mostra + guarda em Supabase
-- **Visitas seguintes (≤5min):** Lê de Supabase (rápido)
-- **Visitas seguintes (>5min):** Mostra dados de Supabase + atualiza em background da FPB
+- **Visitas seguintes (≤15min):** Lê de Supabase (rápido) ou do localStorage cache (instantâneo)
+- **Visitas seguintes (>15min):** Mostra dados do localStorage + atualiza em background da FPB
 
 ## Setup Local
 
@@ -37,7 +38,9 @@ Browser → Vercel Edge Function (/api/fpb)
 git clone https://github.com/mefrraz/gaiensespt.git
 cd gaiensespt/web
 npm install
-cp .env.example .env   # preencher VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY
+# Criar ficheiro .env com:
+# VITE_SUPABASE_URL=https://[project].supabase.co
+# VITE_SUPABASE_ANON_KEY=[anon public key]
 npm run dev
 ```
 
@@ -54,11 +57,12 @@ VITE_SUPABASE_ANON_KEY=[anon public key]
 web/
   src/
     lib/
-      fpbApi.ts        — cliente FPB (fetch + parser HTML)
-      supabase.ts      — cliente Supabase
+      fpbApi.ts           — cliente FPB (fetch + parser HTML)
+      supabase.ts         — cliente Supabase
+      GameDataContext.tsx  — contexto React para dados partilhados
     hooks/
-      useGames.ts      — hook SWR com cache 5min
-      useTimeAgo.ts    — hook "há X minutos"
+      useGames.ts          — hook SWR com cache 15min + localStorage
+      useTimeAgo.ts        — hook "há X minutos"
     components/
       Skeleton.tsx     — loading skeletons
       EmptyState.tsx   — estado vazio com ícone

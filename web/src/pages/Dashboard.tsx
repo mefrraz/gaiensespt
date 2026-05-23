@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { Calendar, Trophy, ChevronRight, Clock, MapPin, Github } from 'lucide-react'
+import { Calendar, Trophy, ChevronRight, Clock, MapPin } from 'lucide-react'
 import { useGameData } from '../lib/GameDataContext'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
@@ -61,18 +61,6 @@ function Dashboard() {
         return { wins, losses, total, pct }
     }, [games])
 
-    const lastFive = useMemo(() => {
-        return games
-            .filter(g => g.status === 'FINALIZADO')
-            .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
-            .slice(0, 5)
-            .map(g => {
-                const gaiaHome = g.equipa_casa.toUpperCase().includes('GAIA')
-                const gaiaWon = gaiaHome ? g.resultado_casa! > g.resultado_fora! : g.resultado_fora! > g.resultado_casa!
-                return gaiaWon ? 'W' : 'L'
-            })
-    }, [games])
-
     if (loading) {
         return (
             <div className="max-w-xl mx-auto space-y-5 pb-20 px-3">
@@ -85,7 +73,7 @@ function Dashboard() {
         )
     }
 
-    const mainColumn = (
+    return (
         <div className="max-w-xl mx-auto space-y-5 pb-20 px-3">
             {/* Hero: Next Game */}
             {nextGame && (
@@ -227,90 +215,9 @@ function Dashboard() {
                                 <span className="text-zinc-400 ml-1">J</span>
                             </div>
                         </div>
-                        <div className="flex gap-1.5 ml-auto items-center">
-                            {lastFive.map((r, i) => (
-                                <span key={i} className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center ${
-                                    r === 'W' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                                }`}>{r}</span>
-                            ))}
-                        </div>
                     </div>
                 </div>
             )}
-
-            {/* GitHub */}
-            <a href="https://github.com/mefrraz/gaiensespt" target="_blank" rel="noopener noreferrer" className="glass-card p-4 flex items-center gap-4 group animate-slide-up hover:border-zinc-300 dark:hover:border-white/20 transition-all">
-                <div className="p-2 rounded-full bg-zinc-100 dark:bg-white/5 text-zinc-500 group-hover:text-gaia-yellow transition-colors">
-                    <Github size={20} />
-                </div>
-                <div>
-                    <p className="text-sm font-bold text-zinc-900 dark:text-white">Open Source</p>
-                    <p className="text-xs text-zinc-500">Código fonte no GitHub</p>
-                </div>
-                <ChevronRight size={14} className="ml-auto text-zinc-400 group-hover:text-gaia-yellow transition-colors" />
-            </a>
-        </div>
-    )
-
-    return (
-        <div className="max-w-6xl mx-auto flex gap-6">
-            {mainColumn}
-            <aside className="hidden lg:block w-72 shrink-0 pt-3">
-                <div className="sticky top-24 space-y-4">
-
-                    {/* Sidebar: Season Record mini */}
-                    {seasonRecord.total > 0 && (
-                        <div className="glass-card p-4">
-                            <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Registo</h4>
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="text-center">
-                                    <span className="text-2xl font-bold text-zinc-900 dark:text-white">{seasonRecord.pct}%</span>
-                                    <p className="text-[9px] text-zinc-500 uppercase mt-0.5">Vitórias</p>
-                                </div>
-                                <div className="flex gap-3 text-sm">
-                                    <div><span className="font-bold text-green-600">{seasonRecord.wins}</span><span className="text-zinc-400 ml-0.5">V</span></div>
-                                    <div><span className="font-bold text-red-600">{seasonRecord.losses}</span><span className="text-zinc-400 ml-0.5">D</span></div>
-                                </div>
-                            </div>
-                            <div className="flex gap-1">
-                                {lastFive.map((r, i) => (
-                                    <span key={i} className={`flex-1 h-1.5 rounded-full ${
-                                        r === 'W' ? 'bg-green-500' : 'bg-red-500'
-                                    }`} />
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Sidebar: Next Up mini */}
-                    {nextGame && (
-                        <div className="glass-card p-4">
-                            <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Próximo Jogo</h4>
-                            <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">{nextGame.equipa_fora.toUpperCase().includes('GAIA') ? nextGame.equipa_casa : nextGame.equipa_fora}</p>
-                            <p className="text-xs text-zinc-500 mt-1">{formatDate(nextGame.data)} · {(nextGame.hora || '00:00').slice(0, 5)}</p>
-                            {nextGame.local && (
-                                <p className="text-[10px] text-zinc-400 mt-1 truncate">{nextGame.local}</p>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Sidebar: Quick links */}
-                    <div className="glass-card p-4">
-                        <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Links</h4>
-                        <div className="space-y-2 text-sm">
-                            <Link to="/games?view=agenda" className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 hover:text-gaia-yellow transition-colors">
-                                <Calendar size={14} /> Agenda
-                            </Link>
-                            <Link to="/standings" className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 hover:text-gaia-yellow transition-colors">
-                                <Trophy size={14} /> Classificações
-                            </Link>
-                            <Link to="/about" className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 hover:text-gaia-yellow transition-colors">
-                                <span className="text-sm">ℹ️</span> Sobre
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </aside>
         </div>
     )
 }
