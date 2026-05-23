@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Outlet, Link } from 'react-router-dom'
+import { Outlet, Link, useLocation } from 'react-router-dom'
 import { Sun, Moon, Instagram, Github, Home, Info, Calendar, BarChart2, Download } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
@@ -8,6 +8,7 @@ import { GameDataContext } from './lib/GameDataContext'
 
 function Layout() {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
+    const location = useLocation()
 
     const { games, loading, lastUpdated, error, refresh } = useGames('2025/2026', 119)
 
@@ -23,6 +24,15 @@ function Layout() {
     const toggleTheme = () => {
         setTheme(theme === 'dark' ? 'light' : 'dark')
     }
+
+    function isActive(path: string) {
+        if (path === '/') return location.pathname === '/'
+        return location.pathname.startsWith(path)
+    }
+
+    const linkBase = 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-xs font-bold'
+    const linkActive = 'bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white shadow-sm'
+    const linkInactive = 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5'
 
     return (
         <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 transition-colors duration-300 flex flex-col font-sans">
@@ -50,39 +60,25 @@ function Layout() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-1 md:gap-2">
-                        <Link
-                            to="/"
-                            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-400 transition-colors"
-                        >
+                        <Link to="/" className={`${linkBase} ${isActive('/') ? linkActive : linkInactive}`}>
                             <Home size={16} />
-                            <span className="text-xs font-bold">Início</span>
+                            <span>Início</span>
                         </Link>
 
-                        <Link
-                            to="/classificacoes"
-                            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-400 transition-colors"
-                        >
+                        <Link to="/classificacoes" className={`${linkBase} ${isActive('/classificacoes') ? linkActive : linkInactive}`}>
                             <BarChart2 size={16} />
-                            <span className="text-xs font-bold">Classificações</span>
+                            <span>Classificações</span>
                         </Link>
 
-                        <Link
-                            to="/games?view=agenda"
-                            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-100/50 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-900 dark:text-white transition-all border border-transparent hover:border-zinc-200 dark:hover:border-white/10"
-                        >
-                            <div className="text-gaia-yellow"><Calendar size={16} /></div>
-                            <span className="text-xs font-bold">Jogos</span>
+                        <Link to="/games?view=agenda" className={`${linkBase} ${isActive('/games') ? linkActive : linkInactive}`}>
+                            <Calendar size={16} />
+                            <span>Jogos</span>
                         </Link>
 
                         <div className="w-px h-6 bg-zinc-200 dark:bg-white/10 mx-1 hidden sm:block"></div>
 
-                        <Link
-                            to="/about"
-                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-400 transition-colors flex"
-                            aria-label="Sobre"
-                        >
-                            <Info size={18} />
-                        </Link>
+                        <Link to="/about" className={`p-2 rounded-full transition-colors flex ${isActive('/about') ? 'bg-zinc-100 dark:bg-white/10 text-zinc-800 dark:text-white' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/10'}`}
+                            aria-label="Sobre"><Info size={18} /></Link>
 
                         <Link
                             to="/install"
