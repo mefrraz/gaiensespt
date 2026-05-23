@@ -45,18 +45,6 @@ function Dashboard() {
         return gaiaHome ? match.resultado_casa > match.resultado_fora : match.resultado_fora > match.resultado_casa
     }
 
-    if (loading) {
-        return (
-            <div className="max-w-xl mx-auto space-y-5 pb-20 px-3">
-                <SkeletonHero />
-                <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse h-32" />
-                    <div className="rounded-2xl bg-gaia-yellow/30 animate-pulse h-32" />
-                </div>
-            </div>
-        )
-    }
-
     const seasonRecord = useMemo(() => {
         const finished = games.filter(g => g.status === 'FINALIZADO')
         let wins = 0, losses = 0
@@ -84,6 +72,18 @@ function Dashboard() {
                 return gaiaWon ? 'W' : 'L'
             })
     }, [games])
+
+    if (loading) {
+        return (
+            <div className="max-w-xl mx-auto space-y-5 pb-20 px-3">
+                <SkeletonHero />
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse h-32" />
+                    <div className="rounded-2xl bg-gaia-yellow/30 animate-pulse h-32" />
+                </div>
+            </div>
+        )
+    }
 
     const mainColumn = (
         <div className="max-w-xl mx-auto space-y-5 pb-20 px-3">
