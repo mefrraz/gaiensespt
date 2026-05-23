@@ -7,13 +7,11 @@ import { SkeletonGameGrid } from '../../components/Skeleton'
 import { EmptyState } from '../../components/EmptyState'
 import { GameCard } from '../../components/GameCard'
 import { SegmentControl } from '../../components/SegmentControl'
-import { useClubColor } from '../../lib/ClubContext'
 import { Match } from '../../components/types'
 import { type Club } from '../../lib/ClubContext'
 
 function ClubGames() {
     const { club } = useOutletContext<{ club: Club }>()
-    const clubColor = useClubColor()
     const [searchParams, setSearchParams] = useSearchParams()
 
     const [view, setView] = useState<'agenda' | 'results'>(() => {
@@ -155,7 +153,7 @@ function ClubGames() {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                 {groupedMatches[date].map(match => (
-                                    <GameCard key={match.id || match.slug} match={match} mode={view === 'agenda' ? 'agenda' : 'results'} clubName={club.name} clubSlug={club.slug} clubColor={clubColor} />
+                                    <GameCard key={match.id || match.slug} match={match} mode={view === 'agenda' ? 'agenda' : 'results'} clubName={club.name} clubSlug={club.slug} />
                                 ))}
                             </div>
                         </div>

@@ -7,7 +7,6 @@ interface GameCardProps {
   mode: 'agenda' | 'results'
   clubName?: string
   clubSlug?: string
-  clubColor?: string
 }
 
 function isClubWin(match: Match, clubName: string): boolean | 'draw' | null {
@@ -24,12 +23,11 @@ function hasHora(hora: string | null | undefined): boolean {
   return !!hora && hora.replace(/[^0-9]/g, '').length > 0
 }
 
-export function GameCard({ match, mode, clubName, clubSlug, clubColor }: GameCardProps) {
+export function GameCard({ match, mode, clubName, clubSlug }: GameCardProps) {
   const slug = match.slug || `${match.data}-${match.equipa_casa.toLowerCase().replace(/\s+/g, '-')}-${match.equipa_fora.toLowerCase().replace(/\s+/g, '-')}`
   const won = clubName ? isClubWin(match, clubName) : null
   const isLive = match.status === 'A DECORRER'
   const linkSlug = clubSlug ? `/game/${slug}?clube=${clubSlug}` : `/game/${slug}`
-  const accent = clubColor || '#7C3AED'
 
   const badge = mode === 'agenda'
     ? null
@@ -49,7 +47,7 @@ export function GameCard({ match, mode, clubName, clubSlug, clubColor }: GameCar
           {mode === 'agenda' ? (
             hasHora(match.hora) ? (
               <>
-                <Clock size={12} className="shrink-0" style={{ color: accent }} strokeWidth={3} />
+                <Clock size={12} className="text-dribly-purple shrink-0" strokeWidth={3} />
                 <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 tracking-wider">
                   {match.hora!.slice(0, 5)}
                 </span>
@@ -86,7 +84,7 @@ export function GameCard({ match, mode, clubName, clubSlug, clubColor }: GameCar
         <div className="flex items-center gap-1.5 truncate max-w-[70%]">
           {match.local ? (
             <>
-              <MapPin size={10} className="shrink-0" style={{ color: accent }} />
+              <MapPin size={10} className="shrink-0 text-dribly-purple" />
               <span className="truncate text-zinc-500">{match.local}</span>
             </>
           ) : (

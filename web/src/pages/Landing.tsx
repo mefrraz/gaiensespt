@@ -1,10 +1,15 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Search, ChevronRight } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { GameCard } from '../components/GameCard'
 import { useClub, type Club } from '../lib/ClubContext'
 import { type Match } from '../components/types'
+
+/** Normalize string: remove accents, lowercase, trim */
+function normalize(s: string): string {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+}
 
 const POPULAR_COMPETITIONS = [
     'Liga Betclic Masculina',
@@ -26,6 +31,14 @@ function Landing() {
     const dropdownRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate()
     const { clubs, loadClubs, favoriteClub } = useClub()
+
+    // Pre-normalize all club names for fast search
+    const normalizedClubs = useMemo(() =>
+        clubs.map(c => ({
+            ...c,
+            _n: normalize(c.search_name || c.name),
+        })),
+    [clubs])
 
     useEffect(() => { loadClubs() }, [loadClubs])
 
@@ -51,14 +64,12 @@ function Landing() {
             setSelectedIdx(-1)
             return
         }
-        const q = query.toLowerCase()
-        const filtered = clubs.filter(c =>
-            c.search_name?.includes(q) || c.name.toLowerCase().includes(q)
-        ).slice(0, 6)
-        setResults(filtered)
+        const q = normalize(query)
+        const filtered = normalizedClubs.filter(c => c._n.includes(q))
+        setResults(filtered.slice(0, 20))
         setShowDropdown(true)
         setSelectedIdx(-1)
-    }, [query, clubs])
+    }, [query, normalizedClubs])
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {

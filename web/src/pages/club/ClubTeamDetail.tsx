@@ -3,7 +3,7 @@ import { Link, useParams, useOutletContext } from 'react-router-dom'
 import { ArrowLeft, Clock, Users } from 'lucide-react'
 import { useGames } from '../../hooks/useGames'
 import { SkeletonGameGrid } from '../../components/Skeleton'
-import { type Club, useClubColor } from '../../lib/ClubContext'
+import { type Club } from '../../lib/ClubContext'
 
 function extractTeamId(fullTeamName: string, clubName: string, fallbackEscalao: string): string {
     const upperTeam = fullTeamName.toUpperCase()
@@ -25,7 +25,6 @@ function formatDate(dateStr: string) {
 
 function ClubTeamDetail() {
     const { club } = useOutletContext<{ club: Club }>()
-    const clubColor = useClubColor()
     const { escalao } = useParams<{ escalao: string }>()
     const decoded = decodeURIComponent(escalao || '')
     const { games: allGames, loading } = useGames('2025/2026', club.id, club.name)
@@ -97,8 +96,8 @@ function ClubTeamDetail() {
             <div className="max-w-xl mx-auto px-3">
                 <div className="glass-card p-5 animate-slide-up">
                     <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: clubColor + '15' }}>
-                            <span className="text-xl font-black" style={{ color: clubColor }}>{decoded.charAt(0).toUpperCase()}</span>
+                        <div className="w-14 h-14 rounded-2xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0">
+                            <span className="text-xl font-black text-dribly-purple">{decoded.charAt(0).toUpperCase()}</span>
                         </div>
                         <div className="min-w-0">
                             <h1 className="text-lg font-bold text-zinc-900 dark:text-white truncate">{decoded}</h1>
@@ -145,7 +144,7 @@ function ClubTeamDetail() {
                 <div className="animate-slide-up">
                     <div className="flex items-center justify-between px-4 mb-3">
                         <h3 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: clubColor }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-dribly-purple animate-pulse" />
                             Próximos Jogos
                         </h3>
                     </div>
@@ -160,7 +159,7 @@ function ClubTeamDetail() {
                                     className="min-w-[240px] glass-card p-4 flex flex-col gap-3 shrink-0 hover:border-dribly-blue/30 group"
                                 >
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[10px] font-bold uppercase tracking-wide truncate max-w-[140px]" style={{ color: clubColor }}>{match.competicao}</span>
+                                        <span className="text-[10px] font-bold text-dribly-purple uppercase tracking-wide truncate max-w-[140px]">{match.competicao}</span>
                                         {match.hora && match.hora.replace(/[^0-9]/g, '').length > 0 && (
                                             <span className="text-[10px] font-bold text-zinc-500 flex items-center gap-1 shrink-0">
                                                 <Clock size={10} />
@@ -173,7 +172,7 @@ function ClubTeamDetail() {
                                         <div className="flex-1 flex items-center gap-2 min-w-0 justify-end">
                                             <p className="text-xs font-bold text-zinc-900 dark:text-white leading-tight line-clamp-1 text-right">
                                                 {isClubHome ? (
-                                                    <span style={{ color: clubColor }}>{club.name.toUpperCase()}</span>
+                                                    <span className="text-dribly-purple font-bold">{club.name.toUpperCase()}</span>
                                                 ) : (
                                                     match.equipa_casa
                                                 )}
@@ -201,7 +200,7 @@ function ClubTeamDetail() {
                                             )}
                                             <p className="text-xs font-bold text-zinc-900 dark:text-white leading-tight line-clamp-1">
                                                 {!isClubHome ? (
-                                                    <span style={{ color: clubColor }}>{club.name.toUpperCase()}</span>
+                                                    <span className="text-dribly-purple font-bold">{club.name.toUpperCase()}</span>
                                                 ) : (
                                                     match.equipa_fora
                                                 )}
@@ -225,7 +224,7 @@ function ClubTeamDetail() {
                 <div className="animate-slide-up">
                     <div className="flex items-center justify-between px-4 mb-3">
                         <h3 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: clubColor }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-dribly-purple" />
                             Últimos Resultados
                         </h3>
                     </div>
@@ -244,7 +243,7 @@ function ClubTeamDetail() {
                                     className="min-w-[240px] glass-card p-4 flex flex-col gap-3 shrink-0 hover:border-dribly-blue/30 group"
                                 >
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[10px] font-bold uppercase tracking-wide truncate max-w-[120px]" style={{ color: clubColor }}>{match.competicao}</span>
+                                        <span className="text-[10px] font-bold text-dribly-purple uppercase tracking-wide truncate max-w-[120px]">{match.competicao}</span>
                                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                                             draw ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' :
                                             won ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
@@ -258,7 +257,7 @@ function ClubTeamDetail() {
                                         <div className="flex-1 text-right min-w-0">
                                             <p className="text-xs font-bold text-zinc-900 dark:text-white leading-tight line-clamp-1">
                                                 {isClubHome ? (
-                                                    <span style={{ color: clubColor }}>{club.name.toUpperCase()}</span>
+                                                    <span className="text-dribly-purple font-bold">{club.name.toUpperCase()}</span>
                                                 ) : (
                                                     match.equipa_casa
                                                 )}
@@ -270,7 +269,7 @@ function ClubTeamDetail() {
                                         <div className="flex-1 min-w-0">
                                             <p className="text-xs font-bold text-zinc-900 dark:text-white leading-tight line-clamp-1">
                                                 {!isClubHome ? (
-                                                    <span style={{ color: clubColor }}>{club.name.toUpperCase()}</span>
+                                                    <span className="text-dribly-purple font-bold">{club.name.toUpperCase()}</span>
                                                 ) : (
                                                     match.equipa_fora
                                                 )}

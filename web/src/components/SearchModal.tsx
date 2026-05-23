@@ -1,8 +1,12 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, X, Building2, Trophy } from 'lucide-react'
 import { useClub, type Club } from '../lib/ClubContext'
 import { supabase } from '../lib/supabase'
+
+function normalize(s: string): string {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+}
 
 interface CompetitionResult {
     competition_id: number
@@ -25,6 +29,13 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     const navigate = useNavigate()
     const { clubs, loadClubs } = useClub()
 
+    const normalizedClubs = useMemo(() =>
+        clubs.map(c => ({
+            ...c,
+            _n: normalize(c.search_name || c.name),
+        })),
+    [clubs])
+
     useEffect(() => {
         if (isOpen) {
             setQuery('')
@@ -43,11 +54,13 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             setSelectedIndex(-1)
             return
         }
-        const q = query.toLowerCase()
-        const filteredClubs = clubs.filter(c =>
-            c.search_name?.includes(q) || c.name.toLowerCase().includes(q)
-        ).slice(0, 8)
-        setClubResults(filteredClubs)
+        const q = normalize(query)
+        const filtered = normalizedClubs
+            .filter(c => c._n.includes(q))
+            .slice(0, 15)
+        // Remove _n property before setting state
+        const clean = filtered.map(({ _n, ...rest }) => rest as Club)
+        setClubResults(clean)
 
         const timeout = setTimeout(async () => {
             const { data } = await supabase
@@ -55,7 +68,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 .select('competition_id, competition_name, association_id, association_name')
                 .ilike('competition_name', `%${query}%`)
                 .eq('season', '2025/2026')
-                .limit(5)
+                .limit(8)
             if (data) {
                 const unique = new Map<number, CompetitionResult>()
                 for (const r of data) {
