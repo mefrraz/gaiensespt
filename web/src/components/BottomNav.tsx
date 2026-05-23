@@ -14,7 +14,7 @@ function BottomNav() {
     const navItems = [
         { icon: Home, label: 'Início', path: '/' },
         { icon: Calendar, label: 'Jogos', path: '/games' },
-        { icon: BarChart2, label: 'Tabelas', path: '/standings' },
+        { icon: BarChart2, label: 'Tabelas', path: '/classificacoes' },
     ]
 
     return (

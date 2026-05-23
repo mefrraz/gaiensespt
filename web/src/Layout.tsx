@@ -59,7 +59,7 @@ function Layout() {
                         </Link>
 
                         <Link
-                            to="/standings"
+                            to="/classificacoes"
                             className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-400 transition-colors"
                         >
                             <BarChart2 size={16} />
