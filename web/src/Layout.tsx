@@ -3,6 +3,11 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { Sun, Moon, Instagram, Github, Info, Calendar, BarChart2, Download } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
+import Dashboard from './pages/Dashboard'
+import Games from './pages/Games'
+import Standings from './pages/Standings'
+
+const SWIPE_PAGES = ['/', '/games', '/standings']
 
 function Layout() {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
@@ -10,66 +15,15 @@ function Layout() {
     const navigate = useNavigate()
     const touchStartX = useRef(0)
     const touchStartY = useRef(0)
-    const contentRef = useRef<HTMLDivElement>(null)
+    const dragOffsetRef = useRef(0)
     const isSwiping = useRef(false)
+    const isDragging = useRef(false)
+    const carouselRef = useRef<HTMLDivElement>(null)
 
-    const pages = ['/', '/games', '/standings']
-    const isSwipePage = pages.includes(location.pathname)
-    const currentIndex = pages.indexOf(location.pathname)
+    const isSwipePage = SWIPE_PAGES.includes(location.pathname)
+    const currentIndex = SWIPE_PAGES.indexOf(location.pathname)
 
-    const handleTouchStart = (e: React.TouchEvent) => {
-        touchStartX.current = e.touches[0].clientX
-        touchStartY.current = e.touches[0].clientY
-        isSwiping.current = false
-    }
-
-    const handleTouchMove = (e: React.TouchEvent) => {
-        if (!isSwipePage || !contentRef.current || !touchStartX.current) return
-        const deltaX = e.touches[0].clientX - touchStartX.current
-        const deltaY = e.touches[0].clientY - touchStartY.current
-
-        if (!isSwiping.current) {
-            if (Math.abs(deltaY) > Math.abs(deltaX) || Math.abs(deltaX) < 10) return
-            isSwiping.current = true
-        }
-
-        if (deltaX > 0 && currentIndex <= 0) {
-            contentRef.current.style.transform = `translateX(${deltaX * 0.2}px)`
-            contentRef.current.style.transition = 'none'
-            return
-        }
-        if (deltaX < 0 && currentIndex >= pages.length - 1) {
-            contentRef.current.style.transform = `translateX(${deltaX * 0.2}px)`
-            contentRef.current.style.transition = 'none'
-            return
-        }
-
-        contentRef.current.style.transform = `translateX(${deltaX}px)`
-        contentRef.current.style.transition = 'none'
-    }
-
-    const handleTouchEnd = (e: React.TouchEvent) => {
-        if (!isSwipePage || !contentRef.current || !touchStartX.current) return
-        const deltaX = e.changedTouches[0].clientX - touchStartX.current
-        touchStartX.current = 0
-        isSwiping.current = false
-
-        if (Math.abs(deltaX) > 50) {
-            const direction = deltaX > 0 ? 1 : -1
-            const targetIndex = direction > 0 ? currentIndex - 1 : currentIndex + 1
-            if (targetIndex < 0 || targetIndex >= pages.length) {
-                contentRef.current.style.transition = 'transform 0.25s ease-out'
-                contentRef.current.style.transform = 'translateX(0px)'
-                return
-            }
-            contentRef.current.style.transition = 'transform 0.15s ease-out'
-            contentRef.current.style.transform = `translateX(${direction * window.innerWidth}px)`
-            setTimeout(() => navigate(pages[targetIndex]), 150)
-        } else {
-            contentRef.current.style.transition = 'transform 0.25s ease-out'
-            contentRef.current.style.transform = 'translateX(0px)'
-        }
-    }
+    const [carouselTarget, setCarouselTarget] = useState<number | null>(null)
 
     useEffect(() => {
         if (theme === 'dark') {
@@ -83,6 +37,69 @@ function Layout() {
     const toggleTheme = () => {
         setTheme(theme === 'dark' ? 'light' : 'dark')
     }
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.touches[0].clientX
+        touchStartY.current = e.touches[0].clientY
+        isSwiping.current = false
+        isDragging.current = false
+        dragOffsetRef.current = 0
+    }
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (!isSwipePage || !carouselRef.current) return
+        const deltaX = e.touches[0].clientX - touchStartX.current
+        const deltaY = e.touches[0].clientY - touchStartY.current
+
+        if (!isSwiping.current) {
+            if (Math.abs(deltaY) > Math.abs(deltaX) || Math.abs(deltaX) < 10) return
+            isSwiping.current = true
+        }
+
+        isDragging.current = true
+        const idx = carouselTarget ?? currentIndex
+
+        if (deltaX > 0 && idx <= 0) {
+            dragOffsetRef.current = deltaX * 0.2
+        } else if (deltaX < 0 && idx >= SWIPE_PAGES.length - 1) {
+            dragOffsetRef.current = deltaX * 0.2
+        } else {
+            dragOffsetRef.current = deltaX
+        }
+
+        carouselRef.current.style.transform = `translateX(${-(idx * 100) + (dragOffsetRef.current / window.innerWidth * 100)}%)`
+        carouselRef.current.style.transition = 'none'
+    }
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        if (!isSwipePage || !carouselRef.current) return
+        const deltaX = e.changedTouches[0].clientX - touchStartX.current
+        const idx = carouselTarget ?? currentIndex
+        isDragging.current = false
+        dragOffsetRef.current = 0
+
+        if (Math.abs(deltaX) > 50) {
+            const dir = deltaX > 0 ? -1 : 1
+            const target = idx + dir
+            if (target >= 0 && target < SWIPE_PAGES.length) {
+                setCarouselTarget(target)
+                carouselRef.current.style.transition = 'transform 0.2s ease-out'
+                carouselRef.current.style.transform = `translateX(${-(target * 100)}%)`
+                setTimeout(() => {
+                    setCarouselTarget(null)
+                    navigate(SWIPE_PAGES[target])
+                }, 200)
+            } else {
+                carouselRef.current.style.transition = 'transform 0.25s ease-out'
+                carouselRef.current.style.transform = `translateX(${-(idx * 100)}%)`
+            }
+        } else {
+            carouselRef.current.style.transition = 'transform 0.25s ease-out'
+            carouselRef.current.style.transform = `translateX(${-(idx * 100)}%)`
+        }
+    }
+
+    const displayIndex = carouselTarget ?? currentIndex
 
     return (
         <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 transition-colors duration-300 flex flex-col font-sans">
@@ -156,10 +173,31 @@ function Layout() {
             </nav>
 
             {/* Main Content */}
-            <main className="flex-grow p-4 md:p-8 pb-24 overflow-hidden overscroll-x-none" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-                <div ref={contentRef} key={location.pathname}>
+            <main className="flex-grow min-h-0 p-4 md:p-8 pb-24 overflow-hidden overscroll-x-none" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+                {isSwipePage ? (
+                    <div className="relative w-full h-full overflow-hidden">
+                        <div
+                            ref={carouselRef}
+                            style={{
+                                display: 'flex',
+                                height: '100%',
+                                transform: `translateX(${-(displayIndex * 100)}%)`,
+                            }}
+                        >
+                            <div key="/" className="w-full shrink-0 h-full overflow-y-auto">
+                                <Dashboard />
+                            </div>
+                            <div key="/games" className="w-full shrink-0 h-full overflow-y-auto">
+                                <Games />
+                            </div>
+                            <div key="/standings" className="w-full shrink-0 h-full overflow-y-auto">
+                                <Standings />
+                            </div>
+                        </div>
+                    </div>
+                ) : (
                     <Outlet />
-                </div>
+                )}
             </main>
 
             {/* Footer */}
