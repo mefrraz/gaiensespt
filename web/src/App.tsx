@@ -17,9 +17,9 @@ function App() {
                     <Route index element={<Dashboard />} />
                     <Route path="games" element={<Games />} />
                     <Route path="game/:slug" element={<Game />} />
-                    <Route path="classificacoes" element={<Standings />} />
-                    <Route path="classificacoes/:associationId" element={<AssociationCompetitions />} />
-                    <Route path="classificacoes/:associationId/:competitionId" element={<CompetitionPhases />} />
+                    <Route path="standings" element={<Standings />} />
+                    <Route path="standings/:associationId" element={<AssociationCompetitions />} />
+                    <Route path="standings/:associationId/:competitionId" element={<CompetitionPhases />} />
                     <Route path="about" element={<About />} />
                     <Route path="install" element={<Install />} />
                 </Route>

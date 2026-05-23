@@ -51,7 +51,7 @@ export default function CompetitionPhases() {
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-[#09090b] dark:via-zinc-950 dark:to-[#09090b]">
             <div className="max-w-4xl mx-auto px-3 sm:px-5 pt-6 sm:pt-8 pb-16">
-                <Link to={`/classificacoes/${assocId}`}
+                <Link to={`/standings/${assocId}`}
                     className="inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors mb-4 group">
                     <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
                     {assocName || 'Competições'}

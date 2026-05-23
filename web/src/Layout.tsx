@@ -12,6 +12,8 @@ function Layout() {
 
     const { games, loading, lastUpdated, error, refresh } = useGames('2025/2026', 119)
 
+    useEffect(() => { window.scrollTo(0, 0) }, [location.pathname])
+
     useEffect(() => {
         if (theme === 'dark') {
             document.documentElement.classList.add('dark')
@@ -65,7 +67,7 @@ function Layout() {
                             <span>Início</span>
                         </Link>
 
-                        <Link to="/classificacoes" className={`${linkBase} ${isActive('/classificacoes') ? linkActive : linkInactive}`}>
+                        <Link to="/standings" className={`${linkBase} ${isActive('/standings') ? linkActive : linkInactive}`}>
                             <BarChart2 size={16} />
                             <span>Classificações</span>
                         </Link>

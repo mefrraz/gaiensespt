@@ -120,7 +120,7 @@ function Dashboard() {
                         <h3 className="text-zinc-900 dark:text-white font-bold text-lg leading-tight">Jogos<br />& Agenda</h3>
                     </div>
                 </Link>
-                <Link to="/classificacoes" className="relative overflow-hidden rounded-2xl bg-gaia-yellow border border-gaia-yellow p-5 h-32 group shadow-sm shadow-yellow-500/10 transition-all active:scale-[0.98] hover:shadow-md">
+                <Link to="/standings" className="relative overflow-hidden rounded-2xl bg-gaia-yellow border border-gaia-yellow p-5 h-32 group shadow-sm shadow-yellow-500/10 transition-all active:scale-[0.98] hover:shadow-md">
                     <Trophy size={56} className="absolute top-0 right-0 text-black/20 transform -rotate-12 translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform" />
                     <div className="relative z-10 h-full flex flex-col justify-between">
                         <div className="w-10 h-10 rounded-full bg-black/10 flex items-center justify-center text-black">
