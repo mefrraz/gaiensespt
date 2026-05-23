@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Calendar, Trophy, Filter, RefreshCw, AlertCircle } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { useGames } from '../hooks/useGames'
+import { useGameData } from '../lib/GameDataContext'
 import { useTimeAgo } from '../hooks/useTimeAgo'
 import { SkeletonGameGrid } from '../components/Skeleton'
 import { EmptyState } from '../components/EmptyState'
@@ -20,7 +20,7 @@ function Games() {
     const [filterEscalao, setFilterEscalao] = useState<string>('Todos')
     const [escaloes, setEscaloes] = useState<string[]>([])
 
-    const { games: allGames, loading, lastUpdated, error, refresh } = useGames('2025/2026', 119)
+    const { games: allGames, loading, lastUpdated, error, refresh } = useGameData()
 
     const matches = allGames || []
     const timeAgo = useTimeAgo(lastUpdated)

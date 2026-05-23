@@ -6,6 +6,8 @@ import BottomNav from './components/BottomNav'
 import Dashboard from './pages/Dashboard'
 import Games from './pages/Games'
 import Standings from './pages/Standings'
+import { useGames } from './hooks/useGames'
+import { GameDataContext } from './lib/GameDataContext'
 
 const SWIPE_PAGES = ['/', '/games', '/standings']
 
@@ -24,6 +26,8 @@ function Layout() {
     const currentIndex = SWIPE_PAGES.indexOf(location.pathname)
 
     const [carouselTarget, setCarouselTarget] = useState<number | null>(null)
+
+    const { games, loading, lastUpdated, error, refresh } = useGames('2025/2026', 119)
 
     useEffect(() => {
         if (theme === 'dark') {
@@ -182,17 +186,20 @@ function Layout() {
                                 display: 'flex',
                                 height: '100%',
                                 transform: `translateX(${-(displayIndex * 100)}%)`,
+                                transition: 'transform 0.25s ease-out',
                             }}
                         >
-                            <div key="/" className="w-full shrink-0 h-full overflow-y-auto">
-                                <Dashboard />
-                            </div>
-                            <div key="/games" className="w-full shrink-0 h-full overflow-y-auto">
-                                <Games />
-                            </div>
-                            <div key="/standings" className="w-full shrink-0 h-full overflow-y-auto">
-                                <Standings />
-                            </div>
+                            <GameDataContext.Provider value={{ games, loading, lastUpdated, error, refresh }}>
+                                <div key="/" className="w-full shrink-0 h-full overflow-y-auto">
+                                    <Dashboard />
+                                </div>
+                                <div key="/games" className="w-full shrink-0 h-full overflow-y-auto">
+                                    <Games />
+                                </div>
+                                <div key="/standings" className="w-full shrink-0 h-full overflow-y-auto">
+                                    <Standings />
+                                </div>
+                            </GameDataContext.Provider>
                         </div>
                     </div>
                 ) : (

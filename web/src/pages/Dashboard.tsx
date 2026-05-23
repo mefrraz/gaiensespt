@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Calendar, Trophy, ChevronRight, Clock, MapPin } from 'lucide-react'
-import { useGames } from '../hooks/useGames'
+import { useGameData } from '../lib/GameDataContext'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 
@@ -10,7 +10,7 @@ function Dashboard() {
     const [upcomingGames, setUpcomingGames] = useState<Match[]>([])
     const [recentResults, setRecentResults] = useState<Match[]>([])
 
-    const { games: allGames, loading } = useGames('2025/2026', 119)
+    const { games: allGames, loading } = useGameData()
     const games = allGames || []
 
     useEffect(() => {
