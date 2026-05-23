@@ -5,6 +5,31 @@ import { Match } from '../components/types'
 
 const CACHE_MINUTES = 15
 
+const LS_KEY = (season: string) => `games_cache_${season}`
+const LS_TS = (season: string) => `games_cache_ts_${season}`
+
+function loadLocalCache(season: string): Match[] {
+    try {
+        const stored = localStorage.getItem(LS_KEY(season))
+        const storedTs = localStorage.getItem(LS_TS(season))
+        if (stored && storedTs) {
+            const parsed = JSON.parse(stored) as Match[]
+            const age = Date.now() - parseInt(storedTs)
+            if (parsed.length > 0 && age < CACHE_MINUTES * 60000) {
+                return parsed
+            }
+        }
+    } catch { /* localStorage unavailable */ }
+    return []
+}
+
+function saveLocalCache(season: string, games: Match[]) {
+    try {
+        localStorage.setItem(LS_KEY(season), JSON.stringify(games))
+        localStorage.setItem(LS_TS(season), Date.now().toString())
+    } catch { /* localStorage full or unavailable */ }
+}
+
 function getTableName(season: string): string {
   return `games_${season.replace('/', '_')}`
 }
@@ -17,13 +42,21 @@ function slugify(s: string): string {
 }
 
 export function useGames(season = '2025/2026', clube = 119) {
-  const [games, setGames] = useState<Match[]>([])
-  const [loading, setLoading] = useState(true)
+  const localCache = loadLocalCache(season)
+  const [games, setGames] = useState<Match[]>(localCache)
+  const [loading, setLoading] = useState(localCache.length === 0)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
   const gamesRef = useRef<Match[]>([])
 
   const tableName = getTableName(season)
+
+  // Persist games to localStorage whenever they change
+  useEffect(() => {
+    if (games.length > 0) {
+      saveLocalCache(season, games)
+    }
+  }, [games, season])
 
   const refresh = useCallback(async () => {
     try {
@@ -99,7 +132,9 @@ export function useGames(season = '2025/2026', clube = 119) {
     let cancelled = false
 
     const loadData = async () => {
-      setLoading(true)
+      if (localCache.length === 0) {
+        setLoading(true)
+      }
       setError(null)
 
       try {

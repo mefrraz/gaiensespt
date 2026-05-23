@@ -1,4 +1,4 @@
-import { ArrowLeft, Instagram, Code, Database, RefreshCw, ExternalLink, Smartphone } from 'lucide-react'
+import { ArrowLeft, Instagram, Code, Database, RefreshCw, ExternalLink } from 'lucide-react'
 
 function About() {
     return (
@@ -119,28 +119,6 @@ function About() {
                         </li>
                     ))}
                 </ul>
-            </div>
-
-            {/* Install */}
-            <div className="glass-card p-6 animate-slide-up border border-gaia-yellow/20">
-                <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <Smartphone size={12} />
-                    Instalar no Telemóvel
-                </h3>
-                <ol className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    <li className="flex items-start gap-2">
-                        <span className="text-gaia-yellow font-bold shrink-0">1.</span>
-                        <span>No Safari/Chrome, toca no ícone de <strong>Partilhar</strong> (📤).</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                        <span className="text-gaia-yellow font-bold shrink-0">2.</span>
-                        <span>Desliza para baixo e toca em <strong>"Adicionar ao Ecrã Início"</strong>.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                        <span className="text-gaia-yellow font-bold shrink-0">3.</span>
-                        <span>Toca em <strong>"Adicionar"</strong> no canto superior direito.</span>
-                    </li>
-                </ol>
             </div>
         </div>
     )
