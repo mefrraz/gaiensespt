@@ -1,19 +1,14 @@
 import { useMemo } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
-import { Users, ChevronRight, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { Users, ChevronRight } from 'lucide-react'
 import { useGames } from '../../hooks/useGames'
 import { SkeletonGameGrid } from '../../components/Skeleton'
 import { type Club } from '../../lib/ClubContext'
 import { type Match } from '../../components/types'
 
-/** Extract the team identifier from a full team name that includes the club name.
- *  e.g. "FC Gaia Sub14 A" → "Sub14 A", "FC Gaia Séniores" → "Séniores"
- *  Falls back to escalão if extraction fails.
- */
 function extractTeamId(fullTeamName: string, clubName: string, fallbackEscalao: string): string {
     const upperTeam = fullTeamName.toUpperCase()
     const upperClub = clubName.toUpperCase()
-    // Remove the club name (with surrounding spaces/special chars)
     let suffix = upperTeam
         .replace(new RegExp(upperClub.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '')
         .replace(/^[\s\-–—/]+/, '')
@@ -114,45 +109,54 @@ function ClubTeams() {
                 <p className="text-xs text-zinc-500 mt-1">{teams.length} equipas encontradas</p>
             </div>
 
-            {teams.map(team => (
-                <Link
-                    key={team.teamId}
-                    to={`/clube/${club.slug}/team/${encodeURIComponent(team.teamId)}`}
-                    className="glass-card p-5 flex items-center justify-between gap-4 group animate-slide-up"
-                >
-                    <div className="flex items-center gap-4 min-w-0">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                            team.lastResult === 'W' ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
-                            team.lastResult === 'L' ? 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
-                            team.lastResult === 'D' ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' :
-                            'bg-zinc-100 dark:bg-white/5 text-zinc-400'
-                        }`}>
-                            {team.lastResult === 'W' ? <TrendingUp size={20} /> :
-                             team.lastResult === 'L' ? <TrendingDown size={20} /> :
-                             team.lastResult === 'D' ? <Minus size={20} /> :
-                             <Users size={20} />}
+            {teams.map(team => {
+                const shortName = team.teamId.length > 28 ? team.teamId.substring(0, 25) + '...' : team.teamId
+                return (
+                    <Link
+                        key={team.teamId}
+                        to={`/clube/${club.slug}/team/${encodeURIComponent(team.teamId)}`}
+                        className="glass-card p-4 flex items-center gap-4 group animate-slide-up hover:border-dribly-blue/20"
+                    >
+                        {/* Avatar circle */}
+                        <div className="w-12 h-12 rounded-full bg-dribly-blue/10 dark:bg-dribly-blue/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                            <span className="text-lg font-black text-dribly-blue">{team.teamId.charAt(0).toUpperCase()}</span>
                         </div>
-                        <div className="min-w-0">
+
+                        {/* Name + stats */}
+                        <div className="flex-1 min-w-0">
                             <h3 className="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-dribly-blue transition-colors truncate">
-                                {team.teamId}
+                                {shortName}
                             </h3>
-                            <div className="flex items-center gap-3 text-xs text-zinc-500 mt-1">
-                                {team.total > 0 && (
+                            <div className="flex items-center gap-3 text-xs mt-1">
+                                {team.total > 0 ? (
                                     <>
-                                        <span className="text-green-600 dark:text-green-400 font-medium">{team.wins}V</span>
-                                        <span className="text-red-500 font-medium">{team.losses}D</span>
+                                        <span className="text-green-600 dark:text-green-400 font-semibold">{team.wins}V</span>
+                                        <span className="text-red-500 font-semibold">{team.losses}D</span>
                                         {team.pct !== null && (
                                             <span className="font-bold text-zinc-700 dark:text-zinc-300">{team.pct}%</span>
                                         )}
+                                        <span className="text-zinc-400">{team.total}J</span>
                                     </>
+                                ) : (
+                                    <span className="text-zinc-400">Sem jogos</span>
                                 )}
-                                {team.total === 0 && <span>Sem jogos</span>}
                             </div>
                         </div>
-                    </div>
-                    <ChevronRight size={16} className="text-zinc-400 group-hover:text-dribly-blue shrink-0 transition-colors" />
-                </Link>
-            ))}
+
+                        {/* Last result badge */}
+                        <div className="flex items-center gap-2 shrink-0">
+                            {team.lastResult && (
+                                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                                    team.lastResult === 'W' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
+                                    team.lastResult === 'L' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+                                    'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                                }`}>{team.lastResult}</span>
+                            )}
+                            <ChevronRight size={16} className="text-zinc-400 group-hover:text-dribly-blue shrink-0 transition-colors" />
+                        </div>
+                    </Link>
+                )
+            })}
         </div>
     )
 }
