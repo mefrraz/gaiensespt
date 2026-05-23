@@ -1,0 +1,201 @@
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { supabase } from '../lib/supabase'
+import { fetchFPBGames } from '../lib/fpbApi'
+import { Match } from '../components/types'
+
+const CACHE_MINUTES = 15
+
+const LS_KEY = (season: string) => `games_cache_${season}`
+const LS_TS = (season: string) => `games_cache_ts_${season}`
+
+function loadLocalCache(season: string): Match[] {
+    try {
+        const stored = localStorage.getItem(LS_KEY(season))
+        const storedTs = localStorage.getItem(LS_TS(season))
+        if (stored && storedTs) {
+            const parsed = JSON.parse(stored) as Match[]
+            const age = Date.now() - parseInt(storedTs)
+            if (parsed.length > 0 && age < CACHE_MINUTES * 60000) {
+                return parsed
+            }
+        }
+    } catch { /* localStorage unavailable */ }
+    return []
+}
+
+function saveLocalCache(season: string, games: Match[]) {
+    try {
+        localStorage.setItem(LS_KEY(season), JSON.stringify(games))
+        localStorage.setItem(LS_TS(season), Date.now().toString())
+    } catch { /* localStorage full or unavailable */ }
+}
+
+function getTableName(season: string): string {
+  return `games_${season.replace('/', '_')}`
+}
+
+function slugify(s: string): string {
+  return s.toLowerCase().trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+export function useGames(season = '2025/2026', clube = 119) {
+  const localCache = loadLocalCache(season)
+  const [games, setGames] = useState<Match[]>(localCache)
+  const [loading, setLoading] = useState(localCache.length === 0)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const gamesRef = useRef<Match[]>([])
+
+  const tableName = getTableName(season)
+
+  // Persist games to localStorage whenever they change
+  useEffect(() => {
+    if (games.length > 0) {
+      saveLocalCache(season, games)
+    }
+  }, [games, season])
+
+  const refresh = useCallback(async () => {
+    try {
+      const freshData = await fetchFPBGames(season, clube)
+      const withEpoch = freshData.map(g => {
+        const slug = `${g.data}-${slugify(g.equipa_casa)}-${slugify(g.equipa_fora)}`
+        return {
+          ...g,
+          id: g.id || '',
+          data: g.data,
+          hora: g.hora || '',
+          equipa_casa: g.equipa_casa || '',
+          equipa_fora: g.equipa_fora || '',
+          resultado_casa: g.resultado_casa,
+          resultado_fora: g.resultado_fora,
+          escalao: g.escalao || '',
+          competicao: g.competicao || '',
+          local: g.local || null,
+          logotipo_casa: g.logotipo_casa || null,
+          logotipo_fora: g.logotipo_fora || null,
+          status: g.status,
+          epoca: season,
+          slug
+        }
+      })
+
+      // Compare with current data to avoid unnecessary updates
+      const current = gamesRef.current
+      if (current.length > 0 && withEpoch.length > 0) {
+        const currentKey = current.map(g => `${g.id}|${g.resultado_casa}|${g.resultado_fora}`).sort().join(',')
+        const freshKey = withEpoch.map(g => `${g.id}|${g.resultado_casa}|${g.resultado_fora}`).sort().join(',')
+        if (currentKey === freshKey) {
+          return // nothing changed, skip update
+        }
+      }
+
+      await supabase.from(tableName).upsert(
+        withEpoch.map(g => ({ ...g, updated_at: new Date().toISOString() })),
+        { onConflict: 'slug' }
+      )
+
+      setGames(withEpoch)
+      setLastUpdated(new Date())
+    } catch (err) {
+      console.error('Failed to fetch games from FPB:', err)
+      setError(err instanceof Error ? err.message : 'Erro ao carregar jogos')
+      throw err
+    }
+  }, [season, clube, tableName])
+
+  // Keep ref in sync
+  gamesRef.current = games
+
+  const lastUpdatedRef = useRef<Date | null>(null)
+  lastUpdatedRef.current = lastUpdated
+
+  // Silent refresh when user returns to the page
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const last = lastUpdatedRef.current
+        const staleThreshold = new Date(Date.now() - CACHE_MINUTES * 60000)
+        if (!last || last < staleThreshold) {
+          refresh()
+        }
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [refresh])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadData = async () => {
+      if (localCache.length === 0) {
+        setLoading(true)
+      }
+      setError(null)
+
+      try {
+        const { data: cached } = await supabase
+          .from(tableName)
+          .select('*')
+          .order('data', { ascending: true })
+
+        if (cached && cached.length > 0) {
+          const updatedAt = new Date(cached[0].updated_at || cached[0].created_at || 0)
+          const staleThreshold = new Date(Date.now() - CACHE_MINUTES * 60000)
+          const isStale = updatedAt < staleThreshold
+
+          if (!isStale) {
+            // Fresh data - show immediately
+            if (!cancelled) {
+              setGames(cached as Match[])
+              setLastUpdated(updatedAt)
+              setLoading(false)
+            }
+          } else if (!cancelled) {
+            // Stale data - try to refresh first, keep loading
+            try {
+              await refresh()
+            } catch {
+              // Refresh failed - show cached as fallback
+              setGames(cached as Match[])
+              setLastUpdated(updatedAt)
+            }
+            setLoading(false)
+          }
+        } else if (!cancelled) {
+          // No cached data - fetch from API
+          try {
+            await refresh()
+          } catch {
+            setError('Não foi possível carregar os jogos.')
+          }
+          setLoading(false)
+        }
+      } catch (err) {
+        console.error('Failed to load from Supabase:', err)
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Erro ao carregar dados')
+          setLoading(false)
+        }
+      }
+    }
+
+    loadData()
+
+    return () => {
+      cancelled = true
+    }
+  }, [season, clube, tableName, refresh])
+
+  return {
+    games,
+    loading,
+    lastUpdated,
+    error,
+    refresh
+  }
+}

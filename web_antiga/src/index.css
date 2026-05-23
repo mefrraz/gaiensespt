@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Outfit', sans-serif;
+}
+
+@layer base {
+  html {
+    overflow-y: scroll;
+  }
+  body {
+    @apply bg-zinc-50 dark:bg-gaia-black text-zinc-900 dark:text-white antialiased;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl shadow-sm transition-all duration-200;
+  }
+  .glass-card:hover {
+    @apply border-zinc-300 dark:border-white/20 shadow-md;
+  }
+  .glass-card:active {
+    @apply scale-[0.985];
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+.match-gradient {
+  background: linear-gradient(135deg, #f5b417 0%, #f7c945 100%);
+}
