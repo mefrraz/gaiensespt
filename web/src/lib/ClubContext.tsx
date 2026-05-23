@@ -11,7 +11,8 @@ export interface Club {
 }
 
 const CLUB_COLOR_PALETTE = [
-    '#2563EB', // blue
+    '#7C3AED', // purple (default)
+    '#3B82F6', // blue
     '#7C3AED', // purple
     '#DB2777', // pink
     '#DC2626', // red
@@ -29,7 +30,7 @@ function getPaletteColor(clubId: number): string {
     return CLUB_COLOR_PALETTE[clubId % CLUB_COLOR_PALETTE.length]
 }
 
-const DEFAULT_COLOR = '#2563EB'
+const DEFAULT_COLOR = '#7C3AED'
 
 interface ClubContextType {
     selectedClub: Club | null

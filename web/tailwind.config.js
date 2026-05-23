@@ -7,17 +7,21 @@ export default {
     theme: {
         extend: {
             colors: {
-                'dribly-blue': '#2563EB',
-                'dribly-blue-dim': '#1D4ED8',
-                'dribly-blue-light': '#3B82F6',
-                'dribly-blue-dark': '#1E40AF',
+                'dribly-purple': '#7C3AED',
+                'dribly-purple-dim': '#6D28D9',
+                'dribly-purple-light': '#8B5CF6',
+                'dribly-purple-dark': '#5B21B6',
                 'dribly-sand': '#fcfbfa',
-                'dribly-black': '#0f0f0f',
+                'dribly-black': '#0D0D14',
                 'dribly-green': '#22c55e',
                 'dribly-green-dim': '#16a34a',
                 'dribly-red': '#ef4444',
                 'dribly-red-dim': '#dc2626',
-                // Kept for backward compat with existing green/red references
+                // Backward compat aliases for existing code
+                'dribly-blue': '#7C3AED',
+                'dribly-blue-dim': '#6D28D9',
+                'dribly-blue-light': '#8B5CF6',
+                'dribly-blue-dark': '#5B21B6',
                 'gaia-green': '#22c55e',
                 'gaia-red': '#ef4444',
             },

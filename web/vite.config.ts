@@ -22,7 +22,7 @@ export default defineConfig({
                 name: 'Dribly - Basquetebol Português',
                 short_name: 'Dribly',
                 description: 'Resultados e agenda de todos os clubes de basquetebol em Portugal',
-                theme_color: '#2563EB',
+                theme_color: '#7C3AED',
                 background_color: '#000000',
                 display: 'standalone',
                 scope: '/',

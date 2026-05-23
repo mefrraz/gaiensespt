@@ -4,7 +4,12 @@
 
 :root {
   font-family: 'Outfit', sans-serif;
-  --club-color: #2563EB;
+  --club-color: #7C3AED;
+  --color-bg-dark: #0D0D14;
+  --color-surface-dark: #16161F;
+  --color-border-dark: #2A2A3D;
+  --color-text-primary-dark: #F1F0FF;
+  --color-text-secondary-dark: #9B99B5;
 }
 
 @layer base {
@@ -42,5 +47,5 @@
 }
 
 .match-gradient {
-  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  background: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%);
 }

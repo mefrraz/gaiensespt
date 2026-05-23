@@ -29,7 +29,7 @@ export function GameCard({ match, mode, clubName, clubSlug, clubColor }: GameCar
   const won = clubName ? isClubWin(match, clubName) : null
   const isLive = match.status === 'A DECORRER'
   const linkSlug = clubSlug ? `/game/${slug}?clube=${clubSlug}` : `/game/${slug}`
-  const accent = clubColor || '#2563EB'
+  const accent = clubColor || '#7C3AED'
 
   const badge = mode === 'agenda'
     ? null

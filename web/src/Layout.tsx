@@ -44,16 +44,16 @@ function Layout() {
             <nav className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-white/10 shadow-sm">
                 <div className="max-w-5xl mx-auto px-4 h-16 flex items-center gap-2">
 
-                    {/* Logo */}
-                    <Link to="/" className="flex items-center gap-2 group shrink-0 mr-1">
+                    {/* Logo — lockup: icon square + "dribly." text */}
+                    <Link to="/" className="flex items-center gap-2.5 group shrink-0 mr-1">
                         <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm"
-                            style={{ backgroundColor: activeClub ? clubColor : '#2563EB' }}
+                            className="w-9 h-9 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden shadow-sm"
+                            style={{ backgroundColor: activeClub ? clubColor : '#7C3AED' }}
                         >
-                            <span className="text-white font-black text-sm">D</span>
+                            <img src="/logo.svg" alt="Dribly" className="w-7 h-7 object-contain" />
                         </div>
-                        <span className="hidden sm:inline font-bold text-sm text-zinc-900 dark:text-white">
-                            Dribly
+                        <span className="hidden sm:flex items-baseline font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                            dribly<span style={{ color: activeClub ? clubColor : '#7C3AED' }}>.</span>
                         </span>
                     </Link>
 
@@ -97,7 +97,7 @@ function Layout() {
                         <Link
                             to="/standings"
                             className={`${navPill} ${isActive('/standings') ? '' : navPillInactive}`}
-                            style={isActive('/standings') ? { backgroundColor: activeClub ? clubColor : '#2563EB', color: '#fff' } : {}}
+                            style={isActive('/standings') ? { backgroundColor: activeClub ? clubColor : '#7C3AED', color: '#fff' } : {}}
                         >
                             <BarChart2 size={14} />
                             <span className="hidden sm:inline">Classificações</span>
@@ -127,7 +127,7 @@ function Layout() {
                         <Link
                             to="/about"
                             className={`${navPill} ${isActive('/about') ? '' : navPillInactive}`}
-                            style={isActive('/about') ? { backgroundColor: activeClub ? clubColor : '#2563EB', color: '#fff' } : {}}
+                            style={isActive('/about') ? { backgroundColor: activeClub ? clubColor : '#7C3AED', color: '#fff' } : {}}
                         >
                             <Info size={14} />
                             <span className="hidden sm:inline">Sobre</span>
