@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { Sun, Moon, Instagram, Github, Home, Info, Calendar, BarChart2, Download } from 'lucide-react'
+import { Sun, Moon, Instagram, Github, Info, BarChart2, Download, Search, Home, Calendar } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
-import { useGames } from './hooks/useGames'
-import { GameDataContext } from './lib/GameDataContext'
+import { SearchModal } from './components/SearchModal'
+import { useClub } from './lib/ClubContext'
 
 function Layout() {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
+    const [searchOpen, setSearchOpen] = useState(false)
     const location = useLocation()
+    const { favoriteClub, selectedClub } = useClub()
 
-    const { games, loading, lastUpdated, error, refresh } = useGames('2025/2026', 119)
+    const activeClub = selectedClub || favoriteClub
 
     useEffect(() => { window.scrollTo(0, 0) }, [location.pathname])
 
@@ -44,37 +46,58 @@ function Layout() {
                 <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
 
                     {/* Logo & Brand */}
-                    <Link to="/" className="flex items-center gap-3 group">
+                    <Link to="/" className="flex items-center gap-3 group shrink-0">
                         <img
                             src="/logo.png"
-                            alt="GaiensesPT Logo"
+                            alt="Dribly Logo"
                             className="h-10 w-auto group-hover:scale-110 transition-transform duration-300 drop-shadow-md"
                         />
                         <div className="flex flex-col">
                             <span className="font-bold text-sm sm:text-lg leading-tight tracking-tight text-zinc-900 dark:text-white">
-                                GaiensesPT
+                                Dribly
                             </span>
-                            <span className="text-[8px] sm:text-[10px] uppercase tracking-widest text-zinc-500 font-medium group-hover:text-gaia-yellow transition-colors">
-                                FC Gaia Basquetebol
+                            <span className="text-[8px] sm:text-[10px] uppercase tracking-widest text-zinc-500 font-medium group-hover:text-dribly-blue transition-colors">
+                                Basquetebol Português
                             </span>
                         </div>
                     </Link>
 
                     {/* Actions */}
                     <div className="flex items-center gap-1 md:gap-2">
-                        <Link to="/" className={`${linkBase} ${isActive('/') ? linkActive : linkInactive}`}>
-                            <Home size={16} />
-                            <span>Início</span>
-                        </Link>
+                        {/* Search button */}
+                        <button
+                            onClick={() => setSearchOpen(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 transition-all"
+                        >
+                            <Search size={16} />
+                            <span className="hidden sm:inline">Pesquisar</span>
+                        </button>
+
+                        {/* Meu Clube */}
+                        {activeClub && (
+                            <Link
+                                to={`/clube/${activeClub.slug}/home`}
+                                className={`${linkBase} ${isActive(`/clube/${activeClub.slug}`) ? linkActive : linkInactive}`}
+                            >
+                                <Home size={16} />
+                                <span>Meu Clube</span>
+                            </Link>
+                        )}
+
+                        {/* Jogos */}
+                        {activeClub && (
+                            <Link
+                                to={`/clube/${activeClub.slug}/games`}
+                                className={`${linkBase} ${isActive(`/clube/${activeClub.slug}/games`) ? linkActive : linkInactive}`}
+                            >
+                                <Calendar size={16} />
+                                <span>Jogos</span>
+                            </Link>
+                        )}
 
                         <Link to="/standings" className={`${linkBase} ${isActive('/standings') ? linkActive : linkInactive}`}>
                             <BarChart2 size={16} />
                             <span>Classificações</span>
-                        </Link>
-
-                        <Link to="/games?view=agenda" className={`${linkBase} ${isActive('/games') ? linkActive : linkInactive}`}>
-                            <Calendar size={16} />
-                            <span>Jogos</span>
                         </Link>
 
                         <div className="w-px h-6 bg-zinc-200 dark:bg-white/10 mx-1 hidden sm:block"></div>
@@ -84,7 +107,7 @@ function Layout() {
 
                         <Link
                             to="/install"
-                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-gaia-yellow transition-colors flex"
+                            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-dribly-blue transition-colors flex"
                             aria-label="Instalar"
                         >
                             <Download size={18} />
@@ -103,24 +126,22 @@ function Layout() {
 
             {/* Main Content */}
             <main className="flex-grow p-4 md:p-8 pb-24">
-                <GameDataContext.Provider value={{ games, loading, lastUpdated, error, refresh }}>
-                    <Outlet />
-                </GameDataContext.Provider>
+                <Outlet />
             </main>
 
             {/* Footer */}
             <footer className="hidden md:block bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-white/10 py-8">
                 <div className="max-w-4xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-zinc-500">
                     <div className="flex items-center gap-2">
-                        <span className="font-bold text-zinc-900 dark:text-white">GaiensesPT</span>
+                        <span className="font-bold text-zinc-900 dark:text-white">Dribly</span>
                         <span className="text-zinc-400">•</span>
                         <span>&copy; {new Date().getFullYear()}</span>
                     </div>
                     <div className="flex gap-4">
-                        <a href="https://www.instagram.com/gaiensespt" target="_blank" rel="noopener noreferrer" className="hover:text-gaia-yellow transition-colors">
+                        <a href="https://www.instagram.com/gaiensespt" target="_blank" rel="noopener noreferrer" className="hover:text-dribly-blue transition-colors">
                             <Instagram size={20} />
                         </a>
-                        <a href="https://github.com/mefrraz/gaiensespt" target="_blank" rel="noopener noreferrer" className="hover:text-gaia-yellow transition-colors">
+                        <a href="https://github.com/mefrraz/gaiensespt" target="_blank" rel="noopener noreferrer" className="hover:text-dribly-blue transition-colors">
                             <Github size={20} />
                         </a>
                     </div>
@@ -132,6 +153,9 @@ function Layout() {
 
             {/* PWA Install Banner - Mobile Only */}
             <PWAInstallBanner />
+
+            {/* Search Modal */}
+            <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
 
         </div>
     )

@@ -33,7 +33,7 @@ export function EmptyState({ view, icon, title, subtitle, action }: EmptyStatePr
       {action && (
         <button
           onClick={action.onClick}
-          className="mt-4 px-4 py-2 text-xs font-bold bg-gaia-yellow text-black rounded-lg hover:bg-yellow-400 transition-colors"
+          className="mt-4 px-4 py-2 text-xs font-bold bg-dribly-blue text-white rounded-lg hover:bg-dribly-blue-dim transition-colors"
         >
           {action.label}
         </button>

@@ -82,7 +82,7 @@ function PWAInstallBanner() {
             return (
                 <div className="flex flex-col gap-2.5 items-center">
                     <button onClick={handleNativeInstall}
-                        className="w-full sm:w-auto px-6 py-3 bg-gaia-yellow text-black text-sm font-bold rounded-xl hover:bg-amber-400 transition-colors shadow-md shadow-amber-500/20">
+                        className="w-full sm:w-auto px-6 py-3 bg-dribly-blue text-white text-sm font-bold rounded-xl hover:bg-dribly-blue-dim transition-colors shadow-md shadow-blue-500/20">
                         Instalar App
                     </button>
                     <button onClick={handleDismiss}
@@ -139,7 +139,7 @@ function PWAInstallBanner() {
 
         return (
             <Link to="/install" onClick={handleDismiss}
-                className="px-6 py-3 bg-gaia-yellow text-black text-sm font-bold rounded-xl hover:bg-amber-400 transition-colors shadow-md shadow-amber-500/20">
+                className="px-6 py-3 bg-dribly-blue text-white text-sm font-bold rounded-xl hover:bg-dribly-blue-dim transition-colors shadow-md shadow-blue-500/20">
                 Ver instruções
             </Link>
         )
@@ -154,13 +154,13 @@ function PWAInstallBanner() {
                 <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mt-3" />
 
                 <div className="p-5 sm:p-6 text-center">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-gaia-yellow to-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/20">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-dribly-blue to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/20">
                         <Download size={26} className="text-white" />
                     </div>
 
-                    <h3 className="text-lg font-black text-zinc-900 dark:text-white mb-1.5">Instalar GaiensesPT</h3>
+                    <h3 className="text-lg font-black text-zinc-900 dark:text-white mb-1.5">Instalar Dribly</h3>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-5 max-w-xs mx-auto leading-relaxed">
-                        Adiciona ao ecrã inicial para acesso rápido a jogos, resultados e classificações do FC Gaia.
+                        Adiciona ao ecrã inicial para acesso rápido a jogos, resultados e classificações de basquetebol.
                     </p>
 
                     <div className="flex flex-col gap-2.5 justify-center">

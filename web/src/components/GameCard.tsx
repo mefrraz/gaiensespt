@@ -5,13 +5,16 @@ import { Match } from './types'
 interface GameCardProps {
   match: Match
   mode: 'agenda' | 'results'
+  clubName?: string
+  clubSlug?: string
 }
 
-function isGaiaWin(match: Match): boolean | 'draw' | null {
+function isClubWin(match: Match, clubName: string): boolean | 'draw' | null {
   if (match.resultado_casa === null || match.resultado_fora === null) return null
   if (match.resultado_casa === match.resultado_fora) return 'draw'
-  const gaiaHome = match.equipa_casa.toUpperCase().includes('GAIA')
-  return gaiaHome
+  const clubUpper = clubName.toUpperCase()
+  const clubHome = match.equipa_casa.toUpperCase().includes(clubUpper)
+  return clubHome
     ? match.resultado_casa > match.resultado_fora
     : match.resultado_fora > match.resultado_casa
 }
@@ -20,10 +23,11 @@ function hasHora(hora: string | null | undefined): boolean {
   return !!hora && hora.replace(/[^0-9]/g, '').length > 0
 }
 
-export function GameCard({ match, mode }: GameCardProps) {
+export function GameCard({ match, mode, clubName, clubSlug }: GameCardProps) {
   const slug = match.slug || `${match.data}-${match.equipa_casa.toLowerCase().replace(/\s+/g, '-')}-${match.equipa_fora.toLowerCase().replace(/\s+/g, '-')}`
-  const won = isGaiaWin(match)
+  const won = clubName ? isClubWin(match, clubName) : null
   const isLive = match.status === 'A DECORRER'
+  const linkSlug = clubSlug ? `/game/${slug}?clube=${clubSlug}` : `/game/${slug}`
 
   const badge = mode === 'agenda'
     ? null
@@ -35,15 +39,17 @@ export function GameCard({ match, mode }: GameCardProps) {
           ? { icon: Minus, label: 'EMPATE', className: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' }
           : { icon: Minus, label: 'FIN', className: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500' }
 
+  const accentColor = 'text-dribly-blue'
+
   return (
-    <Link to={`/game/${slug}`} className="glass-card flex flex-col group active:scale-[0.98]">
+    <Link to={linkSlug} className="glass-card flex flex-col group active:scale-[0.98]">
       {/* Top bar */}
       <div className="flex justify-between items-center p-4 pb-2 border-b border-zinc-100 dark:border-white/5">
         <div className="flex items-center gap-2 min-w-0">
           {mode === 'agenda' ? (
             hasHora(match.hora) ? (
               <>
-                <Clock size={12} className="text-gaia-yellow shrink-0" strokeWidth={3} />
+                <Clock size={12} className={`${accentColor} shrink-0`} strokeWidth={3} />
                 <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 tracking-wider">
                   {match.hora!.slice(0, 5)}
                 </span>
@@ -80,14 +86,14 @@ export function GameCard({ match, mode }: GameCardProps) {
         <div className="flex items-center gap-1.5 truncate max-w-[70%]">
           {match.local ? (
             <>
-              <MapPin size={10} className="shrink-0 text-gaia-yellow" />
+              <MapPin size={10} className={`shrink-0 ${accentColor}`} />
               <span className="truncate text-zinc-500">{match.local}</span>
             </>
           ) : (
             <span className="truncate text-zinc-500">{match.competicao}</span>
           )}
         </div>
-        <ChevronRight size={14} className="text-zinc-400 group-hover:text-gaia-yellow transition-colors" />
+        <ChevronRight size={14} className={`text-zinc-400 group-hover:${accentColor} transition-colors`} />
       </div>
     </Link>
   )

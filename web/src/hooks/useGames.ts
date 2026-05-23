@@ -5,13 +5,13 @@ import { Match } from '../components/types'
 
 const CACHE_MINUTES = 15
 
-const LS_KEY = (season: string) => `games_cache_${season}`
-const LS_TS = (season: string) => `games_cache_ts_${season}`
+const LS_KEY = (season: string, clube: number) => `games_cache_${season}_${clube}`
+const LS_TS = (season: string, clube: number) => `games_cache_ts_${season}_${clube}`
 
-function loadLocalCache(season: string): Match[] {
+function loadLocalCache(season: string, clube: number): Match[] {
     try {
-        const stored = localStorage.getItem(LS_KEY(season))
-        const storedTs = localStorage.getItem(LS_TS(season))
+        const stored = localStorage.getItem(LS_KEY(season, clube))
+        const storedTs = localStorage.getItem(LS_TS(season, clube))
         if (stored && storedTs) {
             const parsed = JSON.parse(stored) as Match[]
             const age = Date.now() - parseInt(storedTs)
@@ -23,10 +23,10 @@ function loadLocalCache(season: string): Match[] {
     return []
 }
 
-function saveLocalCache(season: string, games: Match[]) {
+function saveLocalCache(season: string, clube: number, games: Match[]) {
     try {
-        localStorage.setItem(LS_KEY(season), JSON.stringify(games))
-        localStorage.setItem(LS_TS(season), Date.now().toString())
+        localStorage.setItem(LS_KEY(season, clube), JSON.stringify(games))
+        localStorage.setItem(LS_TS(season, clube), Date.now().toString())
     } catch { /* localStorage full or unavailable */ }
 }
 
@@ -42,7 +42,7 @@ function slugify(s: string): string {
 }
 
 export function useGames(season = '2025/2026', clube = 119) {
-  const localCache = loadLocalCache(season)
+  const localCache = loadLocalCache(season, clube)
   const [games, setGames] = useState<Match[]>(localCache)
   const [loading, setLoading] = useState(localCache.length === 0)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
@@ -54,9 +54,9 @@ export function useGames(season = '2025/2026', clube = 119) {
   // Persist games to localStorage whenever they change
   useEffect(() => {
     if (games.length > 0) {
-      saveLocalCache(season, games)
+      saveLocalCache(season, clube, games)
     }
-  }, [games, season])
+  }, [games, season, clube])
 
   const refresh = useCallback(async () => {
     try {

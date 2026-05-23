@@ -7,14 +7,19 @@ export default {
     theme: {
         extend: {
             colors: {
-                'gaia-yellow': '#f5b417',
-                'gaia-yellow-dim': '#c9920f',
-                'gaia-sand': '#fcfbfa',
-                'gaia-black': '#0f0f0f',
+                'dribly-blue': '#2563EB',
+                'dribly-blue-dim': '#1D4ED8',
+                'dribly-blue-light': '#3B82F6',
+                'dribly-blue-dark': '#1E40AF',
+                'dribly-sand': '#fcfbfa',
+                'dribly-black': '#0f0f0f',
+                'dribly-green': '#22c55e',
+                'dribly-green-dim': '#16a34a',
+                'dribly-red': '#ef4444',
+                'dribly-red-dim': '#dc2626',
+                // Kept for backward compat with existing green/red references
                 'gaia-green': '#22c55e',
-                'gaia-green-dim': '#16a34a',
                 'gaia-red': '#ef4444',
-                'gaia-red-dim': '#dc2626',
             },
             fontFamily: {
                 sans: ['Outfit', 'sans-serif'],

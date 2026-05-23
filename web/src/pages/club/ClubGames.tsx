@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react'
 import { Calendar, Trophy, Filter, RefreshCw, AlertCircle } from 'lucide-react'
-import { Link, useSearchParams } from 'react-router-dom'
-import { useGameData } from '../lib/GameDataContext'
-import { useTimeAgo } from '../hooks/useTimeAgo'
-import { SkeletonGameGrid } from '../components/Skeleton'
-import { EmptyState } from '../components/EmptyState'
-import { GameCard } from '../components/GameCard'
-import { SegmentControl } from '../components/SegmentControl'
-import { Match } from '../components/types'
+import { Link, useSearchParams, useOutletContext } from 'react-router-dom'
+import { useGames } from '../../hooks/useGames'
+import { useTimeAgo } from '../../hooks/useTimeAgo'
+import { SkeletonGameGrid } from '../../components/Skeleton'
+import { EmptyState } from '../../components/EmptyState'
+import { GameCard } from '../../components/GameCard'
+import { SegmentControl } from '../../components/SegmentControl'
+import { Match } from '../../components/types'
+import { type Club } from '../../lib/ClubContext'
 
-function Games() {
+function ClubGames() {
+    const { club } = useOutletContext<{ club: Club }>()
     const [searchParams, setSearchParams] = useSearchParams()
 
     const [view, setView] = useState<'agenda' | 'results'>(() => {
@@ -20,7 +22,7 @@ function Games() {
     const [filterEscalao, setFilterEscalao] = useState<string>('Todos')
     const [escaloes, setEscaloes] = useState<string[]>([])
 
-    const { games: allGames, loading, lastUpdated, error, refresh } = useGameData()
+    const { games: allGames, loading, lastUpdated, error, refresh } = useGames('2025/2026', club.id)
 
     const matches = allGames || []
     const timeAgo = useTimeAgo(lastUpdated)
@@ -84,7 +86,7 @@ function Games() {
                     <select
                         value={filterEscalao}
                         onChange={(e) => setFilterEscalao(e.target.value)}
-                        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-200 text-xs font-medium rounded-lg focus:ring-2 focus:ring-gaia-yellow/30 focus:border-gaia-yellow block w-full pl-9 p-2.5 appearance-none shadow-sm transition-colors"
+                        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-200 text-xs font-medium rounded-lg focus:ring-2 focus:ring-dribly-blue/30 focus:border-dribly-blue block w-full pl-9 p-2.5 appearance-none shadow-sm transition-colors"
                     >
                         <option value="Todos">Todos os Escalões</option>
                         {escaloes.map(e => (
@@ -92,7 +94,7 @@ function Games() {
                         ))}
                     </select>
                 </div>
-                <Link to="/about" className="shrink-0 flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-500 hover:text-gaia-yellow transition-colors uppercase tracking-wide group">
+                <Link to="/about" className="shrink-0 flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-500 hover:text-dribly-blue transition-colors uppercase tracking-wide group">
                     <RefreshCw size={10} className="group-hover:animate-spin" />
                     <span>{timeAgo || '--'}</span>
                 </Link>
@@ -133,7 +135,7 @@ function Games() {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                 {groupedMatches[date].map(match => (
-                                    <GameCard key={match.id || match.slug} match={match} mode={view === 'agenda' ? 'agenda' : 'results'} />
+                                    <GameCard key={match.id || match.slug} match={match} mode={view === 'agenda' ? 'agenda' : 'results'} clubName={club.name} clubSlug={club.slug} />
                                 ))}
                             </div>
                         </div>
@@ -144,4 +146,4 @@ function Games() {
     )
 }
 
-export default Games
+export default ClubGames
