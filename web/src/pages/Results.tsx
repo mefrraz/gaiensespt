@@ -43,7 +43,7 @@ function Results() {
         <div className="max-w-6xl mx-auto space-y-4 pb-24">
             <div className="px-3 pt-4 animate-fade-in">
                 <h1 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                    <Trophy size={18} className="text-violet-600" />
+                    <Trophy size={18} className="text-gaia-yellow" />
                     Resultados
                 </h1>
             </div>
@@ -53,7 +53,7 @@ function Results() {
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                         <Filter size={14} />
                     </div>
-                    <select value={filterEscalao} onChange={(e) => setFilterEscalao(e.target.value)} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-200 text-xs font-medium rounded-lg focus:ring-2 focus:ring-violet-600/30 focus:border-violet-600 block w-full pl-9 p-2.5 appearance-none shadow-sm transition-colors">
+                    <select value={filterEscalao} onChange={(e) => setFilterEscalao(e.target.value)} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-200 text-xs font-medium rounded-lg focus:ring-2 focus:ring-gaia-yellow/30 focus:border-gaia-yellow block w-full pl-9 p-2.5 appearance-none shadow-sm transition-colors">
                         <option value="Todos">Todos os Escalões</option>
                         {escaloes.map(e => <option key={e} value={e}>{e}</option>)}
                     </select>
