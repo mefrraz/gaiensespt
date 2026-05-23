@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link } from 'react-router-dom'
-import { Sun, Moon, Instagram, Github, Info, Calendar, BarChart2, Download } from 'lucide-react'
+import { Sun, Moon, Instagram, Github, Home, Info, Calendar, BarChart2, Download } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
 import { useGames } from './hooks/useGames'
@@ -50,6 +50,14 @@ function Layout() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-1 md:gap-2">
+                        <Link
+                            to="/"
+                            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-400 transition-colors"
+                        >
+                            <Home size={16} />
+                            <span className="text-xs font-bold">Início</span>
+                        </Link>
+
                         <Link
                             to="/standings"
                             className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-400 transition-colors"
