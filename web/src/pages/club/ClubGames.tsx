@@ -25,6 +25,14 @@ function ClubGames() {
     const [escaloes, setEscaloes] = useState<string[]>([])
 
     const { games: allGames, loading, lastUpdated, error, refresh } = useGames('2025/2026', club.id, club.name)
+    const [showLoadingMsg, setShowLoadingMsg] = useState(false)
+
+    useEffect(() => {
+        setShowLoadingMsg(false)
+        if (!loading) return
+        const t = setTimeout(() => setShowLoadingMsg(true), 1000)
+        return () => clearTimeout(t)
+    }, [loading])
 
     const matches = allGames || []
     const timeAgo = useTimeAgo(lastUpdated)
@@ -114,7 +122,17 @@ function ClubGames() {
             )}
 
             {/* Loading */}
-            {loading && <SkeletonGameGrid days={2} count={3} />}
+            {loading && (
+                <div>
+                    {showLoadingMsg && (
+                        <div className="text-center text-xs text-zinc-500 dark:text-zinc-400 animate-fade-in flex items-center justify-center gap-2 pt-4 pb-2">
+                            <RefreshCw size={12} className="animate-spin" />
+                            A atualizar dados...
+                        </div>
+                    )}
+                    <SkeletonGameGrid days={2} count={3} />
+                </div>
+            )}
 
             {/* Error + empty */}
             {!loading && error && matches.length === 0 && (

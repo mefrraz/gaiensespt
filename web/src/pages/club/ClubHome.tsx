@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
-import { Calendar, Trophy, ChevronRight, Clock, MapPin } from 'lucide-react'
+import { Calendar, Trophy, ChevronRight, Clock, MapPin, RefreshCw } from 'lucide-react'
 import { useGames } from '../../hooks/useGames'
 import { SkeletonHero } from '../../components/Skeleton'
 import { Match } from '../../components/types'
@@ -9,7 +9,15 @@ import { type Club } from '../../lib/ClubContext'
 function ClubHome() {
     const { club } = useOutletContext<{ club: Club }>()
     const { games: allGames, loading } = useGames('2025/2026', club.id, club.name)
+    const [showLoadingMsg, setShowLoadingMsg] = useState(false)
     const games = allGames || []
+
+    useEffect(() => {
+        setShowLoadingMsg(false)
+        if (!loading) return
+        const t = setTimeout(() => setShowLoadingMsg(true), 1000)
+        return () => clearTimeout(t)
+    }, [loading])
 
     const clubNameUpper = club.name.toUpperCase()
 
@@ -68,6 +76,12 @@ function ClubHome() {
     if (loading) {
         return (
             <div className="max-w-xl mx-auto space-y-5 pb-20 px-3">
+                {showLoadingMsg && (
+                    <div className="text-center text-xs text-zinc-500 dark:text-zinc-400 animate-fade-in flex items-center justify-center gap-2 pt-2">
+                        <RefreshCw size={12} className="animate-spin" />
+                        A atualizar dados...
+                    </div>
+                )}
                 <SkeletonHero />
                 <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse h-32" />
