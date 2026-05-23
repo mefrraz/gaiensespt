@@ -22,7 +22,7 @@ function ClubGames() {
     const [filterEscalao, setFilterEscalao] = useState<string>('Todos')
     const [escaloes, setEscaloes] = useState<string[]>([])
 
-    const { games: allGames, loading, lastUpdated, error, refresh } = useGames('2025/2026', club.id)
+    const { games: allGames, loading, lastUpdated, error, refresh } = useGames('2025/2026', club.id, club.name)
 
     const matches = allGames || []
     const timeAgo = useTimeAgo(lastUpdated)

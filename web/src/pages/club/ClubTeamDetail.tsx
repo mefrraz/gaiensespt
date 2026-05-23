@@ -9,7 +9,7 @@ function ClubTeamDetail() {
     const { club } = useOutletContext<{ club: Club }>()
     const { escalao } = useParams<{ escalao: string }>()
     const decoded = decodeURIComponent(escalao || '')
-    const { games: allGames, loading } = useGames('2025/2026', club.id)
+    const { games: allGames, loading } = useGames('2025/2026', club.id, club.name)
     const games = allGames || []
     const clubNameUpper = club.name.toUpperCase()
 

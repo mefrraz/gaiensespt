@@ -41,15 +41,29 @@ function slugify(s: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
-export function useGames(season = '2025/2026', clube = 119) {
+export function useGames(season = '2025/2026', clube = 119, clubName = '') {
   const localCache = loadLocalCache(season, clube)
   const [games, setGames] = useState<Match[]>(localCache)
   const [loading, setLoading] = useState(localCache.length === 0)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
   const gamesRef = useRef<Match[]>([])
+  const clubNameRef = useRef(clubName)
+  clubNameRef.current = clubName
 
   const tableName = getTableName(season)
+
+  /** Filter games to only those involving the target club */
+  function filterByClub(games: Match[]): Match[] {
+    if (!clubName) return games
+    const upper = clubName.toUpperCase()
+    // Use a substring match — team names from FPB can vary slightly
+    // Check if either team contains the club name (or vice versa if FPB uses abbreviation)
+    return games.filter(g =>
+      g.equipa_casa.toUpperCase().includes(upper) ||
+      g.equipa_fora.toUpperCase().includes(upper)
+    )
+  }
 
   // Persist games to localStorage whenever they change
   useEffect(() => {
@@ -138,20 +152,25 @@ export function useGames(season = '2025/2026', clube = 119) {
       setError(null)
 
       try {
-        const { data: cached } = await supabase
-          .from(tableName)
-          .select('*')
-          .order('data', { ascending: true })
+        // Query Supabase — filter by club name if provided, otherwise get all
+        let query = supabase.from(tableName).select('*')
+        if (clubName) {
+          query = query.or(
+            `equipa_casa.ilike.%${clubName}%,equipa_fora.ilike.%${clubName}%`
+          )
+        }
+        const { data: cached } = await query.order('data', { ascending: true })
 
         if (cached && cached.length > 0) {
+          const filtered = filterByClub(cached as Match[])
           const updatedAt = new Date(cached[0].updated_at || cached[0].created_at || 0)
           const staleThreshold = new Date(Date.now() - CACHE_MINUTES * 60000)
           const isStale = updatedAt < staleThreshold
 
-          if (!isStale) {
+          if (!isStale && filtered.length > 0) {
             // Fresh data - show immediately
             if (!cancelled) {
-              setGames(cached as Match[])
+              setGames(filtered)
               setLastUpdated(updatedAt)
               setLoading(false)
             }
@@ -161,8 +180,10 @@ export function useGames(season = '2025/2026', clube = 119) {
               await refresh()
             } catch {
               // Refresh failed - show cached as fallback
-              setGames(cached as Match[])
-              setLastUpdated(updatedAt)
+              if (filtered.length > 0) {
+                setGames(filtered)
+                setLastUpdated(updatedAt)
+              }
             }
             setLoading(false)
           }
