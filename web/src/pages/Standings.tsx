@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { ChevronDown, Loader2, Search, Trophy, MapPin } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { ChevronDown, Loader2, Trophy } from 'lucide-react'
 import { StandingsTable } from '../components/StandingsTable'
 import { supabase } from '../lib/supabase'
 import { useStandings } from '../hooks/useStandings'
@@ -8,28 +7,83 @@ import { Standing } from '../components/types'
 
 const SEASONS = ['2025/2026', '2024/2025', '2023/2024', '2022/2023']
 
+const ASSOCIATION_LOGOS: Record<number, string> = {
+    50: 'fpb.jpg',
+    1: 'ablisboa.jpg',
+    2: 'absetubal.jpg',
+    3: 'abaveiro.jpg',
+    4: 'abporto.jpg',
+    5: 'abbraga.jpg',
+    6: 'abmadeira.jpg',
+    7: 'absantarem_novo.jpg',
+    8: 'abcoimbra.jpg',
+    9: 'abalgarve.jpg',
+    10: 'abviseu.jpg',
+    11: 'ableiria.jpg',
+    12: 'abalentejo.jpg',
+    13: 'abit.jpg',
+    14: 'abcastelobranco.jpg',
+    15: 'abbraganca.jpg',
+    16: 'absaomiguel.jpg',
+    17: 'abviana.jpg',
+    18: 'abvilareal.jpg',
+    19: 'abifp.jpg',
+    20: 'abguarda.jpg',
+    22: 'absantamaria.jpg',
+    24: 'abacores.jpg',
+}
+
+interface AssociationMeta {
+    association_id: number
+    association_name: string
+}
+
 interface CompetitionMeta {
     competition_id: number
     competition_name: string
     association_name: string
     club_count: number
+    gender: 'M' | 'F' | 'O'
 }
+
+function detectGender(name: string): 'M' | 'F' | 'O' {
+    const u = name.toUpperCase()
+    if (u.includes('FEMININ') || u.includes('FEM')) return 'F'
+    if (u.includes('MASCULIN') || u.includes('MASC')) return 'M'
+    return 'O'
+}
+
+function logoUrl(associationId: number): string {
+    const file = ASSOCIATION_LOGOS[associationId]
+    if (!file) return ''
+    return `/api/tugabasket?path=/assets/images/logos/${file}`
+}
+
+type View = 'associations' | 'competitions' | 'phases'
 
 export default function Standings() {
     const [season, setSeason] = useState('2025/2026')
+    const [view, setView] = useState<View>('associations')
+    const [transitioning, setTransitioning] = useState(false)
+
+    const [associations, setAssociations] = useState<AssociationMeta[]>([])
+    const [assocsLoading, setAssocsLoading] = useState(true)
+    const [selectedAssoc, setSelectedAssoc] = useState<AssociationMeta | null>(null)
+
     const [competitions, setCompetitions] = useState<CompetitionMeta[]>([])
-    const [compsLoading, setCompsLoading] = useState(true)
-    const [selectedComp, setSelectedComp] = useState<CompetitionMeta | null>(null)
-    const [search, setSearch] = useState('')
-    const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
+    const [compsLoading, setCompsLoading] = useState(false)
+    const [selectedCompId, setSelectedCompId] = useState<number | null>(null)
+    const [selectedCompName, setSelectedCompName] = useState('')
+    const [selectedCompAssoc, setSelectedCompAssoc] = useState('')
+
     const [showLoadingMessage, setShowLoadingMessage] = useState(false)
 
     const competitionIds = useMemo(
-        () => selectedComp ? [selectedComp.competition_id] : undefined,
-        [selectedComp]
+        () => (view === 'phases' && selectedCompId ? [selectedCompId] : undefined),
+        [view, selectedCompId]
     )
 
-    const { standings, loading: standingsLoading, error, refresh } = useStandings(season, competitionIds)
+    const { standings, loading: standingsLoading, error } = useStandings(season, competitionIds)
 
     useEffect(() => {
         setShowLoadingMessage(false)
@@ -39,31 +93,53 @@ export default function Standings() {
     }, [standingsLoading])
 
     useEffect(() => {
-        setSelectedComp(null)
-        setOpenGroups({})
-        setSearch('')
-        setCompsLoading(true)
-        loadCompetitions(season)
+        setAssocsLoading(true)
+        loadAssociations(season)
     }, [season])
 
     useEffect(() => {
-        if (standings.length > 0) {
-            const groups = [...new Set(standings.map(s => s.grupo))].sort().reverse()
-            setOpenGroups(prev => {
-                const next: Record<string, boolean> = { ...prev }
-                groups.forEach(g => { if (!(g in next)) next[g] = true })
-                return next
-            })
-        }
-    }, [standings])
+        if (view !== 'associations') return
+        setSelectedAssoc(null)
+        setSelectedCompId(null)
+        setTransitioning(false)
+    }, [view])
 
-    async function loadCompetitions(season: string) {
+    useEffect(() => {
+        if (view !== 'competitions') return
+        setSelectedCompId(null)
+        setTransitioning(false)
+    }, [view])
+
+    async function loadAssociations(s: string) {
+        setAssocsLoading(true)
+        const { data } = await supabase
+            .from('competitions')
+            .select('association_id, association_name')
+            .eq('season', s)
+            .order('association_name')
+
+        if (data) {
+            const seen = new Set<number>()
+            const uniq: AssociationMeta[] = []
+            for (const row of data) {
+                const id = row.association_id as number
+                if (!seen.has(id)) {
+                    seen.add(id)
+                    uniq.push({ association_id: id, association_name: row.association_name as string })
+                }
+            }
+            setAssociations(uniq)
+        }
+        setAssocsLoading(false)
+    }
+
+    async function loadCompetitions(assocId: number) {
         setCompsLoading(true)
-        const tableSeason = season
         const { data } = await supabase
             .from('competitions')
             .select('competition_id, competition_name, association_name, club_names')
-            .eq('season', tableSeason)
+            .eq('season', season)
+            .eq('association_id', assocId)
             .order('competition_name')
 
         if (data) {
@@ -73,26 +149,43 @@ export default function Standings() {
                     competition_name: row.competition_name as string,
                     association_name: row.association_name as string,
                     club_count: Array.isArray(row.club_names) ? (row.club_names as string[]).length : 0,
+                    gender: detectGender(row.competition_name as string),
                 }))
             )
         }
         setCompsLoading(false)
     }
 
-    const filteredComps = useMemo(() => {
-        if (!search.trim()) return competitions
-        const q = search.toLowerCase()
-        return competitions.filter(c =>
-            c.competition_name.toLowerCase().includes(q) ||
-            c.association_name.toLowerCase().includes(q)
-        )
-    }, [competitions, search])
+    function selectAssoc(assoc: AssociationMeta) {
+        setTransitioning(true)
+        setTimeout(() => {
+            setSelectedAssoc(assoc)
+            loadCompetitions(assoc.association_id)
+            setView('competitions')
+        }, 150)
+    }
 
-    const compGroups = useMemo(() => {
-        const active = filteredComps.filter(c => c.club_count > 2)
-        const empty = filteredComps.filter(c => c.club_count <= 2)
-        return { active, empty }
-    }, [filteredComps])
+    function selectComp(comp: CompetitionMeta) {
+        setTransitioning(true)
+        setTimeout(() => {
+            setSelectedCompId(comp.competition_id)
+            setSelectedCompName(comp.competition_name)
+            setSelectedCompAssoc(comp.association_name)
+            setView('phases')
+        }, 150)
+    }
+
+    function goBack() {
+        setTransitioning(true)
+        setTimeout(() => {
+            if (view === 'phases') setView('competitions')
+            else if (view === 'competitions') setView('associations')
+        }, 150)
+    }
+
+    const masculine = useMemo(() => competitions.filter(c => c.gender === 'M'), [competitions])
+    const feminine = useMemo(() => competitions.filter(c => c.gender === 'F'), [competitions])
+    const other = useMemo(() => competitions.filter(c => c.gender === 'O'), [competitions])
 
     const getStatus = (teams: Standing[]): 'active' | 'finished' => {
         if (season !== '2025/2026') return 'finished'
@@ -100,87 +193,112 @@ export default function Standings() {
         return teams.every(t => t.is_finished === true) ? 'finished' : 'active'
     }
 
-    const groups = [...new Set(standings.map(s => s.grupo))].sort((a, b) => b.localeCompare(a))
-    const toggleGroup = (grupo: string) => setOpenGroups(prev => ({ ...prev, [grupo]: !prev[grupo] }))
-    const isOpen = (grupo: string) => openGroups[grupo] !== false
+    const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
+    const groups = useMemo(() => [...new Set(standings.map(s => s.grupo))].sort((a, b) => b.localeCompare(a)), [standings])
+
+    const toggleGroup = (g: string) => setOpenGroups(prev => ({ ...prev, [g]: !prev[g] }))
+    const isOpen = (g: string) => openGroups[g] ?? false
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-[#09090b] animate-fadeIn pb-16 pt-4 px-3 sm:px-4 md:px-6">
-            <div className="max-w-4xl mx-auto">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-5">
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
-                            <Trophy size={22} className="text-amber-500 shrink-0" />
-                            Classificações
-                        </h1>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
-                            Centro de classificações do basquetebol português
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="relative">
-                            <select
-                                value={season}
-                                onChange={e => setSeason(e.target.value)}
-                                className="appearance-none bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2 pr-8 text-sm font-semibold text-zinc-800 dark:text-zinc-200 cursor-pointer hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors shadow-sm"
+        <div className="min-h-screen bg-zinc-50 dark:bg-[#09090b] pb-16 pt-4 px-3 sm:px-5 md:px-8">
+            <div className="max-w-5xl mx-auto">
+                {/* Header */}
+                <div className={`flex items-center justify-between gap-4 mb-6 transition-opacity duration-300 ${transitioning ? 'opacity-50' : 'opacity-100'}`}>
+                    <div className="flex items-center gap-3 min-w-0">
+                        {view !== 'associations' && (
+                            <button
+                                onClick={goBack}
+                                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-sm transition-all group"
                             >
-                                {SEASONS.map(s => <option key={s} value={s}>{s}</option>)}
-                            </select>
-                            <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+                                <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                        )}
+                        <div className="min-w-0">
+                            <h1 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2 truncate">
+                                <Trophy size={20} className="text-amber-500 shrink-0" />
+                                {view === 'associations' && 'Classificações'}
+                                {view === 'competitions' && selectedAssoc?.association_name}
+                                {view === 'phases' && selectedCompName}
+                            </h1>
+                            {view === 'phases' && (
+                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                    {selectedCompAssoc} · {season}
+                                </p>
+                            )}
                         </div>
-                        <Link
-                            to="/"
-                            className="hidden sm:flex items-center justify-center px-3.5 py-2 text-sm font-semibold text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white transition-colors bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700"
+                    </div>
+
+                    <div className="relative shrink-0">
+                        <select
+                            value={season}
+                            onChange={e => { setSeason(e.target.value); setView('associations') }}
+                            className="appearance-none bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-3 pr-8 py-2 text-sm font-semibold text-zinc-800 dark:text-zinc-200 cursor-pointer hover:border-zinc-300 dark:hover:border-zinc-700 shadow-sm transition-colors"
                         >
-                            ← Voltar
-                        </Link>
+                            {SEASONS.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                        <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
                     </div>
                 </div>
 
-                {!selectedComp ? (
-                    <>
-                        <div className="relative mb-4">
-                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                <Search size={16} className="text-zinc-400" />
-                            </div>
-                            <input
-                                type="text"
-                                placeholder="Pesquisar competição ou associação..."
-                                value={search}
-                                onChange={e => setSearch(e.target.value)}
-                                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 focus:outline-none focus:border-amber-500/50 dark:focus:border-amber-500/50 focus:ring-4 focus:ring-amber-500/10 transition-all shadow-sm"
-                            />
-                        </div>
-
-                        {compsLoading ? (
-                            <div className="flex justify-center py-16">
+                {/* --- SCREEN 1: ASSOCIATIONS --- */}
+                {view === 'associations' && (
+                    <div className={`transition-all duration-300 ${transitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}>
+                        {assocsLoading ? (
+                            <div className="flex justify-center py-20">
                                 <Loader2 className="animate-spin text-amber-500" size={28} />
                             </div>
                         ) : (
-                            <div className="space-y-5">
-                                {compGroups.active.length > 0 && (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+                                {associations.map(assoc => (
+                                    <button
+                                        key={assoc.association_id}
+                                        onClick={() => selectAssoc(assoc)}
+                                        className="group flex flex-col items-center gap-2.5 p-4 sm:p-5 bg-white dark:bg-zinc-900/80 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm hover:shadow-lg hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 hover:-translate-y-0.5"
+                                    >
+                                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center p-2.5 shadow-sm group-hover:shadow-md transition-shadow duration-200">
+                                            <img
+                                                src={logoUrl(assoc.association_id)}
+                                                alt={assoc.association_name}
+                                                className="w-full h-full object-contain"
+                                                loading="lazy"
+                                            />
+                                        </div>
+                                        <span className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300 text-center leading-tight group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                                            {assoc.association_name}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* --- SCREEN 2: COMPETITIONS BY GENDER --- */}
+                {view === 'competitions' && (
+                    <div className={`space-y-6 transition-all duration-300 ${transitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}>
+                        {compsLoading ? (
+                            <div className="flex justify-center py-20">
+                                <Loader2 className="animate-spin text-amber-500" size={28} />
+                            </div>
+                        ) : (
+                            <>
+                                {masculine.length > 0 && (
                                     <div>
-                                        <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3 px-1">
-                                            Competições com atividade
-                                        </h3>
-                                        <div className="grid gap-2">
-                                            {compGroups.active.map(comp => (
+                                        <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3 px-1">Competições Masculinas</h3>
+                                        <div className="space-y-2">
+                                            {masculine.map(comp => (
                                                 <button
                                                     key={comp.competition_id}
-                                                    onClick={() => setSelectedComp(comp)}
-                                                    className="w-full text-left bg-white dark:bg-zinc-900/80 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-3.5 hover:border-amber-500/40 dark:hover:border-amber-500/30 hover:shadow-md transition-all duration-200 group"
+                                                    onClick={() => selectComp(comp)}
+                                                    className="w-full text-left bg-white dark:bg-zinc-900/80 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-3.5 sm:p-4 hover:border-amber-500/40 dark:hover:border-amber-500/30 hover:shadow-md transition-all duration-200 group"
                                                 >
                                                     <div className="flex items-start justify-between gap-3">
                                                         <div className="min-w-0">
                                                             <h4 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors leading-snug">
                                                                 {comp.competition_name}
                                                             </h4>
-                                                            <div className="flex items-center gap-2 mt-1">
-                                                                <span className="inline-flex items-center gap-1 text-[11px] text-zinc-400">
-                                                                    <MapPin size={10} />
-                                                                    {comp.association_name}
-                                                                </span>
-                                                            </div>
                                                         </div>
                                                         <span className="shrink-0 text-xs font-medium text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full">
                                                             {comp.club_count} equipas
@@ -192,26 +310,25 @@ export default function Standings() {
                                     </div>
                                 )}
 
-                                {compGroups.empty.length > 0 && search && (
+                                {feminine.length > 0 && (
                                     <div>
-                                        <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3 px-1">
-                                            Sem atividade recente
-                                        </h3>
-                                        <div className="grid gap-2">
-                                            {compGroups.empty.slice(0, 10).map(comp => (
+                                        <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3 px-1">Competições Femininas</h3>
+                                        <div className="space-y-2">
+                                            {feminine.map(comp => (
                                                 <button
                                                     key={comp.competition_id}
-                                                    onClick={() => setSelectedComp(comp)}
-                                                    className="w-full text-left bg-white/50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800/40 rounded-2xl p-3 hover:border-zinc-200 dark:hover:border-zinc-700/60 transition-all duration-200"
+                                                    onClick={() => selectComp(comp)}
+                                                    className="w-full text-left bg-white dark:bg-zinc-900/80 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-3.5 sm:p-4 hover:border-amber-500/40 dark:hover:border-amber-500/30 hover:shadow-md transition-all duration-200 group"
                                                 >
                                                     <div className="flex items-start justify-between gap-3">
                                                         <div className="min-w-0">
-                                                            <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 leading-snug">
+                                                            <h4 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors leading-snug">
                                                                 {comp.competition_name}
                                                             </h4>
-                                                            <span className="text-[10px] text-zinc-400">{comp.association_name}</span>
                                                         </div>
-                                                        <span className="shrink-0 text-[10px] text-zinc-400">{comp.club_count} equipas</span>
+                                                        <span className="shrink-0 text-xs font-medium text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full">
+                                                            {comp.club_count} equipas
+                                                        </span>
                                                     </div>
                                                 </button>
                                             ))}
@@ -219,35 +336,45 @@ export default function Standings() {
                                     </div>
                                 )}
 
-                                {filteredComps.length === 0 && !compsLoading && (
-                                    <div className="text-center py-16">
-                                        <p className="text-zinc-400 font-medium">Nenhuma competição encontrada.</p>
+                                {other.length > 0 && (
+                                    <div>
+                                        <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3 px-1">Outras Competições</h3>
+                                        <div className="space-y-2">
+                                            {other.map(comp => (
+                                                <button
+                                                    key={comp.competition_id}
+                                                    onClick={() => selectComp(comp)}
+                                                    className="w-full text-left bg-white dark:bg-zinc-900/80 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-3.5 sm:p-4 hover:border-amber-500/40 dark:hover:border-amber-500/30 hover:shadow-md transition-all duration-200 group"
+                                                >
+                                                    <div className="flex items-start justify-between gap-3">
+                                                        <div className="min-w-0">
+                                                            <h4 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors leading-snug">
+                                                                {comp.competition_name}
+                                                            </h4>
+                                                        </div>
+                                                        <span className="shrink-0 text-xs font-medium text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full">
+                                                            {comp.club_count} equipas
+                                                        </span>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
-                            </div>
+
+                                {competitions.length === 0 && (
+                                    <div className="text-center py-16">
+                                        <p className="text-zinc-400 font-medium">Nenhuma competição encontrada para esta associação.</p>
+                                    </div>
+                                )}
+                            </>
                         )}
-                    </>
-                ) : (
-                    <>
-                        <button
-                            onClick={() => { setSelectedComp(null); setOpenGroups({}) }}
-                            className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white transition-colors mb-5 group"
-                        >
-                            <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                            </svg>
-                            Todas as competições
-                        </button>
+                    </div>
+                )}
 
-                        <div className="mb-5">
-                            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">{selectedComp.competition_name}</h2>
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className="text-sm text-zinc-500">{selectedComp.association_name}</span>
-                                <span className="text-zinc-300 dark:text-zinc-600">·</span>
-                                <span className="text-sm text-zinc-500">{season}</span>
-                            </div>
-                        </div>
-
+                {/* --- SCREEN 3: PHASES --- */}
+                {view === 'phases' && (
+                    <div className={`transition-all duration-300 ${transitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}>
                         {standingsLoading ? (
                             <div className="flex flex-col items-center justify-center py-20 gap-3">
                                 <Loader2 className="animate-spin text-amber-500" size={28} />
@@ -257,10 +384,7 @@ export default function Standings() {
                             </div>
                         ) : error ? (
                             <div className="text-center py-16 bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-                                <p className="text-zinc-500 font-medium mb-1">{error}</p>
-                                <button onClick={() => refresh()} className="text-sm font-bold text-amber-600 hover:text-amber-700 transition-colors">
-                                    Tentar novamente
-                                </button>
+                                <p className="text-zinc-500 font-medium">{error}</p>
                             </div>
                         ) : groups.length === 0 ? (
                             <div className="text-center py-16 bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800">
@@ -283,22 +407,18 @@ export default function Standings() {
                                 })}
                             </div>
                         )}
-                    </>
-                )}
-
-                {!selectedComp && (
-                    <div className="mt-8 flex flex-wrap gap-3 text-[10px] font-medium text-zinc-400 px-1">
-                        <span><span className="font-bold text-zinc-500 dark:text-zinc-300">Pts</span>: Pontos</span>
-                        <span><span className="font-bold text-zinc-500 dark:text-zinc-300">J</span>: Jogos</span>
-                        <span><span className="font-bold text-zinc-500 dark:text-zinc-300">V</span>: Vitórias</span>
-                        <span><span className="font-bold text-zinc-500 dark:text-zinc-300">D</span>: Derrotas</span>
                     </div>
                 )}
+
+                <div className="mt-10 flex flex-wrap gap-4 text-[10px] font-medium text-zinc-400 px-1 justify-center">
+                    <span><span className="font-bold text-zinc-500 dark:text-zinc-300">Pts</span>: Pontos</span>
+                    <span><span className="font-bold text-zinc-500 dark:text-zinc-300">J</span>: Jogos</span>
+                    <span><span className="font-bold text-zinc-500 dark:text-zinc-300">V</span>: Vitórias</span>
+                    <span><span className="font-bold text-zinc-500 dark:text-zinc-300">D</span>: Derrotas</span>
+                </div>
             </div>
 
             <style>{`
-                @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-                .animate-fadeIn { animation: fadeIn 0.35s ease-out forwards; }
                 .duration-600 { transition-duration: 600ms; }
             `}</style>
         </div>
