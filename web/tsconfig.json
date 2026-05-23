@@ -25,6 +25,9 @@
     "include": [
         "src"
     ],
+    "exclude": [
+        "src/pages/legacy"
+    ],
     "references": [
         {
             "path": "./tsconfig.node.json"

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom'
 import Layout from './Layout'
 import LandingPage from './pages/LandingPage'
 import ClubHome from './pages/ClubHome'
@@ -31,6 +31,9 @@ function App() {
                     <Route path="standings/:associationId/:competitionId" element={<CompetitionPhases />} />
                     <Route path="about" element={<About />} />
                     <Route path="install" element={<Install />} />
+                    <Route path="games" element={<Navigate to="/clube/fc-gaia/jogos" replace />} />
+                    <Route path="game/:slug" element={<Navigate to="/clube/fc-gaia/jogo/:slug" replace />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
             </Routes>
         </BrowserRouter>

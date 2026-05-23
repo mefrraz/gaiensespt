@@ -2,9 +2,14 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Search, Loader2, Trophy } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { useCarouselGames } from '../hooks/useCarouselGames'
 
 interface ClubResult { id: number; name: string; slug: string; logo_url: string | null }
 interface CompResult { competition_id: number; competition_name: string; association_id: number }
+
+function formatDate(d: string) {
+    try { return new Date(d).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' }) } catch { return d }
+}
 
 export default function LandingPage() {
     const navigate = useNavigate()
@@ -14,6 +19,7 @@ export default function LandingPage() {
     const [searching, setSearching] = useState(false)
     const [showDropdown, setShowDropdown] = useState(false)
     const [focusIdx, setFocusIdx] = useState(-1)
+    const { games: carouselGames, loading: carouselLoading } = useCarouselGames()
 
     useEffect(() => {
         if (search.length < 1) { setClubs([]); setComps([]); setShowDropdown(false); return }
@@ -118,9 +124,43 @@ export default function LandingPage() {
                 <Link to="/about" className="text-xs font-medium text-zinc-500 hover:text-amber-500 transition-colors">Sobre</Link>
             </div>
 
+            {/* Carousel */}
+            {!carouselLoading && carouselGames.length > 0 && (
+                <div className="mt-10 w-full max-w-4xl">
+                    <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 px-1">Jogos em destaque</p>
+                    <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide">
+                        {carouselGames.slice(0, 30).map((g, i) => (
+                            <div key={i} className="shrink-0 snap-start w-[220px] bg-zinc-800/60 border border-zinc-700/30 rounded-2xl p-3.5 hover:border-amber-500/30 transition-colors">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-[10px] font-bold text-amber-500 uppercase">{g.competition}</span>
+                                    {g.status === 'FINALIZADO' ? (
+                                        <span className="text-[10px] font-bold text-zinc-500">FIM</span>
+                                    ) : (
+                                        <span className="text-[10px] font-bold text-emerald-400">AGENDADO</span>
+                                    )}
+                                </div>
+                                <div className="space-y-1 mb-2">
+                                    <p className="text-xs font-bold text-zinc-200 truncate">{g.home}</p>
+                                    <p className="text-xs font-bold text-zinc-200 truncate">{g.away}</p>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    {g.score ? (
+                                        <span className="text-xs font-black text-white tabular-nums">{g.score}</span>
+                                    ) : (
+                                        <span className="text-[10px] text-zinc-500">vs</span>
+                                    )}
+                                    <span className="text-[10px] text-zinc-500">{formatDate(g.date)}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <div className="mt-16 text-center">
                 <p className="text-[10px] font-medium text-zinc-600">Dados da Federação Portuguesa de Basquetebol</p>
             </div>
+            <style>{`.scrollbar-hide::-webkit-scrollbar{display:none}.scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}`}</style>
         </div>
     )
 }
