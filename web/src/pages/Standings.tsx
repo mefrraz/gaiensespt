@@ -49,7 +49,7 @@ export default function Standings() {
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-16 gap-4">
-                        <Loader2 className="animate-spin text-amber-500" size={28} />
+                        <Loader2 className="animate-spin text-violet-600" size={28} />
                         <span className="text-sm text-zinc-400 font-medium">A carregar associações...</span>
                     </div>
                 ) : (

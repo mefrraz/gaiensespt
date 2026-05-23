@@ -87,7 +87,7 @@ export default function AssociationCompetitions() {
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-24 gap-4">
-                        <Loader2 className="animate-spin text-amber-500" size={32} />
+                        <Loader2 className="animate-spin text-violet-600" size={32} />
                     </div>
                 ) : (
                     <>
@@ -101,7 +101,7 @@ export default function AssociationCompetitions() {
                                 <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">Época 2025/2026</p>
                                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-5 mt-3">
                                     <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400">
-                                        <Trophy size={13} className="text-amber-500" /> {comps.length} competições
+                                        <Trophy size={13} className="text-violet-600" /> {comps.length} competições
                                     </span>
                                     <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400">
                                         <Users size={13} className="text-emerald-500" /> {totalTeams} equipas
@@ -138,12 +138,12 @@ export default function AssociationCompetitions() {
                                     {list.map(c => (
                                         <button key={c.competition_id}
                                             onClick={() => navigate(`/standings/${id}/${c.competition_id}`)}
-                                            className="w-full text-left bg-white dark:bg-zinc-900/90 hover:bg-zinc-50 dark:hover:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 hover:border-amber-500/40 dark:hover:border-amber-500/30 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 group flex items-center justify-between gap-4">
+                                            className="w-full text-left bg-white dark:bg-zinc-900/90 hover:bg-zinc-50 dark:hover:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 hover:border-violet-600/40 dark:hover:border-violet-600/30 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 group flex items-center justify-between gap-4">
                                             <div className="min-w-0">
-                                                <h4 className="text-sm sm:text-base font-bold text-zinc-800 dark:text-zinc-200 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors leading-snug">{c.competition_name}</h4>
+                                                <h4 className="text-sm sm:text-base font-bold text-zinc-800 dark:text-zinc-200 group-hover:text-violet-700 dark:group-hover:text-violet-600 transition-colors leading-snug">{c.competition_name}</h4>
                                                 <p className="text-[11px] sm:text-xs text-zinc-400 mt-1">{c.club_count} equipas</p>
                                             </div>
-                                            <svg className="w-5 h-5 shrink-0 text-zinc-300 dark:text-zinc-600 group-hover:text-amber-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                                            <svg className="w-5 h-5 shrink-0 text-zinc-300 dark:text-zinc-600 group-hover:text-violet-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                                         </button>
                                     ))}
                                 </div>

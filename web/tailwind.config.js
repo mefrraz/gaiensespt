@@ -7,10 +7,10 @@ export default {
     theme: {
         extend: {
             colors: {
-                'gaia-yellow': '#f5b417',
-                'gaia-yellow-dim': '#c9920f',
+                'dribly-violet': '#7C3AED',
+                'dribly-violet-hover': '#8B5CF6',
+                'dribly-violet-dim': '#6D28D9',
                 'gaia-sand': '#fcfbfa',
-                'gaia-black': '#0f0f0f',
                 'gaia-green': '#22c55e',
                 'gaia-green-dim': '#16a34a',
                 'gaia-red': '#ef4444',

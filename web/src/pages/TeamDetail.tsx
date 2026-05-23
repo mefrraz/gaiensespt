@@ -38,7 +38,7 @@ export default function TeamDetail() {
 
     return (
         <div className="max-w-xl mx-auto pb-24 px-3">
-            <Link to={`/clube/${clubSlug}/equipas`} className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-amber-500 mb-4 pt-2 group">
+            <Link to={`/clube/${clubSlug}/equipas`} className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-violet-600 mb-4 pt-2 group">
                 <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" /> Equipas
             </Link>
 
@@ -46,7 +46,7 @@ export default function TeamDetail() {
             <p className="text-xs text-zinc-500 mb-5">{clubName} · 2025/2026</p>
 
             {loading ? (
-                <div className="flex justify-center py-16"><div className="w-6 h-6 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" /></div>
+                <div className="flex justify-center py-16"><div className="w-6 h-6 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" /></div>
             ) : (
                 <>
                     {form.length > 0 && (
@@ -72,7 +72,7 @@ export default function TeamDetail() {
                                     const won = score !== null && opp !== null && score > opp
                                     return (
                                         <Link to={`/clube/${clubSlug}/jogo/${g.slug}`} key={g.slug}
-                                            className="flex items-center gap-2 p-2.5 bg-white dark:bg-zinc-900/80 border border-zinc-100 dark:border-zinc-800/50 rounded-xl hover:border-amber-500/30 transition-all">
+                                            className="flex items-center gap-2 p-2.5 bg-white dark:bg-zinc-900/80 border border-zinc-100 dark:border-zinc-800/50 rounded-xl hover:border-violet-600/30 transition-all">
                                             {won ? <TrendingUp size={14} className="text-emerald-500 shrink-0" /> : score === opp ? <Minus size={14} className="text-blue-500 shrink-0" /> : <TrendingDown size={14} className="text-red-500 shrink-0" />}
                                             <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{g.equipa_casa} {g.resultado_casa}-{g.resultado_fora} {g.equipa_fora}</span>
                                             <span className="text-[10px] text-zinc-400 ml-auto shrink-0">{new Date(g.data).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' })}</span>
@@ -89,7 +89,7 @@ export default function TeamDetail() {
                             <div className="space-y-1.5">
                                 {scheduled.map(g => (
                                     <Link to={`/clube/${clubSlug}/jogo/${g.slug}`} key={g.slug}
-                                        className="flex items-center gap-2 p-2.5 bg-white dark:bg-zinc-900/80 border border-zinc-100 dark:border-zinc-800/50 rounded-xl hover:border-amber-500/30 transition-all">
+                                        className="flex items-center gap-2 p-2.5 bg-white dark:bg-zinc-900/80 border border-zinc-100 dark:border-zinc-800/50 rounded-xl hover:border-violet-600/30 transition-all">
                                         <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{g.equipa_casa} <span className="text-zinc-400">vs</span> {g.equipa_fora}</span>
                                         <span className="text-[10px] text-zinc-400 ml-auto shrink-0">{new Date(g.data).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' })}</span>
                                     </Link>

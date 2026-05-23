@@ -68,7 +68,7 @@ export default function ClubTeams() {
             </div>
 
             {loading ? (
-                <div className="flex justify-center py-20"><Loader2 className="animate-spin text-amber-500" size={28} /></div>
+                <div className="flex justify-center py-20"><Loader2 className="animate-spin text-violet-600" size={28} /></div>
             ) : teams.length === 0 ? (
                 <div className="text-center py-20 text-zinc-400 font-medium">Nenhuma equipa encontrada.</div>
             ) : (
@@ -80,12 +80,12 @@ export default function ClubTeams() {
                                 {comps.map(c => (
                                     <Link key={c.competition_id}
                                         to={`/standings/${c.competition_id}`.replace(/\/\d+$/, '') + '/' + c.competition_id}
-                                        className="w-full text-left bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm hover:border-amber-500/40 transition-all flex items-center justify-between gap-3 group">
+                                        className="w-full text-left bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm hover:border-violet-600/40 transition-all flex items-center justify-between gap-3 group">
                                         <div className="min-w-0">
                                             <h4 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">{c.competition_name}</h4>
                                             <p className="text-[11px] text-zinc-400 mt-0.5">{c.club_count} equipas</p>
                                         </div>
-                                        <ArrowRight size={14} className="text-zinc-400 group-hover:text-amber-500 shrink-0 transition-colors" />
+                                        <ArrowRight size={14} className="text-zinc-400 group-hover:text-violet-600 shrink-0 transition-colors" />
                                     </Link>
                                 ))}
                             </div>

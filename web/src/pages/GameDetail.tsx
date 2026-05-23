@@ -70,7 +70,7 @@ function GameDetail() {
     }
 
     if (loading) return <div className="max-w-xl mx-auto pb-24 px-3"><div className="flex items-center justify-between pt-3 mb-4"><div className="h-10 w-10 bg-zinc-200 dark:bg-zinc-800 rounded-xl animate-pulse" /><div className="h-4 w-24 bg-zinc-200 dark:bg-zinc-800 rounded animate-pulse" /><div className="h-10 w-10 bg-zinc-200 dark:bg-zinc-800 rounded-xl animate-pulse" /></div><SkeletonHero /></div>
-    if (!match) return <div className="max-w-xl mx-auto px-3 py-32 text-center"><Trophy size={40} className="mx-auto text-zinc-300 dark:text-zinc-700 mb-4" strokeWidth={1} /><p className="text-sm text-zinc-500 mb-4">Jogo não encontrado</p><button onClick={() => window.history.back()} className="text-xs font-bold text-amber-500 hover:underline">Voltar</button></div>
+    if (!match) return <div className="max-w-xl mx-auto px-3 py-32 text-center"><Trophy size={40} className="mx-auto text-zinc-300 dark:text-zinc-700 mb-4" strokeWidth={1} /><p className="text-sm text-zinc-500 mb-4">Jogo não encontrado</p><button onClick={() => window.history.back()} className="text-xs font-bold text-violet-600 hover:underline">Voltar</button></div>
 
     const isFinished = match.status === 'FINALIZADO'
     const isLive = match.status === 'A DECORRER'
@@ -92,12 +92,12 @@ function GameDetail() {
             <div className="flex items-center justify-between pt-3 animate-fade-in">
                 <Link to={cSlug ? `/clube/${cSlug}/jogos` : '/'} className="p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"><ArrowLeft size={22} /></Link>
                 <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500">FICHA DE JOGO</span>
-                <button onClick={shareGame} className={`p-2 -mr-2 transition-colors ${copied ? 'text-green-500' : 'text-zinc-500 hover:text-amber-500'}`}>{copied ? <Check size={18} /> : <Share2 size={18} />}</button>
+                <button onClick={shareGame} className={`p-2 -mr-2 transition-colors ${copied ? 'text-green-500' : 'text-zinc-500 hover:text-violet-600'}`}>{copied ? <Check size={18} /> : <Share2 size={18} />}</button>
             </div>
 
-            <div className="glass-card overflow-hidden animate-slide-up group hover:border-amber-500/30 transition-all duration-200">
-                <div className="bg-gradient-to-r from-amber-500/10 via-zinc-50 to-amber-500/10 dark:from-amber-500/5 dark:via-zinc-900 dark:to-amber-500/5 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-amber-500 uppercase">{match.escalao}</span>
+            <div className="glass-card overflow-hidden animate-slide-up group hover:border-violet-600/30 transition-all duration-200">
+                <div className="bg-gradient-to-r from-violet-600/10 via-zinc-50 to-violet-600/10 dark:from-violet-600/5 dark:via-zinc-900 dark:to-violet-600/5 border-b border-zinc-100 dark:border-white/5 p-3 flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-violet-600 uppercase">{match.escalao}</span>
                     <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase truncate ml-2">{match.competicao}</span>
                 </div>
                 <div className="p-6 pt-8 pb-6">
@@ -119,24 +119,24 @@ function GameDetail() {
                         <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} />
                     </div>
                     <div className="mt-6 flex justify-center">
-                        {match.id && <a href={`https://www.fpb.pt/ficha-de-jogo?internalID=${match.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 hover:text-amber-500 transition-colors"><ExternalLink size={10} />Ver jogo na FPB</a>}
+                        {match.id && <a href={`https://www.fpb.pt/ficha-de-jogo?internalID=${match.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 hover:text-violet-600 transition-colors"><ExternalLink size={10} />Ver jogo na FPB</a>}
                     </div>
                 </div>
             </div>
 
             <div className="glass-card p-5 flex items-start gap-4 animate-slide-up">
-                <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-amber-500 shrink-0"><MapPin size={20} /></div>
-                <div className="min-w-0"><h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Localização</h4>{match.local ? <><p className="text-sm font-medium text-zinc-900 dark:text-white mb-2 break-words">{match.local}</p><a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(match.local)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-500 hover:text-black dark:hover:text-white transition-colors group"><Navigation size={12} /><span className="group-hover:underline">Abrir no Google Maps</span></a></> : <p className="text-sm text-zinc-500 italic">A definir</p>}</div>
+                <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-violet-600 shrink-0"><MapPin size={20} /></div>
+                <div className="min-w-0"><h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Localização</h4>{match.local ? <><p className="text-sm font-medium text-zinc-900 dark:text-white mb-2 break-words">{match.local}</p><a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(match.local)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[10px] font-bold text-violet-600 hover:text-black dark:hover:text-white transition-colors group"><Navigation size={12} /><span className="group-hover:underline">Abrir no Google Maps</span></a></> : <p className="text-sm text-zinc-500 italic">A definir</p>}</div>
             </div>
 
             <div className="glass-card p-5 flex items-start gap-4 animate-slide-up">
-                <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-amber-500 shrink-0"><Calendar size={20} /></div>
+                <div className="p-3 rounded-full bg-zinc-100 dark:bg-white/5 text-violet-600 shrink-0"><Calendar size={20} /></div>
                 <div><h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Data</h4><p className="text-sm font-medium text-zinc-900 dark:text-white capitalize">{dateFormatted}</p>{hasHora && <p className="text-sm font-medium text-zinc-500">{match.hora!.slice(0, 5)}</p>}</div>
             </div>
 
             {recentGames.length > 0 && (
                 <div className="glass-card overflow-hidden animate-slide-up">
-                    <div className="p-4 border-b border-zinc-100 dark:border-white/5"><h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-500" />Últimos Jogos</h3></div>
+                    <div className="p-4 border-b border-zinc-100 dark:border-white/5"><h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-violet-600" />Últimos Jogos</h3></div>
                     <div className="divide-y divide-zinc-100 dark:divide-white/5">
                         {recentGames.map(game => {
                             const cHome = game.equipa_casa.toUpperCase().includes(clubName?.toUpperCase() || 'GAIA')
@@ -148,7 +148,7 @@ function GameDetail() {
                             const dt = new Date(game.data).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' })
                             return <Link to={`/clube/${cSlug}/jogo/${game.slug}`} key={game.slug} className="flex items-center gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
                                 {w ? <TrendingUp size={12} className="text-green-500 shrink-0" /> : d ? <Minus size={12} className="text-blue-500 shrink-0" /> : <TrendingDown size={12} className="text-red-500 shrink-0" />}
-                                <div className="flex-1 min-w-0"><p className="text-xs text-zinc-900 dark:text-white truncate group-hover:text-amber-500 transition-colors"><span className="font-bold">{clubName || 'CLUBE'}</span><span className="text-zinc-500 mx-1">{cScore}-{oScore}</span><span className="text-zinc-400 dark:text-zinc-500">{opp}</span></p></div>
+                                <div className="flex-1 min-w-0"><p className="text-xs text-zinc-900 dark:text-white truncate group-hover:text-violet-600 transition-colors"><span className="font-bold">{clubName || 'CLUBE'}</span><span className="text-zinc-500 mx-1">{cScore}-{oScore}</span><span className="text-zinc-400 dark:text-zinc-500">{opp}</span></p></div>
                                 <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase shrink-0">{dt}</span>
                             </Link>
                         })}
@@ -158,15 +158,15 @@ function GameDetail() {
 
             {upcomingH2H.length > 0 && (
                 <div className="glass-card overflow-hidden animate-slide-up">
-                    <div className="p-4 border-b border-zinc-100 dark:border-white/5"><h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-500" />Próximos Jogos</h3></div>
+                    <div className="p-4 border-b border-zinc-100 dark:border-white/5"><h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-violet-600" />Próximos Jogos</h3></div>
                     <div className="divide-y divide-zinc-100 dark:divide-white/5">
                         {upcomingH2H.map(game => {
                             const cHome = game.equipa_casa.toUpperCase().includes(clubName?.toUpperCase() || 'GAIA')
                             const opp = cHome ? game.equipa_fora : game.equipa_casa
                             const dt = new Date(game.data).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' })
                             return <Link to={`/clube/${cSlug}/jogo/${game.slug}`} key={game.slug} className="flex items-center gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
-                                <TrendingUp size={12} className="text-amber-500 shrink-0" />
-                                <div className="flex-1 min-w-0"><p className="text-xs text-zinc-900 dark:text-white truncate group-hover:text-amber-500 transition-colors"><span className="font-bold">{clubName || 'CLUBE'}</span><span className="text-zinc-400 mx-1">vs</span><span className="text-zinc-500">{opp}</span></p></div>
+                                <TrendingUp size={12} className="text-violet-600 shrink-0" />
+                                <div className="flex-1 min-w-0"><p className="text-xs text-zinc-900 dark:text-white truncate group-hover:text-violet-600 transition-colors"><span className="font-bold">{clubName || 'CLUBE'}</span><span className="text-zinc-400 mx-1">vs</span><span className="text-zinc-500">{opp}</span></p></div>
                                 <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase shrink-0">{dt}</span>
                             </Link>
                         })}

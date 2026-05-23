@@ -82,7 +82,7 @@ function PWAInstallBanner() {
             return (
                 <div className="flex flex-col gap-2.5 items-center">
                     <button onClick={handleNativeInstall}
-                        className="w-full sm:w-auto px-6 py-3 bg-gaia-yellow text-black text-sm font-bold rounded-xl hover:bg-amber-400 transition-colors shadow-md shadow-amber-500/20">
+                        className="w-full sm:w-auto px-6 py-3 bg-gaia-yellow text-black text-sm font-bold rounded-xl hover:bg-violet-500 transition-colors shadow-md shadow-violet-600/20">
                         Instalar App
                     </button>
                     <button onClick={handleDismiss}
@@ -139,7 +139,7 @@ function PWAInstallBanner() {
 
         return (
             <Link to="/install" onClick={handleDismiss}
-                className="px-6 py-3 bg-gaia-yellow text-black text-sm font-bold rounded-xl hover:bg-amber-400 transition-colors shadow-md shadow-amber-500/20">
+                className="px-6 py-3 bg-gaia-yellow text-black text-sm font-bold rounded-xl hover:bg-violet-500 transition-colors shadow-md shadow-violet-600/20">
                 Ver instruções
             </Link>
         )
@@ -154,7 +154,7 @@ function PWAInstallBanner() {
                 <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mt-3" />
 
                 <div className="p-5 sm:p-6 text-center">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-gaia-yellow to-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/20">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-gaia-yellow to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-600/20">
                         <Download size={26} className="text-white" />
                     </div>
 
