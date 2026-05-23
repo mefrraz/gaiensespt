@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Search, Trophy, BarChart2, TrendingUp, Building2, Users, ArrowRight, Calendar, ChevronRight } from 'lucide-react'
+import { Search, Trophy, BarChart2, TrendingUp, Building2, ArrowRight, ChevronRight } from 'lucide-react'
 import { GameCarousel } from '../components/GameCarousel'
 import { useClub, type Club } from '../lib/ClubContext'
 
@@ -65,29 +65,24 @@ function Landing() {
 
     return (
         <div className="pb-24">
-            {/* Hero Section — full-width gradient */}
+            {/* Hero Section */}
             <div className="relative overflow-hidden bg-gradient-to-br from-dribly-blue via-blue-600 to-dribly-blue-dark dark:from-dribly-blue-dark dark:via-blue-900 dark:to-dribly-black">
-                {/* Decorative circles */}
-                <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full translate-x-32 -translate-y-32 hidden md:block" />
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-16 translate-y-16 hidden md:block" />
-                <div className="absolute top-1/2 left-1/4 w-48 h-48 bg-white/3 rounded-full hidden md:block" />
-
-                <div className="max-w-5xl mx-auto px-4 pt-12 md:pt-20 pb-12 md:pb-16 text-center relative z-10">
+                <div className="max-w-5xl mx-auto px-4 pt-12 md:pt-16 pb-10 md:pb-14 text-center relative z-10">
                     {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white/90 text-[11px] font-bold uppercase tracking-wider mb-6 border border-white/10">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white/90 text-[11px] font-bold uppercase tracking-wider mb-5 border border-white/10">
                         <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                         Época 2025/2026
                     </div>
 
-                    <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tight mb-4 leading-tight">
+                    <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-3 leading-tight">
                         Basquetebol<br />Português ao Vivo
                     </h1>
-                    <p className="text-sm md:text-base text-white/70 max-w-lg mx-auto leading-relaxed mb-8">
-                        Pesquisa o teu clube e acompanha todos os jogos, resultados e classificações do basquetebol em Portugal.
+                    <p className="text-sm md:text-base text-white/70 max-w-md mx-auto leading-relaxed mb-6">
+                        Pesquisa o teu clube e acompanha jogos, resultados e classificações.
                     </p>
 
-                    {/* Search Bar — in hero */}
-                    <div className="max-w-lg mx-auto relative animate-slide-up" ref={dropdownRef}>
+                    {/* Search Bar */}
+                    <div className="max-w-lg mx-auto relative" ref={dropdownRef}>
                         <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
                             <Search size={20} className="text-zinc-400" />
                         </div>
@@ -119,20 +114,18 @@ function Landing() {
                                                 <span className="text-xs font-bold text-zinc-500">{club.name.charAt(0)}</span>
                                             )}
                                         </div>
-                                        <div className="min-w-0">
-                                            <span className="text-sm font-medium text-zinc-900 dark:text-white block truncate">{club.name}</span>
-                                        </div>
+                                        <span className="text-sm font-medium text-zinc-900 dark:text-white truncate">{club.name}</span>
                                     </button>
                                 ))}
                             </div>
                         )}
                     </div>
 
-                    {/* Favorite club shortcut */}
+                    {/* Favorite shortcut */}
                     {favoriteClub && (
                         <Link
                             to={`/clube/${favoriteClub.slug}/home`}
-                            className="inline-flex items-center gap-2 mt-5 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-xs font-bold border border-white/10 hover:bg-white/20 transition-all group"
+                            className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-xs font-bold border border-white/10 hover:bg-white/20 transition-all group"
                         >
                             <HomeIcon size={14} />
                             <span>Continuar com {favoriteClub.name}</span>
@@ -142,13 +135,12 @@ function Landing() {
                 </div>
             </div>
 
-            {/* Stats Bar — full-width with glass effect */}
+            {/* Stats Bar */}
             <div className="bg-white dark:bg-zinc-950 border-b border-zinc-100 dark:border-white/5">
-                <div className="max-w-5xl mx-auto px-4 py-6 flex items-center justify-around md:justify-center md:gap-16">
-                    <StatBlock value="197" label="Clubes" icon={<Building2 size={16} className="text-dribly-blue" />} />
-                    <StatBlock value="411" label="Competições" icon={<Trophy size={16} className="text-amber-500" />} />
-                    <StatBlock value="24" label="Associações" icon={<Users size={16} className="text-emerald-500" />} />
-                    <StatBlock value="2025/26" label="Época" icon={<Calendar size={16} className="text-violet-500" />} />
+                <div className="max-w-5xl mx-auto px-4 py-5 flex items-center justify-around md:justify-center md:gap-20">
+                    <span className="text-xs text-zinc-500"><strong className="text-zinc-900 dark:text-white">197</strong> Clubes</span>
+                    <span className="text-xs text-zinc-500"><strong className="text-zinc-900 dark:text-white">411</strong> Competições</span>
+                    <span className="text-xs text-zinc-500"><strong className="text-zinc-900 dark:text-white">24</strong> Associações</span>
                 </div>
             </div>
 
@@ -159,88 +151,48 @@ function Landing() {
                 </div>
             </div>
 
-            {/* Quick Links — full-width grid */}
+            {/* Quick Links — all blue */}
             <div className="max-w-5xl mx-auto px-4 py-8">
-                <div className="flex items-center justify-between mb-5">
-                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Explorar</h2>
-                </div>
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-5">Explorar</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <QuickCard
                         to="/standings"
                         icon={<BarChart2 size={22} />}
                         title="Classificações"
                         desc="Tabelas de todas as associações"
-                        color="from-blue-500 to-blue-600"
+                        gradient="from-dribly-blue to-dribly-blue-dim"
                     />
                     <QuickCard
                         to="/standings"
                         icon={<Trophy size={22} />}
                         title="Competições"
                         desc="400+ competições disponíveis"
-                        color="from-amber-500 to-amber-600"
+                        gradient="from-dribly-blue-light to-dribly-blue"
                     />
                     <QuickCard
                         to="/about"
                         icon={<Building2 size={22} />}
-                        title="Sobre o Dribly"
-                        desc="Como funciona a plataforma"
-                        color="from-emerald-500 to-emerald-600"
+                        title="Sobre"
+                        desc="Como funciona o Dribly"
+                        gradient="from-dribly-blue-dim to-dribly-blue-dark"
                     />
                     <QuickCard
                         to="/install"
                         icon={<TrendingUp size={22} />}
                         title="Instalar App"
                         desc="No ecrã do telemóvel"
-                        color="from-violet-500 to-violet-600"
+                        gradient="from-dribly-blue to-blue-700"
                     />
                 </div>
             </div>
-
-            {/* Como funciona — 3 steps */}
-            <div className="bg-white dark:bg-zinc-950 border-y border-zinc-100 dark:border-white/5 py-10">
-                <div className="max-w-5xl mx-auto px-4">
-                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white text-center mb-8">Como funciona?</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <StepCard
-                            step="1"
-                            title="Pesquisa"
-                            desc="Escreve o nome do teu clube na barra de pesquisa e seleciona-o."
-                        />
-                        <StepCard
-                            step="2"
-                            title="Segue"
-                            desc="Vê jogos, resultados e agenda do teu clube. Fica guardado como favorito."
-                        />
-                        <StepCard
-                            step="3"
-                            title="Explora"
-                            desc="Descobre classificações de todas as competições do basquetebol português."
-                        />
-                    </div>
-                </div>
-            </div>
         </div>
     )
 }
 
-function StatBlock({ value, label, icon }: { value: string; label: string; icon: React.ReactNode }) {
-    return (
-        <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-white/5 flex items-center justify-center shrink-0">
-                {icon}
-            </div>
-            <div>
-                <span className="text-lg font-black text-zinc-900 dark:text-white block leading-none">{value}</span>
-                <p className="text-[10px] text-zinc-500 uppercase tracking-wide">{label}</p>
-            </div>
-        </div>
-    )
-}
-
-function QuickCard({ to, icon, title, desc, color }: { to: string; icon: React.ReactNode; title: string; desc: string; color: string }) {
+function QuickCard({ to, icon, title, desc, gradient }: { to: string; icon: React.ReactNode; title: string; desc: string; gradient: string }) {
     return (
         <Link to={to} className="glass-card p-5 flex flex-col gap-4 group hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform`}>
+            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform`}>
                 {icon}
             </div>
             <div>
@@ -251,18 +203,6 @@ function QuickCard({ to, icon, title, desc, color }: { to: string; icon: React.R
                 <p className="text-[11px] text-zinc-500 mt-0.5 leading-relaxed">{desc}</p>
             </div>
         </Link>
-    )
-}
-
-function StepCard({ step, title, desc }: { step: string; title: string; desc: string }) {
-    return (
-        <div className="text-center p-5">
-            <div className="w-12 h-12 rounded-full bg-dribly-blue/10 dark:bg-dribly-blue/20 text-dribly-blue flex items-center justify-center mx-auto mb-4 text-lg font-black">
-                {step}
-            </div>
-            <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-1.5">{title}</h3>
-            <p className="text-xs text-zinc-500 leading-relaxed max-w-[200px] mx-auto">{desc}</p>
-        </div>
     )
 }
 

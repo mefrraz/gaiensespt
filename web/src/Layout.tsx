@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { Sun, Moon, Instagram, Github, Info, BarChart2, Download, Search, Home, Calendar } from 'lucide-react'
+import { Sun, Moon, Instagram, Github, Info, BarChart2, Search, Home, Calendar, Users } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
 import { SearchModal } from './components/SearchModal'
@@ -44,29 +44,22 @@ function Layout() {
             <nav className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-white/10 shadow-sm">
                 <div className="max-w-5xl mx-auto px-4 h-16 flex items-center gap-3">
 
-                    {/* Logo & Brand */}
+                    {/* Logo & Brand — simple circle logo */}
                     <Link to="/" className="flex items-center gap-2.5 group shrink-0 mr-1">
-                        <img
-                            src="/logo.svg"
-                            alt="Dribly"
-                            className="h-9 w-auto group-hover:scale-110 transition-transform duration-300"
-                        />
-                        <div className="hidden sm:flex flex-col">
-                            <span className="font-bold text-sm leading-tight tracking-tight text-zinc-900 dark:text-white">
-                                Dribly
-                            </span>
-                            <span className="text-[8px] uppercase tracking-widest text-zinc-400 font-medium group-hover:text-dribly-blue transition-colors">
-                                Basquetebol PT
-                            </span>
+                        <div className="w-9 h-9 rounded-full bg-dribly-blue flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-md shadow-blue-500/20">
+                            <span className="text-white font-black text-base">D</span>
                         </div>
+                        <span className="hidden sm:inline font-bold text-sm text-zinc-900 dark:text-white group-hover:text-dribly-blue transition-colors">
+                            Dribly
+                        </span>
                     </Link>
 
-                    {/* Spacer - pushes actions to right */}
+                    {/* Spacer */}
                     <div className="flex-1" />
 
                     {/* Actions */}
                     <div className="flex items-center gap-1">
-                        {/* Search chip — shows club name if selected */}
+                        {/* Search chip */}
                         <button
                             onClick={() => setSearchOpen(true)}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
@@ -83,18 +76,18 @@ function Layout() {
                             )}
                         </button>
 
-                        {/* Meu Clube — only if club selected */}
+                        {/* Início (club home) */}
                         {activeClub && (
                             <Link
                                 to={`/clube/${activeClub.slug}/home`}
                                 className={`${navPill} hidden sm:flex ${isActive(`/clube/${activeClub.slug}/home`) ? navPillActive : navPillInactive}`}
                             >
                                 <Home size={14} />
-                                <span>Meu Clube</span>
+                                <span>Início</span>
                             </Link>
                         )}
 
-                        {/* Jogos — only if club selected */}
+                        {/* Jogos */}
                         {activeClub && (
                             <Link
                                 to={`/clube/${activeClub.slug}/games`}
@@ -102,6 +95,17 @@ function Layout() {
                             >
                                 <Calendar size={14} />
                                 <span>Jogos</span>
+                            </Link>
+                        )}
+
+                        {/* Equipas */}
+                        {activeClub && (
+                            <Link
+                                to={`/clube/${activeClub.slug}/team`}
+                                className={`${navPill} hidden sm:flex ${isActive(`/clube/${activeClub.slug}/team`) ? navPillActive : navPillInactive}`}
+                            >
+                                <Users size={14} />
+                                <span>Equipas</span>
                             </Link>
                         )}
 
@@ -114,27 +118,30 @@ function Layout() {
                             <span>Classificações</span>
                         </Link>
 
-                        {/* Icon-only actions */}
-                        <div className="hidden sm:flex items-center gap-0.5 ml-1">
-                            <Link to="/about" className={`${navIcon} ${isActive('/about') ? 'text-dribly-blue bg-dribly-blue/10' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5'}`}
-                                aria-label="Sobre">
-                                <Info size={17} />
-                            </Link>
-                            <Link to="/install" className={`${navIcon} text-dribly-blue hover:bg-dribly-blue/10 transition-colors`}
-                                aria-label="Instalar">
-                                <Download size={17} />
-                            </Link>
-                            <button onClick={toggleTheme} className={`${navIcon} text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5`}
-                                aria-label="Tema">
-                                {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
-                            </button>
-                        </div>
+                        {/* Sobre */}
+                        <Link
+                            to="/about"
+                            className={`${navPill} hidden sm:flex ${isActive('/about') ? navPillActive : navPillInactive}`}
+                        >
+                            <Info size={14} />
+                            <span>Sobre</span>
+                        </Link>
+
+                        {/* Theme toggle */}
+                        <button onClick={toggleTheme} className={`${navIcon} text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5`}
+                            aria-label="Tema">
+                            {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+                        </button>
 
                         {/* Mobile-only compact actions */}
                         <div className="flex sm:hidden items-center gap-0.5">
                             <Link to="/standings" className={`${navIcon} ${isActive('/standings') ? 'text-dribly-blue' : 'text-zinc-400'}`}
                                 aria-label="Classificações">
                                 <BarChart2 size={18} />
+                            </Link>
+                            <Link to="/about" className={`${navIcon} ${isActive('/about') ? 'text-dribly-blue' : 'text-zinc-400'}`}
+                                aria-label="Sobre">
+                                <Info size={18} />
                             </Link>
                             <button onClick={toggleTheme} className={`${navIcon} text-zinc-400`}
                                 aria-label="Tema">
@@ -145,8 +152,8 @@ function Layout() {
                 </div>
             </nav>
 
-            {/* Main Content */}
-            <main className="flex-grow pb-24">
+            {/* Main Content — with top spacing so navbar doesn't glue to content */}
+            <main className="flex-grow pt-4 md:pt-6 pb-24">
                 <Outlet />
             </main>
 

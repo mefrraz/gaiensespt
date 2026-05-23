@@ -35,9 +35,7 @@ export function GameCarousel() {
             .limit(20)
             .then(({ data }) => {
                 if (data && data.length > 0) {
-                    // Shuffle the games for variety
-                    const shuffled = [...data].sort(() => Math.random() - 0.5)
-                    setGames(shuffled as Match[])
+                    setGames(data as Match[])
                 }
                 setLoading(false)
             })
@@ -50,7 +48,7 @@ export function GameCarousel() {
         return (
             <div className="flex gap-3 overflow-hidden px-4">
                 {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="min-w-[260px] h-40 rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse shrink-0" />
+                    <div key={i} className="min-w-[260px] h-44 rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse shrink-0" />
                 ))}
             </div>
         )
@@ -91,26 +89,36 @@ export function GameCarousel() {
                             className="min-w-[260px] glass-card p-4 flex flex-col gap-3 shrink-0 hover:border-dribly-blue/30 group"
                         >
                             <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-bold text-dribly-blue uppercase tracking-wide truncate">{game.competicao}</span>
+                                <span className="text-[10px] font-bold text-dribly-blue uppercase tracking-wide truncate max-w-[160px]">{game.competicao}</span>
                                 {game.hora && game.hora.replace(/[^0-9]/g, '').length > 0 && (
-                                    <span className="text-[10px] font-bold text-zinc-500 flex items-center gap-1">
+                                    <span className="text-[10px] font-bold text-zinc-500 flex items-center gap-1 shrink-0">
                                         <Clock size={10} />
                                         {game.hora.slice(0, 5)}
                                     </span>
                                 )}
                             </div>
 
-                            <div className="flex items-center justify-between gap-2">
-                                <div className="flex-1 text-right">
-                                    <p className="text-sm font-bold text-zinc-900 dark:text-white leading-tight line-clamp-1">{game.equipa_casa}</p>
+                            <div className="flex items-center gap-3">
+                                <div className="flex-1 flex items-center gap-2 min-w-0">
+                                    {game.logotipo_casa ? (
+                                        <img src={game.logotipo_casa} alt="" className="w-8 h-8 object-contain rounded-full bg-zinc-50 dark:bg-zinc-800 shrink-0" />
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0">
+                                            <span className="text-[10px] font-bold text-zinc-500">{game.equipa_casa?.charAt(0) || '?'}</span>
+                                        </div>
+                                    )}
+                                    <p className="text-xs font-bold text-zinc-900 dark:text-white leading-tight line-clamp-1">{game.equipa_casa}</p>
                                 </div>
-                                <div className="shrink-0">
-                                    <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                                        <span className="text-xs font-black text-zinc-400">VS</span>
-                                    </div>
-                                </div>
-                                <div className="flex-1">
-                                    <p className="text-sm font-bold text-zinc-900 dark:text-white leading-tight line-clamp-1">{game.equipa_fora}</p>
+                                <span className="text-[10px] font-black text-zinc-400 shrink-0">VS</span>
+                                <div className="flex-1 flex items-center gap-2 min-w-0 justify-end">
+                                    <p className="text-xs font-bold text-zinc-900 dark:text-white leading-tight line-clamp-1 text-right">{game.equipa_fora}</p>
+                                    {game.logotipo_fora ? (
+                                        <img src={game.logotipo_fora} alt="" className="w-8 h-8 object-contain rounded-full bg-zinc-50 dark:bg-zinc-800 shrink-0" />
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0">
+                                            <span className="text-[10px] font-bold text-zinc-500">{game.equipa_fora?.charAt(0) || '?'}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -119,7 +127,7 @@ export function GameCarousel() {
                                 {game.local && (
                                     <>
                                         <span className="text-zinc-300">·</span>
-                                        <span className="text-[10px] text-zinc-400 truncate max-w-[120px]">{game.local}</span>
+                                        <span className="text-[10px] text-zinc-400 truncate max-w-[100px]">{game.local}</span>
                                     </>
                                 )}
                             </div>
