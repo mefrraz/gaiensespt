@@ -2,21 +2,6 @@ import { Standing } from '../components/types'
 
 const TUGABASKET_PROXY = '/api/tugabasket'
 
-const CLUB_COMPETITIONS: Record<string, { id: number; displayName: string }[]> = {
-    '2025/2026': [
-        { id: 10904, displayName: 'Séniores' },
-        { id: 11042, displayName: 'Sub 18' },
-        { id: 11040, displayName: 'Sub 16' },
-        { id: 11038, displayName: 'Sub 14' },
-    ],
-    '2024/2025': [
-        { id: 10392, displayName: 'Séniores' },
-        { id: 10478, displayName: 'Sub 18' },
-        { id: 10476, displayName: 'Sub 16' },
-        { id: 10487, displayName: 'Sub 14' },
-    ],
-}
-
 export async function fetchFromProxy(path: string, params: Record<string, string | number>): Promise<string> {
     const searchParams = new URLSearchParams({ path })
     Object.entries(params).forEach(([k, v]) => searchParams.set(k, String(v)))
@@ -25,11 +10,12 @@ export async function fetchFromProxy(path: string, params: Record<string, string
     return res.text()
 }
 
-export async function fetchStandingsFromSource(season: string): Promise<Standing[]> {
-    const comps = CLUB_COMPETITIONS[season]
-    if (!comps || comps.length === 0) return []
+export async function fetchStandingsFromSource(
+    competitions: { id: number; displayName: string }[]
+): Promise<Standing[]> {
+    if (!competitions || competitions.length === 0) return []
 
-    const results = await Promise.all(comps.map(async (comp) => {
+    const results = await Promise.all(competitions.map(async (comp) => {
         const html = await fetchFromProxy('/getCompetitionDetails', { competitionId: comp.id })
         const standings = parseAccordionStandings(html, comp.displayName)
         markFinishedGroups(standings, html)
@@ -153,4 +139,23 @@ function markFinishedGroups(standings: Standing[], html: string): void {
             }
         }
     })
+}
+
+function extractEscalao(name: string): string {
+    const upper = name.toUpperCase()
+    if (upper.includes('SENIOR') || upper.includes('SÉNIOR') || upper.includes('1ª DIVISÃO MASCULINA') || upper.includes('PROLIGA') || upper.includes('BETCLIC')) return 'Séniores'
+    if (upper.includes('SUB18') || upper.includes('SUB 18')) return 'Sub 18'
+    if (upper.includes('SUB16') || upper.includes('SUB 16')) return 'Sub 16'
+    if (upper.includes('SUB14') || upper.includes('SUB 14')) return 'Sub 14'
+    if (upper.includes('SUB12') || upper.includes('SUB 12') || upper.includes('MINI')) return 'Sub 12'
+    return name
+}
+
+export function resolveDisplayName(competitionName: string): string {
+    const escalao = extractEscalao(competitionName)
+    if (escalao !== competitionName) return escalao
+
+    return competitionName.length > 30
+        ? competitionName.substring(0, 30) + '...'
+        : competitionName
 }

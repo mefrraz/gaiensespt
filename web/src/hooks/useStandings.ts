@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
-import { fetchStandingsFromSource } from '../lib/tugabasketApi'
+import { fetchStandingsFromSource, resolveDisplayName } from '../lib/tugabasketApi'
 import { Standing } from '../components/types'
 
 const CACHE_MINUTES = 15
+const CLUB_SEARCH = 'GAIA'
 
 const LS_KEY = (season: string) => `standings_cache_${season}`
 const LS_TS = (season: string) => `standings_cache_ts_${season}`
@@ -34,6 +35,25 @@ function getTableName(season: string): string {
     return `classificacoes_${season.replace('/', '_')}`
 }
 
+async function clubCompetitions(season: string): Promise<{ id: number; displayName: string }[]> {
+    const { data } = await supabase
+        .from('competitions')
+        .select('competition_id, competition_name, club_names')
+        .eq('season', season)
+
+    if (!data || data.length === 0) return []
+
+    return data
+        .filter(row => {
+            const names = (row.club_names as string[]) || []
+            return names.some(name => name.toUpperCase().includes(CLUB_SEARCH))
+        })
+        .map(row => ({
+            id: row.competition_id as number,
+            displayName: resolveDisplayName(row.competition_name as string),
+        }))
+}
+
 export function useStandings(season = '2025/2026') {
     const localCache = loadLocalCache(season)
     const [standings, setStandings] = useState<Standing[]>(localCache)
@@ -52,7 +72,15 @@ export function useStandings(season = '2025/2026') {
 
     const refresh = useCallback(async () => {
         try {
-            const freshData = await fetchStandingsFromSource(season)
+            const comps = await clubCompetitions(season)
+
+            if (comps.length === 0) {
+                setStandings([])
+                setLastUpdated(new Date())
+                return
+            }
+
+            const freshData = await fetchStandingsFromSource(comps)
             const withTimestamp = freshData.map(s => ({
                 ...s,
                 updated_at: new Date().toISOString(),
