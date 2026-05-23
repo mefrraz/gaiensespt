@@ -9,6 +9,8 @@ export interface Standing {
     derrotas: number
     pontos: number
     forma?: ('W' | 'L')[]
+    is_finished?: boolean
+    updated_at?: string
 }
 
 export type Match = {

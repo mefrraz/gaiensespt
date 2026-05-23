@@ -1,73 +1,66 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { ChevronDown, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { StandingsTable } from '../components/StandingsTable'
-import { supabase } from '../lib/supabase'
+import { useStandings } from '../hooks/useStandings'
 import { Standing } from '../components/types'
 
 const SEASONS = ['2025/2026', '2024/2025', '2023/2024', '2022/2023']
 
 export default function Standings() {
     const [season, setSeason] = useState('2025/2026')
-    const [standings, setStandings] = useState<Standing[]>([])
-    const [loading, setLoading] = useState(true)
-
-    // Filters
     const [competition, setCompetition] = useState('')
     const [phase, setPhase] = useState('Todas')
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
+    const [showLoadingMessage, setShowLoadingMessage] = useState(false)
 
-    // Fetch Data
+    const { standings, loading, error, refresh } = useStandings(season)
+
     useEffect(() => {
-        const fetchStandings = async () => {
-            setLoading(true)
-            setCompetition('') // Reset filters on season change
-            setPhase('Todas')
-
-            const tableName = `classificacoes_${season.replace('/', '_')}`
-
-            const { data, error } = await supabase
-                .from(tableName)
-                .select('*')
-
-            if (!error && data) {
-                setStandings(data as Standing[])
-
-                // Set default competition if available
-                if (data.length > 0) {
-                    const comps = [...new Set(data.map((s: Standing) => s.competicao))].sort()
-                    setCompetition(comps[0] || '')
-                }
-            } else {
-                console.error('Error fetching standings:', error)
-                setStandings([])
-            }
-            setLoading(false)
+        if (!loading) {
+            setShowLoadingMessage(false)
+            return
         }
+        const timer = setTimeout(() => setShowLoadingMessage(true), 1500)
+        return () => clearTimeout(timer)
+    }, [loading])
 
-        fetchStandings()
+    useEffect(() => {
+        setCompetition('')
+        setPhase('Todas')
+        setOpenGroups({})
     }, [season])
 
-    // Derived Data
-    const competitions = [...new Set(standings.map(s => s.competicao))].sort()
-    const byCompetition = standings.filter(s => s.competicao === competition)
+    useEffect(() => {
+        if (standings.length > 0 && !competition) {
+            const comps = [...new Set(standings.map(s => s.competicao))].sort()
+            setCompetition(comps[0] || '')
+        }
+    }, [standings, competition])
 
-    // Sort phases (groups) descending to show newest first
-    const phases = [...new Set(byCompetition.map(s => s.grupo))].sort().reverse()
+    const competitions = useMemo(
+        () => [...new Set(standings.map(s => s.competicao))].sort(),
+        [standings]
+    )
 
-    // Logic to determine active phase
-    // 1. Extract base phase names (e.g. "1.ª Fase" from "1.ª Fase - Série A")
-    const basePhases = [...new Set(byCompetition.map(s => s.grupo.split(' - ')[0]))].sort().reverse()
-    const currentBasePhase = basePhases[0] // Top one is assumed current
+    const byCompetition = useMemo(
+        () => standings.filter(s => s.competicao === competition),
+        [standings, competition]
+    )
 
-    const getStatus = (group: string) => {
-        if (season !== '2025/2026') return 'finished' // Past seasons are all finished
-        if (!currentBasePhase) return 'finished'
-        return group.startsWith(currentBasePhase) ? 'active' : 'finished'
+    const phases = useMemo(
+        () => [...new Set(byCompetition.map(s => s.grupo))].sort().reverse(),
+        [byCompetition]
+    )
+
+    const getStatus = (teams: Standing[]): 'active' | 'finished' => {
+        if (season !== '2025/2026') return 'finished'
+        if (teams.length === 0) return 'finished'
+        const allFinished = teams.every(t => t.is_finished === true)
+        return allFinished ? 'finished' : 'active'
     }
 
     const filtered = phase === 'Todas' ? byCompetition : byCompetition.filter(s => s.grupo === phase)
-    // Sort groups based on phase order (descending)
     const groups = [...new Set(filtered.map(s => s.grupo))].sort((a, b) => b.localeCompare(a))
 
     const toggleGroup = (grupo: string) => setOpenGroups(prev => ({ ...prev, [grupo]: !prev[grupo] }))
@@ -84,11 +77,10 @@ export default function Standings() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        {/* Season Selector */}
                         <div className="relative">
                             <select
                                 value={season}
-                                onChange={e => { setSeason(e.target.value); setOpenGroups({}) }}
+                                onChange={e => setSeason(e.target.value)}
                                 className="appearance-none bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 pr-8 text-sm font-bold text-zinc-900 dark:text-white cursor-pointer hover:border-amber-500/50 dark:hover:border-amber-500/50 transition-colors shadow-sm"
                             >
                                 {SEASONS.map(s => <option key={s} value={s}>{s}</option>)}
@@ -142,8 +134,25 @@ export default function Standings() {
 
                 {/* Content */}
                 {loading ? (
-                    <div className="flex justify-center py-20">
+                    <div className="flex flex-col items-center justify-center py-20 gap-3">
                         <Loader2 className="animate-spin text-amber-500" size={32} />
+                        <span
+                            className={`text-sm text-zinc-400 font-medium transition-opacity duration-600 ${
+                                showLoadingMessage ? 'opacity-100' : 'opacity-0'
+                            }`}
+                        >
+                            A atualizar classificações...
+                        </span>
+                    </div>
+                ) : error && standings.length === 0 ? (
+                    <div className="text-center py-20 bg-white dark:bg-zinc-900/50 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                        <p className="text-zinc-500 font-medium mb-2">Erro ao carregar classificações</p>
+                        <button
+                            onClick={() => refresh()}
+                            className="text-sm font-bold text-amber-600 hover:text-amber-700 transition-colors"
+                        >
+                            Tentar novamente
+                        </button>
                     </div>
                 ) : groups.length === 0 ? (
                     <div className="text-center py-20 bg-white dark:bg-zinc-900/50 rounded-xl border border-zinc-200 dark:border-zinc-800">
@@ -151,16 +160,19 @@ export default function Standings() {
                     </div>
                 ) : (
                     <div className="space-y-4 mb-8">
-                        {groups.map(grupo => (
-                            <StandingsTable
-                                key={grupo}
-                                grupo={grupo}
-                                teams={filtered.filter(s => s.grupo === grupo)}
-                                isOpen={isOpen(grupo)}
-                                onToggle={() => toggleGroup(grupo)}
-                                status={getStatus(grupo)}
-                            />
-                        ))}
+                        {groups.map(grupo => {
+                            const teams = filtered.filter(s => s.grupo === grupo)
+                            return (
+                                <StandingsTable
+                                    key={grupo}
+                                    grupo={grupo}
+                                    teams={teams}
+                                    isOpen={isOpen(grupo)}
+                                    onToggle={() => toggleGroup(grupo)}
+                                    status={getStatus(teams)}
+                                />
+                            )
+                        })}
                     </div>
                 )}
 
@@ -185,6 +197,7 @@ export default function Standings() {
             <style>{`
                 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
                 .animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
+                .duration-600 { transition-duration: 600ms; }
             `}</style>
         </div>
     )
