@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { Sun, Moon, Instagram, Github, Info, BarChart2, Search, Home, Calendar, Users } from 'lucide-react'
+import { Sun, Moon, Instagram, Github, Info, BarChart2, Search, Home, Calendar } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
 import { SearchModal } from './components/SearchModal'
@@ -40,56 +40,44 @@ function Layout() {
     return (
         <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 transition-colors duration-300 flex flex-col font-sans">
 
-            {/* Navbar */}
+            {/* Navbar — transparent on scroll via backdrop-blur */}
             <nav className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-white/10 shadow-sm">
-                <div className="max-w-5xl mx-auto px-4 h-16 flex items-center gap-3">
+                <div className="max-w-5xl mx-auto px-4 h-16 flex items-center gap-2">
 
-                    {/* Logo & Brand */}
-                    <Link to="/" className="flex items-center gap-2.5 group shrink-0 mr-1">
+                    {/* Logo */}
+                    <Link to="/" className="flex items-center gap-2 group shrink-0 mr-1">
                         <div
-                            className="w-9 h-9 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-md"
-                            style={{ backgroundColor: activeClub ? clubColor : '#2563EB', boxShadow: `0 4px 12px ${activeClub ? clubColor : '#2563EB'}40` }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm"
+                            style={{ backgroundColor: activeClub ? clubColor : '#2563EB' }}
                         >
-                            <span className="text-white font-black text-base">D</span>
+                            <span className="text-white font-black text-sm">D</span>
                         </div>
-                        <span className="hidden sm:inline font-bold text-sm text-zinc-900 dark:text-white transition-colors"
-                            style={activeClub ? {} : { color: '' }}>
+                        <span className="hidden sm:inline font-bold text-sm text-zinc-900 dark:text-white">
                             Dribly
                         </span>
                     </Link>
 
-                    {/* Spacer */}
-                    <div className="flex-1" />
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-1">
-                        {/* Search chip */}
-                        <button
-                            onClick={() => setSearchOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border"
-                            style={
-                                activeClub
-                                    ? { borderColor: clubColor + '40', backgroundColor: clubColor + '10', color: clubColor }
-                                    : { borderColor: '', color: '' }
-                            }
+                    {/* LEFT navigation — near logo */}
+                    <div className="flex items-center gap-1 ml-1">
+                        {/* Início — always visible, goes to landing page */}
+                        <Link
+                            to="/"
+                            className={`${navPill} ${isActive('/') && !activeClub ? '' : navPillInactive}`}
+                            style={isActive('/') && !activeClub ? { backgroundColor: clubColor, color: '#fff' } : {}}
                         >
-                            <Search size={14} />
-                            {activeClub ? (
-                                <span className="max-w-[100px] truncate hidden sm:inline">{activeClub.name}</span>
-                            ) : (
-                                <span className="hidden sm:inline text-zinc-500 dark:text-zinc-400">Pesquisar</span>
-                            )}
-                        </button>
+                            <Home size={14} />
+                            <span className="hidden sm:inline">Início</span>
+                        </Link>
 
-                        {/* Início */}
+                        {/* Meu Clube — club home */}
                         {activeClub && (
                             <Link
                                 to={`/clube/${activeClub.slug}/home`}
-                                className={`${navPill} hidden sm:flex ${isActive(`/clube/${activeClub.slug}/home`) ? '' : navPillInactive}`}
-                                style={isActive(`/clube/${activeClub.slug}/home`) ? { backgroundColor: clubColor, color: '#fff', boxShadow: `0 4px 12px ${clubColor}40` } : {}}
+                                className={`${navPill} ${isActive(`/clube/${activeClub.slug}/home`) ? '' : navPillInactive}`}
+                                style={isActive(`/clube/${activeClub.slug}/home`) ? { backgroundColor: clubColor, color: '#fff' } : {}}
                             >
                                 <Home size={14} />
-                                <span>Início</span>
+                                <span className="hidden sm:inline">Meu Clube</span>
                             </Link>
                         )}
 
@@ -97,44 +85,52 @@ function Layout() {
                         {activeClub && (
                             <Link
                                 to={`/clube/${activeClub.slug}/games`}
-                                className={`${navPill} hidden sm:flex ${isActive(`/clube/${activeClub.slug}/games`) ? '' : navPillInactive}`}
-                                style={isActive(`/clube/${activeClub.slug}/games`) ? { backgroundColor: clubColor, color: '#fff', boxShadow: `0 4px 12px ${clubColor}40` } : {}}
+                                className={`${navPill} ${isActive(`/clube/${activeClub.slug}/games`) ? '' : navPillInactive}`}
+                                style={isActive(`/clube/${activeClub.slug}/games`) ? { backgroundColor: clubColor, color: '#fff' } : {}}
                             >
                                 <Calendar size={14} />
-                                <span>Jogos</span>
-                            </Link>
-                        )}
-
-                        {/* Equipas */}
-                        {activeClub && (
-                            <Link
-                                to={`/clube/${activeClub.slug}/team`}
-                                className={`${navPill} hidden sm:flex ${isActive(`/clube/${activeClub.slug}/team`) ? '' : navPillInactive}`}
-                                style={isActive(`/clube/${activeClub.slug}/team`) ? { backgroundColor: clubColor, color: '#fff', boxShadow: `0 4px 12px ${clubColor}40` } : {}}
-                            >
-                                <Users size={14} />
-                                <span>Equipas</span>
+                                <span className="hidden sm:inline">Jogos</span>
                             </Link>
                         )}
 
                         {/* Classificações */}
                         <Link
                             to="/standings"
-                            className={`${navPill} hidden sm:flex ${isActive('/standings') ? '' : navPillInactive}`}
-                            style={isActive('/standings') ? { backgroundColor: activeClub ? clubColor : '#2563EB', color: '#fff', boxShadow: `0 4px 12px ${activeClub ? clubColor : '#2563EB'}40` } : {}}
+                            className={`${navPill} ${isActive('/standings') ? '' : navPillInactive}`}
+                            style={isActive('/standings') ? { backgroundColor: activeClub ? clubColor : '#2563EB', color: '#fff' } : {}}
                         >
                             <BarChart2 size={14} />
-                            <span>Classificações</span>
+                            <span className="hidden sm:inline">Classificações</span>
                         </Link>
+                    </div>
+
+                    {/* Spacer — pushes right-side items to the right */}
+                    <div className="flex-1" />
+
+                    {/* RIGHT side — search, sobre, theme */}
+                    <div className="flex items-center gap-1">
+                        {/* Search chip */}
+                        <button
+                            onClick={() => setSearchOpen(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/5"
+                            style={activeClub ? { borderColor: clubColor + '40', color: clubColor, backgroundColor: clubColor + '08' } : {}}
+                        >
+                            <Search size={14} />
+                            {activeClub ? (
+                                <span className="max-w-[100px] truncate hidden sm:inline">{activeClub.name}</span>
+                            ) : (
+                                <span className="hidden sm:inline">Pesquisar</span>
+                            )}
+                        </button>
 
                         {/* Sobre */}
                         <Link
                             to="/about"
-                            className={`${navPill} hidden sm:flex ${isActive('/about') ? '' : navPillInactive}`}
-                            style={isActive('/about') ? { backgroundColor: activeClub ? clubColor : '#2563EB', color: '#fff', boxShadow: `0 4px 12px ${activeClub ? clubColor : '#2563EB'}40` } : {}}
+                            className={`${navPill} ${isActive('/about') ? '' : navPillInactive}`}
+                            style={isActive('/about') ? { backgroundColor: activeClub ? clubColor : '#2563EB', color: '#fff' } : {}}
                         >
                             <Info size={14} />
-                            <span>Sobre</span>
+                            <span className="hidden sm:inline">Sobre</span>
                         </Link>
 
                         {/* Theme toggle */}
@@ -143,20 +139,17 @@ function Layout() {
                             {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
                         </button>
 
-                        {/* Mobile-only compact actions */}
+                        {/* Mobile-only compact */}
                         <div className="flex sm:hidden items-center gap-0.5">
                             <Link to="/standings" className={`${navIcon} ${isActive('/standings') ? '' : 'text-zinc-400'}`}
-                                style={isActive('/standings') ? { color: clubColor } : {}}
-                                aria-label="Classificações">
+                                style={isActive('/standings') ? { color: clubColor } : {}}>
                                 <BarChart2 size={18} />
                             </Link>
                             <Link to="/about" className={`${navIcon} ${isActive('/about') ? '' : 'text-zinc-400'}`}
-                                style={isActive('/about') ? { color: clubColor } : {}}
-                                aria-label="Sobre">
+                                style={isActive('/about') ? { color: clubColor } : {}}>
                                 <Info size={18} />
                             </Link>
-                            <button onClick={toggleTheme} className={`${navIcon} text-zinc-400`}
-                                aria-label="Tema">
+                            <button onClick={toggleTheme} className={`${navIcon} text-zinc-400`}>
                                 {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                             </button>
                         </div>
@@ -178,8 +171,7 @@ function Layout() {
                         <span>&copy; {new Date().getFullYear()}</span>
                     </div>
                     <div className="flex gap-4">
-                        <a href="https://www.instagram.com/gaiensespt" target="_blank" rel="noopener noreferrer" className="transition-colors"
-                            style={{ ':hover': { color: clubColor } } as React.CSSProperties}>
+                        <a href="https://www.instagram.com/gaiensespt" target="_blank" rel="noopener noreferrer" className="hover:[--tw-text-opacity:1] transition-colors">
                             <Instagram size={20} className="hover:text-[var(--club-color)] transition-colors" />
                         </a>
                         <a href="https://github.com/mefrraz/gaiensespt" target="_blank" rel="noopener noreferrer" className="transition-colors">

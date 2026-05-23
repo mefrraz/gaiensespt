@@ -4,8 +4,6 @@ import ClubLayout from './pages/club/ClubLayout'
 import Landing from './pages/Landing'
 import ClubHome from './pages/club/ClubHome'
 import ClubGames from './pages/club/ClubGames'
-import ClubTeams from './pages/club/ClubTeams'
-import ClubTeamDetail from './pages/club/ClubTeamDetail'
 import Game from './pages/Game'
 import Standings from './pages/Standings'
 import AssociationCompetitions from './pages/AssociationCompetitions'
@@ -25,8 +23,6 @@ function App() {
                             <Route index element={<ClubHome />} />
                             <Route path="home" element={<ClubHome />} />
                             <Route path="games" element={<ClubGames />} />
-                            <Route path="team" element={<ClubTeams />} />
-                            <Route path="team/:escalao" element={<ClubTeamDetail />} />
                         </Route>
                         <Route path="game/:slug" element={<Game />} />
                         <Route path="standings" element={<Standings />} />

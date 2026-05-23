@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Calendar, BarChart2, Search, Users } from 'lucide-react'
+import { Home, Calendar, BarChart2, Search } from 'lucide-react'
 import { useClub } from '../lib/ClubContext'
 
 function BottomNav() {
@@ -16,25 +16,24 @@ function BottomNav() {
 
     const clubHomePath = activeClub ? `/clube/${activeClub.slug}/home` : '/'
     const clubGamesPath = activeClub ? `/clube/${activeClub.slug}/games` : '/'
-    const clubTeamsPath = activeClub ? `/clube/${activeClub.slug}/team` : '/'
 
     return (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-t border-zinc-200 dark:border-white/10 pb-safe md:hidden">
             <div className="flex items-center justify-around h-16">
                 <Link
                     to="/"
-                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive('/') ? 'text-dribly-blue' : 'text-zinc-400 dark:text-zinc-500'}`}
+                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive('/') && !isActive(`/clube/${activeClub?.slug}`) ? 'text-dribly-blue' : 'text-zinc-400 dark:text-zinc-500'}`}
                 >
                     <Search size={18} strokeWidth={isActive('/') ? 2.5 : 2} />
-                    <span className="text-[10px] font-medium">Pesquisar</span>
+                    <span className="text-[10px] font-medium">Início</span>
                 </Link>
 
                 <Link
                     to={clubHomePath}
-                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive(`/clube/${activeClub?.slug}`) ? 'text-dribly-blue' : 'text-zinc-400 dark:text-zinc-500'}`}
+                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive(`/clube/${activeClub?.slug}/home`) ? 'text-dribly-blue' : 'text-zinc-400 dark:text-zinc-500'}`}
                 >
-                    <Home size={18} strokeWidth={isActive(`/clube/${activeClub?.slug}`) ? 2.5 : 2} />
-                    <span className="text-[10px] font-medium">Início</span>
+                    <Home size={18} strokeWidth={isActive(`/clube/${activeClub?.slug}/home`) ? 2.5 : 2} />
+                    <span className="text-[10px] font-medium">Clube</span>
                 </Link>
 
                 <Link
@@ -43,14 +42,6 @@ function BottomNav() {
                 >
                     <Calendar size={18} strokeWidth={isActive(`/clube/${activeClub?.slug}/games`) ? 2.5 : 2} />
                     <span className="text-[10px] font-medium">Jogos</span>
-                </Link>
-
-                <Link
-                    to={clubTeamsPath}
-                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive(`/clube/${activeClub?.slug}/team`) ? 'text-dribly-blue' : 'text-zinc-400 dark:text-zinc-500'}`}
-                >
-                    <Users size={18} strokeWidth={isActive(`/clube/${activeClub?.slug}/team`) ? 2.5 : 2} />
-                    <span className="text-[10px] font-medium">Equipas</span>
                 </Link>
 
                 <Link

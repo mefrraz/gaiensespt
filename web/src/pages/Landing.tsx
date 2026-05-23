@@ -1,18 +1,49 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Trophy, BarChart2, TrendingUp, Building2, ArrowRight, ChevronRight } from 'lucide-react'
-import { GameCarousel } from '../components/GameCarousel'
+import { ChevronRight } from 'lucide-react'
+import { supabase } from '../lib/supabase'
+import { GameCard } from '../components/GameCard'
 import { useClub } from '../lib/ClubContext'
+import { type Match } from '../components/types'
+
+const POPULAR_COMPETITIONS = [
+    'Liga Betclic Masculina',
+    'Campeonato da Proliga',
+    'Campeonato Nacional da 1ª Divisão Masculina',
+    'Liga Betclic Feminina',
+    'Taça de Portugal Masculina Skoiy',
+    'Taça de Portugal Feminina Skoiy',
+]
 
 function Landing() {
     const { favoriteClub } = useClub()
+    const [games, setGames] = useState<Match[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        supabase
+            .from('games_2025_2026')
+            .select('*')
+            .in('competicao', POPULAR_COMPETITIONS)
+            .neq('status', 'FINALIZADO')
+            .gte('data', new Date().toISOString().split('T')[0])
+            .order('data', { ascending: true })
+            .limit(20)
+            .then(({ data }) => {
+                if (data && data.length > 0) {
+                    setGames(data as Match[])
+                }
+                setLoading(false)
+            })
+    }, [])
 
     return (
         <div className="pb-24">
-            {/* Hero Section */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-dribly-blue via-blue-600 to-dribly-blue-dark dark:from-dribly-blue-dark dark:via-blue-900 dark:to-dribly-black">
-                <div className="max-w-5xl mx-auto px-4 pt-12 md:pt-16 pb-10 md:pb-14 text-center relative z-10">
+            {/* Hero Section — solid blue, no gradient */}
+            <div className="bg-dribly-blue dark:bg-dribly-blue-dark">
+                <div className="max-w-5xl mx-auto px-4 pt-12 md:pt-16 pb-10 md:pb-14 text-center">
                     {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white/90 text-[11px] font-bold uppercase tracking-wider mb-5 border border-white/10">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white/90 text-[11px] font-bold uppercase tracking-wider mb-5 border border-white/10">
                         <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                         Época 2025/2026
                     </div>
@@ -28,7 +59,7 @@ function Landing() {
                     {favoriteClub && (
                         <Link
                             to={`/clube/${favoriteClub.slug}/home`}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-xs font-bold border border-white/10 hover:bg-white/20 transition-all group"
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white text-xs font-bold border border-white/10 hover:bg-white/20 transition-all group"
                         >
                             <HomeIcon size={14} />
                             <span>Continuar com {favoriteClub.name}</span>
@@ -47,65 +78,34 @@ function Landing() {
                 </div>
             </div>
 
-            {/* Game Carousel */}
+            {/* Jogos em Destaque — GameCard carousel, horizontal scroll */}
             <div className="py-8 bg-zinc-50/50 dark:bg-zinc-950/50">
-                <div className="max-w-5xl mx-auto">
-                    <GameCarousel />
+                <div className="mb-4 px-4">
+                    <h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-dribly-blue animate-pulse" />
+                        Jogos em Destaque
+                    </h2>
                 </div>
-            </div>
 
-            {/* Quick Links — all blue */}
-            <div className="max-w-5xl mx-auto px-4 py-8">
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-5">Explorar</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <QuickCard
-                        to="/standings"
-                        icon={<BarChart2 size={22} />}
-                        title="Classificações"
-                        desc="Tabelas de todas as associações"
-                        gradient="from-dribly-blue to-dribly-blue-dim"
-                    />
-                    <QuickCard
-                        to="/standings"
-                        icon={<Trophy size={22} />}
-                        title="Competições"
-                        desc="400+ competições disponíveis"
-                        gradient="from-dribly-blue-light to-dribly-blue"
-                    />
-                    <QuickCard
-                        to="/about"
-                        icon={<Building2 size={22} />}
-                        title="Sobre"
-                        desc="Como funciona o Dribly"
-                        gradient="from-dribly-blue-dim to-dribly-blue-dark"
-                    />
-                    <QuickCard
-                        to="/install"
-                        icon={<TrendingUp size={22} />}
-                        title="Instalar App"
-                        desc="No ecrã do telemóvel"
-                        gradient="from-dribly-blue to-blue-700"
-                    />
-                </div>
+                {loading ? (
+                    <div className="flex gap-3 overflow-hidden px-4">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="min-w-[280px] h-44 rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse shrink-0" />
+                        ))}
+                    </div>
+                ) : games.length === 0 ? (
+                    <p className="text-xs text-zinc-400 text-center py-8">Nenhum jogo em destaque de momento.</p>
+                ) : (
+                    <div className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-none">
+                        {games.map(match => (
+                            <div key={match.slug || match.id} className="min-w-[280px] shrink-0">
+                                <GameCard match={match} mode="agenda" />
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
-    )
-}
-
-function QuickCard({ to, icon, title, desc, gradient }: { to: string; icon: React.ReactNode; title: string; desc: string; gradient: string }) {
-    return (
-        <Link to={to} className="glass-card p-5 flex flex-col gap-4 group hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform`}>
-                {icon}
-            </div>
-            <div>
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-dribly-blue transition-colors flex items-center gap-1">
-                    {title}
-                    <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
-                </h3>
-                <p className="text-[11px] text-zinc-500 mt-0.5 leading-relaxed">{desc}</p>
-            </div>
-        </Link>
     )
 }
 
