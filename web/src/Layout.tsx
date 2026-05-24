@@ -55,7 +55,7 @@ function Layout() {
 
                     {/* LEFT navigation — desktop only pills */}
                     <div className="hidden sm:flex items-center gap-1 ml-1">
-                        <Link to="/" className={`${navPill} ${isActive('/') && !activeClub ? navPillActive : navPillInactive}`}>
+                        <Link to="/" className={`${navPill} ${isActive('/') ? navPillActive : navPillInactive}`}>
                             <Home size={14} />
                             Início
                         </Link>
