@@ -29,7 +29,7 @@ export default defineConfig({
             registerType: 'autoUpdate',
             includeAssets: ['logo.png', 'index.html'],
             manifest: {
-                name: 'Dribly - Basquetebol Português',
+                name: 'Dribly',
                 short_name: 'Dribly',
                 description: 'Resultados e agenda de todos os clubes de basquetebol em Portugal',
                 theme_color: '#7C3AED',
@@ -39,6 +39,12 @@ export default defineConfig({
                 start_url: '/',
                 orientation: 'portrait',
                 icons: [
+                    {
+                        src: 'logo.svg',
+                        sizes: 'any',
+                        type: 'image/svg+xml',
+                        purpose: 'any maskable'
+                    },
                     {
                         src: 'logo.png',
                         sizes: '192x192',
