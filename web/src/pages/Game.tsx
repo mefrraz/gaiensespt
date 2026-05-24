@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { fetchFPBGames } from '../lib/fpbApi'
 import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink, Calendar, Minus, Check } from 'lucide-react'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
@@ -28,16 +29,53 @@ function Game() {
     useEffect(() => {
         if (!slug) return
         setLoading(true)
-        supabase
-            .from('games_2025_2026')
-            .select('*')
-            .eq('slug', slug)
-            .single()
-            .then(({ data, error }) => {
-                if (!error && data) setMatch(data as Match)
+
+        const tryLoad = async () => {
+            // 1) Try all Supabase seasons first
+            const tables = ['games_2025_2026', 'games_2024_2025', 'games_2023_2024', 'games_2022_2023']
+            for (const table of tables) {
+                const { data, error } = await supabase
+                    .from(table)
+                    .select('*')
+                    .eq('slug', slug)
+                    .single()
+                if (!error && data) {
+                    setMatch(data as Match)
+                    setLoading(false)
+                    return
+                }
+            }
+
+            // 2) If no club in URL, stop here
+            if (!clubSlug) {
                 setLoading(false)
-            })
-    }, [slug])
+                return
+            }
+
+            // 3) Wait for club to load, then try FPB API
+            //    (club will be null until getClubBySlug resolves — keep loading)
+            if (!club) return // re-run when club loads
+
+            try {
+                const seasons = ['2025/2026', '2024/2025', '2023/2024', '2022/2023']
+                for (const season of seasons) {
+                    const fpbGames = await fetchFPBGames(season, club.id)
+                    const found = fpbGames.find(g => g.slug === slug)
+                    if (found) {
+                        setMatch(found)
+                        setLoading(false)
+                        return
+                    }
+                }
+            } catch (err) {
+                console.warn('FPB fallback failed:', err)
+            }
+
+            setLoading(false)
+        }
+
+        tryLoad()
+    }, [slug, club])
 
     useEffect(() => {
         const handleVisibilityChange = () => {
@@ -54,7 +92,7 @@ function Game() {
         }
         document.addEventListener('visibilitychange', handleVisibilityChange)
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }, [slug])
+    }, [slug, club])
 
     useEffect(() => {
         if (!match) return
