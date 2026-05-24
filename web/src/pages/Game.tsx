@@ -10,7 +10,7 @@ function Game() {
     const { slug } = useParams()
     const [searchParams] = useSearchParams()
     const clubSlug = searchParams.get('clube') || ''
-    const { getClubBySlug } = useClub()
+    const { getClubBySlug, clubs } = useClub()
 
     const [match, setMatch] = useState<Match | null>(null)
     const [club, setClub] = useState<Club | null>(null)
@@ -210,7 +210,7 @@ function Game() {
                     </div>
 
                     <div className="flex items-center justify-between gap-4">
-                        <TeamBlock name={match.equipa_casa} logo={match.logotipo_casa} />
+                        <TeamBlock name={match.equipa_casa} logo={match.logotipo_casa} clubSlug={(() => { const n = match.equipa_casa; const found = clubs.find(c => n.toUpperCase().includes(c.name.toUpperCase())); return found ? found.slug : null })()} />
                         <div className="flex flex-col items-center gap-1 shrink-0">
                             {isFinished || isLive ? (
                                 <div className="flex items-center gap-1 sm:gap-3">
@@ -228,7 +228,7 @@ function Game() {
                                 </div>
                             )}
                         </div>
-                        <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} />
+                        <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} clubSlug={(() => { const n = match.equipa_fora; const found = clubs.find(c => n.toUpperCase().includes(c.name.toUpperCase())); return found ? found.slug : null })()} />
                     </div>
 
                     {/* FPB Link */}
@@ -362,8 +362,8 @@ function Game() {
     )
 }
 
-function TeamBlock({ name, logo }: { name: string; logo: string | null }) {
-    return (
+function TeamBlock({ name, logo, clubSlug }: { name: string; logo: string | null; clubSlug?: string | null }) {
+    const content = (
         <div className="flex-1 flex flex-col items-center text-center gap-2 min-w-0">
             <div className="w-20 h-20 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
                 {logo ? (
@@ -376,7 +376,11 @@ function TeamBlock({ name, logo }: { name: string; logo: string | null }) {
                 {name.toUpperCase()}
             </p>
         </div>
-    )
+    );
+    if (clubSlug) {
+        return <Link to={"/clube/" + clubSlug + "/home"} className="hover:opacity-80 transition-opacity">{content}</Link>;
+    }
+    return content;
 }
 
 export default Game

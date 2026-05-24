@@ -28,6 +28,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     const inputRef = useRef<HTMLInputElement>(null)
     const navigate = useNavigate()
     const { clubs, loadClubs } = useClub()
+    const [allComps, setAllComps] = useState<CompetitionResult[]>([])
 
     const normalizedClubs = useMemo(() =>
         clubs.map(c => ({
@@ -35,6 +36,10 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             _n: normalize(c.search_name || c.name),
         })),
     [clubs])
+
+    useEffect(() => {
+        supabase.from('competitions').select('competition_id, competition_name, association_id, association_name').eq('season','2025/2026').then(({data}) => { if (data) { const seen: Record<number, CompetitionResult> = {}; (data as CompetitionResult[]).forEach(c => { if (!seen[c.competition_id]) seen[c.competition_id] = c }); setAllComps(Object.values(seen)) } })
+    }, [])
 
     useEffect(() => {
         if (isOpen) {
@@ -62,23 +67,13 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         const clean = filtered.map(({ _n, ...rest }) => rest as Club)
         setClubResults(clean)
 
-        const timeout = setTimeout(async () => {
-            const { data } = await supabase
-                .from('competitions')
-                .select('competition_id, competition_name, association_id, association_name')
-                .ilike('competition_name', `%${query}%`)
-                .eq('season', '2025/2026')
-                .limit(8)
-            if (data) {
-                const unique = new Map<number, CompetitionResult>()
-                for (const r of data) {
-                    if (!unique.has(r.competition_id)) {
-                        unique.set(r.competition_id, r as CompetitionResult)
-                    }
-                }
-                setCompResults(Array.from(unique.values()))
+        const timeout = setTimeout(() => {
+            if (allComps.length > 0) {
+                const q = normalize(query)
+                const filtered = allComps.filter(c => normalize(c.competition_name).includes(q))
+                setCompResults(filtered.slice(0, 15))
             }
-        }, 300)
+        }, 150)
         return () => clearTimeout(timeout)
     }, [query, clubs])
 
