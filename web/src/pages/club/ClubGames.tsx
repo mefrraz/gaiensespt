@@ -94,7 +94,7 @@ function ClubGames() {
                     <select
                         value={filterEscalao}
                         onChange={(e) => setFilterEscalao(e.target.value)}
-                        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-200 text-xs font-medium rounded-lg focus:ring-2 focus:ring-dribly-blue/30 focus:border-dribly-blue block w-full pl-9 p-2.5 appearance-none shadow-sm transition-colors"
+                        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-200 text-xs font-medium rounded-lg focus:ring-2 focus:ring-[var(--club-color)]/30 focus:border-[var(--club-color)] block w-full pl-9 p-2.5 appearance-none shadow-sm transition-colors"
                     >
                         <option value="Todos">Todos os Escalões</option>
                         {escaloes.map(e => (
@@ -102,7 +102,7 @@ function ClubGames() {
                         ))}
                     </select>
                 </div>
-                <Link to="/about" className="shrink-0 flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-500 hover:text-dribly-blue transition-colors uppercase tracking-wide group">
+                <Link to="/about" className="shrink-0 flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-500 hover:text-[var(--club-color)] transition-colors uppercase tracking-wide group">
                     <RefreshCw size={10} className="group-hover:animate-spin" />
                     <span>{timeAgo || '--'}</span>
                 </Link>

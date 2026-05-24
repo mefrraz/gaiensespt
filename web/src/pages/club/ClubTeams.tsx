@@ -115,16 +115,16 @@ function ClubTeams() {
                     <Link
                         key={team.teamId}
                         to={`/clube/${club.slug}/team/${encodeURIComponent(team.teamId)}`}
-                        className="glass-card p-4 flex items-center gap-4 group animate-slide-up hover:border-dribly-blue/20"
+                        className="glass-card p-4 flex items-center gap-4 group animate-slide-up hover:border-[var(--club-color)]/20"
                     >
                         {/* Avatar circle */}
-                        <div className="w-12 h-12 rounded-full bg-dribly-blue/10 dark:bg-dribly-blue/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                            <span className="text-lg font-black text-dribly-blue">{team.teamId.charAt(0).toUpperCase()}</span>
+                        <div className="w-12 h-12 rounded-full bg-[var(--club-color)]/10 dark:bg-[var(--club-color)]/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                            <span className="text-lg font-black text-[var(--club-color)]">{team.teamId.charAt(0).toUpperCase()}</span>
                         </div>
 
                         {/* Name + stats */}
                         <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-dribly-blue transition-colors truncate">
+                            <h3 className="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-[var(--club-color)] transition-colors truncate">
                                 {shortName}
                             </h3>
                             <div className="flex items-center gap-3 text-xs mt-1">
@@ -152,7 +152,7 @@ function ClubTeams() {
                                     'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
                                 }`}>{team.lastResult}</span>
                             )}
-                            <ChevronRight size={16} className="text-zinc-400 group-hover:text-dribly-blue shrink-0 transition-colors" />
+                            <ChevronRight size={16} className="text-zinc-400 group-hover:text-[var(--club-color)] shrink-0 transition-colors" />
                         </div>
                     </Link>
                 )

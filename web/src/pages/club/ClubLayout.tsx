@@ -32,6 +32,17 @@ export default function ClubLayout() {
         return () => { setSelectedClub(null) }
     }, [slug, setSelectedClub, setFavoriteClub, getClubBySlug])
 
+    useEffect(() => {
+        if (!club) return
+        const color = !club.primary_color || club.primary_color === '#000000'
+            ? '#7C3AED'
+            : club.primary_color
+        document.documentElement.style.setProperty('--club-color', color)
+        return () => {
+            document.documentElement.style.setProperty('--club-color', '#7C3AED')
+        }
+    }, [club])
+
     if (loading) {
         return (
             <div className="flex items-center justify-center py-32">
