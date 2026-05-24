@@ -60,7 +60,7 @@ function SearchPage() {
             return
         }
         const q = normalize(query)
-        setClubResults(normalizedClubs.filter(c => c._n.includes(q)).sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0)))
+        setClubResults(normalizedClubs.filter(c => c._n.includes(q)).sort((a, b) => (a.priority ?? 999) - (b.priority ?? 999)))
         if (allComps.length > 0) {
             setCompResults(allComps.filter(c => normalize(c.competition_name).includes(q)))
         }

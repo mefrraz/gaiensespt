@@ -63,7 +63,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         const q = normalize(query)
         const filtered = normalizedClubs
             .filter(c => c._n.includes(q))
-            .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
+            .sort((a, b) => (a.priority ?? 999) - (b.priority ?? 999))
             .slice(0, 15)
         // Remove _n property before setting state
         const clean = filtered.map(({ _n, ...rest }) => rest as Club)
