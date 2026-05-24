@@ -12,7 +12,11 @@ import { type Match } from '../components/types'
 function normalize(s: string): string { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim() }
 
 const POPULAR_TEAMS = ['FC PORTO', 'SL Benfica', 'Sporting CP', 'FC GAIA', 'Ovarense', 'Belenenses', 'Academica Coimbra', 'Farense']
-const FEATURED_CLUBS = ['FC PORTO', 'SL Benfica-B', 'Sporting CP']
+const FEATURED_CLUBS = [
+    { name: 'FC Porto', slug: 'fc-porto' },
+    { name: 'SL Benfica', slug: 'sl-benfica' },
+    { name: 'Sporting CP', slug: 'sporting-cp' },
+]
 
 
 const TUGABASKET_ASSETS = 'https://resultados.tugabasket.com/assets/images/logos'
@@ -31,8 +35,8 @@ interface CompetitionResult { competition_id: number; competition_name: string; 
 function Cell({ val }: { val: string }) {
     if (val === '✓') return <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span>
     if (val === '✗') return <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span>
-    if (val === 'LIMITADO') return <span className="text-[10px] text-zinc-400 font-medium">—</span>
-    return <span className="text-[10px] text-amber-500 dark:text-amber-400 font-medium inline-flex items-center gap-1"><Clock size={10} />{val}</span>
+    if (val === 'LIMITADO') return <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">—</span>
+    return <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-500 dark:text-amber-400"><Clock size={12} /></span>
 }
 
 function Landing() {
@@ -106,7 +110,7 @@ function Landing() {
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 text-dribly-purple text-[11px] font-bold uppercase tracking-wider mb-6 animate-fade-in"><span className="w-1.5 h-1.5 rounded-full bg-dribly-purple animate-pulse" />Época 2025/2026</div>
                     <h1 className="text-3xl md:text-5xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight mb-2 animate-slide-up">Dribly<span className="text-dribly-purple">.</span></h1>
                     <p className="text-sm md:text-base text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto leading-relaxed mb-6 animate-slide-up">Resultados de todos os clubes de basquetebol em Portugal</p>
-                    <div className="flex flex-wrap justify-center gap-2 mb-6 animate-slide-up">{FEATURED_CLUBS.map(name => { const c = clubs.find(x => name.toLowerCase().includes(x.name.toLowerCase().substring(0, 4))); if (!c) return null; return (<button key={c.slug} onClick={() => selectClub(c)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:border-dribly-purple/30 hover:text-dribly-purple hover:shadow-sm transition-all"><span className="w-5 h-5 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center text-[9px] font-bold text-dribly-purple shrink-0">{name.charAt(0).toUpperCase()}</span>{name}</button>) })}</div>
+                    <div className="flex flex-wrap justify-center gap-2 mb-6 animate-slide-up">{FEATURED_CLUBS.map(({ name, slug }) => { const c = clubs.find(x => x.slug === slug); if (!c) return null; return (<button key={c.slug} onClick={() => selectClub(c)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:border-dribly-purple/30 hover:text-dribly-purple hover:shadow-sm transition-all"><span className="w-5 h-5 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">{c.logo_url ? <img src={c.logo_url} alt="" className="w-3.5 h-3.5 object-contain" /> : <span className="text-[9px] font-bold text-zinc-500">{name.charAt(0).toUpperCase()}</span>}</span>{c.name}</button>) })}</div>
                     <div className="max-w-lg mx-auto relative animate-slide-up" ref={dropdownRef}><div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none"><Search size={20} className="text-zinc-400" /></div><input ref={inputRef} type="text" value={query} onChange={e => { setQuery(e.target.value); setSelectedIdx(-1) }} onKeyDown={handleKeyDown} onFocus={() => query.trim() && setShowDropdown(true)} placeholder="Pesquisar clubes e competições..." className="w-full pl-12 pr-4 py-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none shadow-lg shadow-zinc-200/50 dark:shadow-black/20 transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple" />{showDropdown && totalResults > 0 && (<div className="absolute top-full mt-2 left-0 right-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50 text-left">{results.length > 0 && (<div><div className="px-4 py-2 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Clubes</div>{results.map((club,i) => (<button key={club.slug} onClick={() => selectClub(club)} className={'w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ' + (selectedIdx === i ? 'bg-dribly-purple/10 dark:bg-dribly-purple/20' : 'hover:bg-zinc-50 dark:hover:bg-white/5')}><div className="w-9 h-9 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">{club.logo_url ? <img src={club.logo_url} alt="" className="w-6 h-6 object-contain" /> : <span className="text-xs font-bold text-zinc-500">{club.name.charAt(0).toUpperCase()}</span>}</div><span className="text-sm font-medium text-zinc-900 dark:text-white truncate">{club.name}</span></button>))}</div>)}{compResults.length > 0 && (<div className={results.length > 0 ? 'border-t border-zinc-100 dark:border-white/5' : ''}><div className="px-4 py-2 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Competições</div>{compResults.map((comp,i) => { const idx = results.length + i; return (<button key={'comp-'+comp.competition_id} onClick={() => { navigate('/standings/' + comp.association_id + '/' + comp.competition_id); setQuery(''); setShowDropdown(false) }} className={'w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ' + (selectedIdx === idx ? 'bg-dribly-purple/10 dark:bg-dribly-purple/20' : 'hover:bg-zinc-50 dark:hover:bg-white/5')}><div className="w-9 h-9 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0"><Trophy size={16} className="text-dribly-purple" /></div><div className="min-w-0"><span className="text-sm font-medium text-zinc-900 dark:text-white truncate block">{comp.competition_name}</span><span className="text-[10px] text-zinc-400">{comp.association_name}</span></div></button>) })}</div>)}{(results.length === 3 || compResults.length === 3) && (<Link to={'/search?q=' + encodeURIComponent(query)} onClick={() => setShowDropdown(false)} className="block w-full text-center py-3 text-xs font-bold text-dribly-purple hover:bg-dribly-purple/5 border-t border-zinc-100 dark:border-white/5 transition-colors">Ver todos os resultados</Link>)}</div>)}</div>
                     {favoriteClub && (<Link to={'/clube/' + favoriteClub.slug + '/home'} className="inline-flex items-center gap-2 mt-5 px-4 py-2 rounded-full bg-dribly-purple/5 dark:bg-dribly-purple/10 text-dribly-purple text-xs font-bold border border-dribly-purple/20 hover:bg-dribly-purple/10 dark:hover:bg-dribly-purple/20 transition-all group animate-slide-up"><HomeIcon size={14} /><span>Continuar com {favoriteClub.name}</span><ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" /></Link>)}
                 </div>
@@ -210,7 +214,7 @@ function Landing() {
                                 <th className="text-center py-3 px-1 font-bold text-zinc-500 dark:text-zinc-400 w-[14.4%]">FPB</th>
                                 <th className="text-center py-3 px-1 font-bold text-zinc-500 dark:text-zinc-400 w-[14.4%]">Swish</th>
                                 <th className="hidden md:table-cell text-center py-3 px-1 font-bold text-zinc-500 dark:text-zinc-400 w-[14.4%]">TugaBasket</th>
-                                <th className="text-center py-3 px-1 font-bold text-zinc-500 dark:text-zinc-400 w-[14.4%]">FPB TV</th>
+                                <th className="hidden md:table-cell text-center py-3 px-1 font-bold text-zinc-500 dark:text-zinc-400 w-[14.4%]">FPB TV</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -234,17 +238,25 @@ function Landing() {
                                 ['Multi-escalão',                   '✓', '✓', 'LIMITADO', '✗', '✗'],
                                 ['Equipas por clube',               '✓', '✓', 'LIMITADO', '✗', '✗'],
                                 ['Dados oficiais FPB',              '✓', '✓', '✓', '✗', '✗'],
-                                ['Streaming de jogos',              'Futuro', '✗', '✗', '✗', '✓'],
                             ].map(([feat, d, fpb, swish, tuga, fpbtv]) => (
                                 <tr key={feat} className="border-b border-zinc-100 dark:border-zinc-800">
                                     <td className="py-3 pr-3 font-medium text-zinc-800 dark:text-zinc-200 text-xs">{feat}</td>
                                     <td className="text-center py-3 px-1"><Cell val={d} /></td>
                                     <td className="text-center py-3 px-1"><Cell val={fpb} /></td>
                                     <td className="text-center py-3 px-1"><Cell val={swish} /></td>
-                                    <td className="hidden md:table-cell text-center py-3 px-1"><Cell val={tuga} /></td>
-                                    <td className="text-center py-3 px-1"><Cell val={fpbtv} /></td>
+                                <td className="hidden md:table-cell text-center py-3 px-1"><Cell val={tuga} /></td>
+                                <td className="hidden md:table-cell text-center py-3 px-1"><Cell val={fpbtv} /></td>
                                 </tr>
                             ))}
+                            {/* Streaming de jogos — hidden on mobile */}
+                            <tr className="hidden md:table-row border-b border-zinc-100 dark:border-zinc-800">
+                                <td className="py-3 pr-3 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Streaming de jogos</td>
+                                <td className="text-center py-3 px-1"><Cell val="Futuro" /></td>
+                                <td className="text-center py-3 px-1"><Cell val="✗" /></td>
+                                <td className="text-center py-3 px-1"><Cell val="✗" /></td>
+                                <td className="hidden md:table-cell text-center py-3 px-1"><Cell val="✗" /></td>
+                                <td className="hidden md:table-cell text-center py-3 px-1"><Cell val="✓" /></td>
+                                </tr>
                         </tbody>
                     </table>
                 </div>

@@ -44,8 +44,8 @@ function Layout() {
                 <div className="max-w-5xl mx-auto px-4 h-14 sm:h-16 flex items-center gap-2 sm:gap-3">
 
                     {/* Logo — bigger, always visible with text */}
-                    <Link to="/" className="flex items-center gap-2 sm:gap-2.5 group shrink-0 mr-1">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                    <Link to="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 mr-1">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center overflow-hidden">
                             <img src="/logo.svg" alt="Dribly" className="w-full h-full object-contain" />
                         </div>
                         <span className="flex items-baseline font-bold text-sm sm:text-base text-zinc-900 dark:text-zinc-100">
