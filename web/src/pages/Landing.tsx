@@ -11,6 +11,17 @@ function normalize(s: string): string { return s.normalize('NFD').replace(/[\u03
 const POPULAR_TEAMS = ['FC PORTO', 'SL Benfica', 'Sporting CP', 'FC GAIA', 'Ovarense', 'Belenenses', 'Academica Coimbra', 'Farense']
 const FEATURED_CLUBS = ['FC PORTO', 'SL Benfica-B', 'Sporting CP', 'FC GAIA', 'Belenenses', 'Academica Coimbra']
 
+
+const TUGABASKET_ASSETS = 'https://resultados.tugabasket.com/assets/images/logos'
+const ASSOCIATION_LOGOS: Record<number, string> = {
+    50: 'fpb.jpg', 1: 'ablisboa.jpg', 2: 'absetubal.jpg', 3: 'abaveiro.jpg',
+    4: 'abporto.jpg', 5: 'abbraga.jpg', 6: 'abmadeira.jpg', 7: 'absantarem_novo.jpg',
+    8: 'abcoimbra.jpg', 9: 'abalgarve.jpg', 10: 'abviseu.jpg', 11: 'ableiria.jpg',
+    12: 'abalentejo.jpg', 13: 'abit.jpg', 14: 'abcastelobranco.jpg', 15: 'abbraganca.jpg',
+    16: 'absaomiguel.jpg', 17: 'abviana.jpg', 18: 'abvilareal.jpg', 19: 'abifp.jpg',
+    20: 'abguarda.jpg', 22: 'absantamaria.jpg', 24: 'abacores.jpg',
+}
+function logoUrl(id: number) { const f = ASSOCIATION_LOGOS[id]; return f ? TUGABASKET_ASSETS + '/' + f : '' }
 interface Association { association_id: number; association_name: string }
 
 function Landing() {
@@ -106,8 +117,8 @@ function Landing() {
                         <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white dark:from-zinc-950 to-transparent pointer-events-none z-10" />
                         <div className="flex gap-4 py-2" style={{ transform: 'translateX(' + assoOffset + 'px)', transition: 'none', width: (associations.length * 2 * 132) + 'px' }}>
                             {[...associations, ...associations].map((a, i) => (
-                                <Link key={a.association_id + '-' + i} to={'/standings/' + a.association_id} className="w-[100px] h-[100px] shrink-0 rounded-2xl flex items-center justify-center overflow-hidden hover:scale-105 transition-transform duration-300 shadow-sm" style={{ backgroundColor: ["#7C3AED","#3B82F6","#059669","#DC2626","#EA580C","#CA8A04","#0891B2","#9333EA","#4F46E5","#0D9488","#DB2777"][a.association_id % 11] }}>
-                                    <span className="text-white font-black text-lg">{a.association_name.replace('AB ','').substring(0,3).toUpperCase()}</span>
+                                <Link key={a.association_id + '-' + i} to={'/standings/' + a.association_id} className="w-[110px] h-[110px] shrink-0 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 flex items-center justify-center hover:scale-105 transition-transform duration-300 shadow-sm group overflow-hidden">
+                                    {(() => { const url = logoUrl(a.association_id); return url ? <img src={url} alt={a.association_name} className="w-full h-full object-contain" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }} /> : <span className="text-dribly-purple font-black text-xl">{a.association_name.replace("AB ","").substring(0,3).toUpperCase()}</span> })()}
                                 </Link>
                             ))}
                         </div>
@@ -118,16 +129,41 @@ function Landing() {
                 </div>
             </div>
 
-            {/* Data info */}
-            <div className="max-w-2xl mx-auto px-4 py-8 text-center">
-                <h2 className="text-sm font-bold text-zinc-900 dark:text-white mb-4">Dados disponiveis</h2>
-                <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
-                    <span className="px-3 py-1.5 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 text-dribly-purple text-xs font-bold">79 clubes</span>
-                    <span className="px-3 py-1.5 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 text-dribly-purple text-xs font-bold">411 competicoes</span>
-                    <span className="px-3 py-1.5 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 text-dribly-purple text-xs font-bold">23 associacoes</span>
+            {/* Data info — cards per data type */}
+            <div className="max-w-2xl mx-auto px-4 py-8">
+                <h2 className="text-sm font-bold text-zinc-900 dark:text-white mb-4 text-center">O que encontras no Dribly</h2>
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                    <div className="glass-card p-4 flex flex-col items-center text-center gap-2">
+                        <div className="w-10 h-10 rounded-xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        </div>
+                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white">Jogos e Agenda</h3>
+                        <p className="text-[10px] text-zinc-500">Próximos jogos de cada clube</p>
+                    </div>
+                    <div className="glass-card p-4 flex flex-col items-center text-center gap-2">
+                        <div className="w-10 h-10 rounded-xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        </div>
+                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white">Resultados</h3>
+                        <p className="text-[10px] text-zinc-500">Fichas de jogo completas</p>
+                    </div>
+                    <div className="glass-card p-4 flex flex-col items-center text-center gap-2">
+                        <div className="w-10 h-10 rounded-xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                        </div>
+                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white">Classificações</h3>
+                        <p className="text-[10px] text-zinc-500">Tabelas de competições</p>
+                    </div>
+                    <div className="glass-card p-4 flex flex-col items-center text-center gap-2">
+                        <div className="w-10 h-10 rounded-xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white">79 Clubes</h3>
+                        <p className="text-[10px] text-zinc-500">De todas as divisões</p>
+                    </div>
                 </div>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs mx-auto leading-relaxed">
-                    Os dados sao obtidos diretamente do site da FPB e atualizados sempre que abres o Dribly.
+                <p className="text-[11px] text-zinc-400 text-center max-w-sm mx-auto leading-relaxed">
+                    Os dados são obtidos do site oficial da FPB e atualizados sempre que abres o Dribly.
                 </p>
             </div>
 
