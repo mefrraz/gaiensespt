@@ -1,4 +1,6 @@
-# Dribly — Basquetebol português no teu bolso
+import sys
+
+content = r"""# Dribly — Basquetebol português no teu bolso
 
 App web (PWA) gratuita e open-source para acompanhar todos os clubes de basquetebol registados na Federação Portuguesa de Basquetebol (FPB).
 
@@ -161,3 +163,9 @@ python discover-competitions.py
 ## Licenca
 
 MIT
+"""
+
+with open(r'C:\Users\andre\OneDrive\Documentos\gaiensespt\README.md', 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print(f'Written {len(content)} chars')
