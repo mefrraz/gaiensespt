@@ -1,0 +1,16 @@
+INSERT INTO competitions (competition_id, competition_name, association_id, association_name, season, club_names, created_at, updated_at)
+VALUES (11124, 'Torneio Regional Sub 16 Femininos', 24, 'AB Açores', '2025/2026', ARRAY[]::text[], NOW(),
+(11126, 'Campeonato Regional Seniores Femininos', 24, 'AB Açores', '2025/2026', ARRAY[]::text[], NOW(),
+(11128, 'Campeonato Regional Sub 18 Femininos', 24, 'AB Açores', '2025/2026', ARRAY[]::text[], NOW(),
+(11132, 'Campeonato Regional Sub 14 Femininos', 24, 'AB Açores', '2025/2026', ARRAY[]::text[], NOW(),
+(11324, 'Campeonato Regional Sub16 Femininos', 24, 'AB Açores', '2025/2026', ARRAY[]::text[], NOW(),
+(11121, 'Torneio Regional Sub 14 Masculinos', 24, 'AB Açores', '2025/2026', ARRAY[]::text[], NOW(),
+(11123, 'Torneio Regional Sub 16 Masculinos', 24, 'AB Açores', '2025/2026', ARRAY[]::text[], NOW(),
+(11125, 'Campeonato Regional Seniores Masculinos', 24, 'AB Açores', '2025/2026', ARRAY[]::text[], NOW(),
+(11127, 'Campeonato Regional Sub 18 Masculinos', 24, 'AB Açores', '2025/2026', ARRAY[]::text[], NOW(),
+(11129, 'Campeonato Regional Sub 16 Masculinos', 24, 'AB Açores', '2025/2026', ARRAY[]::text[], NOW(),
+(11131, 'Campeonato Regional Sub 14 Masculinos', 24, 'AB Açores', '2025/2026', ARRAY[]::text[], NOW()
+ON CONFLICT (competition_id, season) DO UPDATE SET
+  competition_name = EXCLUDED.competition_name,
+  association_name = EXCLUDED.association_name,
+  updated_at = NOW();;
