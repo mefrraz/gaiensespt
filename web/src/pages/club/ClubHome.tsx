@@ -111,6 +111,12 @@ function ClubHome() {
 
     return (
         <div className="max-w-xl mx-auto space-y-5 pb-20 px-3">
+            {games.length === 0 && !loading && !error && (
+                <div className="glass-card p-6 text-center animate-fade-in">
+                    <Calendar size={32} className="mx-auto text-zinc-300 dark:text-zinc-600 mb-3" />
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">Este clube não tem jogos registados na FPB para esta época.</p>
+                </div>
+            )}
             {/* Hero: Next Game */}
             {nextGame && (
                 <Link to={`/game/${nextGame.slug || ''}?clube=${club.slug}`} className="block group animate-slide-up">

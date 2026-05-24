@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Search, X, Building2, Trophy } from 'lucide-react'
 import { useClub, type Club } from '../lib/ClubContext'
 import { supabase } from '../lib/supabase'
+import { associationLogoUrl } from '../lib/associationLogos'
 
 function normalize(s: string): string {
     return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
@@ -62,6 +63,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         const q = normalize(query)
         const filtered = normalizedClubs
             .filter(c => c._n.includes(q))
+            .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
             .slice(0, 15)
         // Remove _n property before setting state
         const clean = filtered.map(({ _n, ...rest }) => rest as Club)
@@ -181,9 +183,13 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                                     : 'hover:bg-zinc-50 dark:hover:bg-white/5'
                                             }`}
                                         >
-                                            <div className="w-8 h-8 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0">
-                                                <Trophy size={14} className="text-dribly-purple" />
-                                            </div>
+                                        <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
+                                            {associationLogoUrl(comp.association_id) ? (
+                                                <img src={associationLogoUrl(comp.association_id)!} alt="" className="w-5 h-5 object-contain" />
+                                            ) : (
+                                                <Trophy size={14} className="text-zinc-400" />
+                                            )}
+                                        </div>
                                             <div className="min-w-0">
                                                 <span className="text-sm font-medium text-zinc-900 dark:text-white truncate block">{comp.competition_name}</span>
                                                 <span className="text-[10px] text-zinc-400">{comp.association_name}</span>

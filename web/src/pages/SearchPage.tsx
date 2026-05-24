@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { Search, Building2, Trophy, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useClub, type Club } from '../lib/ClubContext'
+import { associationLogoUrl } from '../lib/associationLogos'
 
 function normalize(s: string): string {
     return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
@@ -59,7 +60,7 @@ function SearchPage() {
             return
         }
         const q = normalize(query)
-        setClubResults(normalizedClubs.filter(c => c._n.includes(q)))
+        setClubResults(normalizedClubs.filter(c => c._n.includes(q)).sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0)))
         if (allComps.length > 0) {
             setCompResults(allComps.filter(c => normalize(c.competition_name).includes(q)))
         }
@@ -134,11 +135,15 @@ function SearchPage() {
                                         onClick={() => navigate('/standings/' + comp.association_id + '/' + comp.competition_id)}
                                         className="w-full text-left glass-card p-4 flex items-center gap-3 hover:border-dribly-purple/20 group transition-colors"
                                     >
-                                        <div className="w-10 h-10 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0">
-                                            <Trophy size={18} className="text-dribly-purple" />
+                                        <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
+                                            {associationLogoUrl(comp.association_id) ? (
+                                                <img src={associationLogoUrl(comp.association_id)!} alt="" className="w-6 h-6 object-contain" />
+                                            ) : (
+                                                <Trophy size={18} className="text-zinc-400" />
+                                            )}
                                         </div>
                                         <div className="min-w-0">
-                                            <span className="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-dribly-purple transition-colors truncate block">{comp.competition_name}</span>
+                                            <span className="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-[var(--club-color)] transition-colors truncate block">{comp.competition_name}</span>
                                             <span className="text-[10px] text-zinc-400">{comp.association_name}</span>
                                         </div>
                                     </button>
