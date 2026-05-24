@@ -24,6 +24,7 @@ function BottomNav({ onOpenSearch }: BottomNavProps) {
     const handleClubClick = (e: React.MouseEvent) => {
         if (!activeClub) {
             e.preventDefault()
+            window.alert('Selecione um clube primeiro para aceder a esta página.')
             onOpenSearch()
         }
     }
