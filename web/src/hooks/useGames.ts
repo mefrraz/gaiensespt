@@ -107,13 +107,17 @@ export function useGames(season = '2025/2026', clube = 119, clubName = '') {
         }
       }
 
-      await supabase.from(tableName).upsert(
-        withEpoch.map(g => ({ ...g, updated_at: new Date().toISOString() })),
-        { onConflict: 'slug' }
-      )
-
+      // Show games immediately from FPB data (don't wait for DB upsert)
       setGames(withEpoch)
       setLastUpdated(new Date())
+
+      // Try to persist to Supabase (fire-and-forget — don't block UI)
+      supabase.from(tableName).upsert(
+        withEpoch.map(g => ({ ...g, updated_at: new Date().toISOString() })),
+        { onConflict: 'slug' }
+      ).then(({ error }) => {
+        if (error) console.warn('Failed to upsert games to Supabase:', error.message)
+      })
     } catch (err) {
       console.error('Failed to fetch games from FPB:', err)
       setError(err instanceof Error ? err.message : 'Erro ao carregar jogos')
