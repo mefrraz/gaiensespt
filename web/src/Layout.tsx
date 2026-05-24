@@ -112,10 +112,10 @@ function Layout() {
                         <span>&copy; {new Date().getFullYear()}</span>
                     </div>
                     <div className="flex gap-4">
-                        <a href="https://www.instagram.com/gaiensespt" target="_blank" rel="noopener noreferrer" className="hover:text-dribly-purple transition-colors">
+                        <a href="https://www.instagram.com/dribly" target="_blank" rel="noopener noreferrer" className="hover:text-dribly-purple transition-colors">
                             <Instagram size={20} />
                         </a>
-                        <a href="https://github.com/mefrraz/gaiensespt" target="_blank" rel="noopener noreferrer" className="hover:text-dribly-purple transition-colors">
+                        <a href="https://github.com/mefrraz/dribly" target="_blank" rel="noopener noreferrer" className="hover:text-dribly-purple transition-colors">
                             <Github size={20} />
                         </a>
                     </div>

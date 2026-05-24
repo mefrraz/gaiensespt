@@ -1,8 +1,8 @@
-# gaiensespt — FC Gaia Basquetebol
+﻿# Dribly — Basquetebol português no teu bolso
 
-App web (PWA) para acompanhar jogos, resultados e classificação do **FC Gaia — Basquetebol**.
+App web (PWA) multiplataforma para acompanhar todos os clubes de basquetebol registados na Federação Portuguesa de Basquetebol (FPB).
 
-**Site:** https://gaiensespt.vercel.app
+**Site:** https://dribly.vercel.app *(após renomear projeto na Vercel)*
 
 ---
 
@@ -12,103 +12,100 @@ App web (PWA) para acompanhar jogos, resultados e classificação do **FC Gaia �
 |--------|-----------|
 | Frontend | React 18 + TypeScript + Vite |
 | Estilos | Tailwind CSS |
-| Base de dados | Supabase (PostgreSQL) |
-| Estado partilhado | GameDataContext + localStorage cache |
+| Base de dados | Supabase (PostgreSQL) + localStorage |
 | Deploy | Vercel (static + Edge Functions) |
-| API externa | [fpb.pt](https://www.fpb.pt) (scraping WordPress) |
-| PWA | vite-plugin-pwa (service worker + cache 15min) |
+| API externa | [FPB](https://www.fpb.pt) + [TugaBasket](https://resultados.tugabasket.com) |
+| PWA | vite-plugin-pwa (service worker + cache) |
 
-## Fluxo de Dados
+## Funcionalidades
 
-```
-Browser → Vercel Edge Function (/api/fpb)
-         → fetches https://www.fpb.pt (calendário + resultados)
-         → HTML da FPB
-         → parser DOMParser no browser → Match[]
-         → upsert Supabase (cache partilhado entre users)
-```
-
-- **Primeira visita:** Browser busca da FPB via Edge Function → parser → mostra + guarda em Supabase
-- **Visitas seguintes (≤15min):** Lê de Supabase (rápido) ou do localStorage cache (instantâneo)
-- **Visitas seguintes (>15min):** Mostra dados do localStorage + atualiza em background da FPB
+- **Pesquisa de clubes** — 281 clubes FPB com cores e logótipos
+- **Jogos e agenda** — próximos jogos, resultados, fichas de jogo
+- **Classificações** — todas as competições por associação
+- **Multi-clube** — segue vários clubes ao mesmo tempo
+- **PWA** — instala como app no telemóvel
+- **Modo escuro** — tema claro/escuro
+- **Offline parcial** — cache inteligente com dados recentes
 
 ## Setup Local
 
-```bash
-git clone https://github.com/mefrraz/gaiensespt.git
-cd gaiensespt/web
+\\\ash
+git clone https://github.com/mefrraz/dribly.git
+cd dribly/web
 npm install
-# Criar ficheiro .env com:
+# Criar .env com:
 # VITE_SUPABASE_URL=https://[project].supabase.co
 # VITE_SUPABASE_ANON_KEY=[anon public key]
 npm run dev
-```
+\\\
 
-Variáveis de ambiente necessárias (ver Supabase dashboard → Settings → API):
+Variáveis de ambiente (ver Supabase Dashboard → Settings → API):
 
-```
+\\\
 VITE_SUPABASE_URL=https://[project].supabase.co
 VITE_SUPABASE_ANON_KEY=[anon public key]
-```
+\\\
 
 ## Estrutura
 
-```
+\\\
 web/
   src/
     lib/
-      fpbApi.ts           — cliente FPB (fetch + parser HTML)
-      supabase.ts         — cliente Supabase
-      GameDataContext.tsx  — contexto React para dados partilhados
+      fpbApi.ts        — scraper HTML da FPB
+      tugabasketApi.ts — scraper TugaBasket
+      associationLogos.ts — logótipos das associações
+      ClubContext.tsx   — contexto global de clubes
+      supabase.ts      — cliente Supabase
     hooks/
-      useGames.ts          — hook SWR com cache 15min + localStorage
-      useTimeAgo.ts        — hook "há X minutos"
+      useGames.ts      — jogos com cache 15min + localStorage
+      useStandings.ts  — classificações com cache
     components/
-      Skeleton.tsx     — loading skeletons
-      EmptyState.tsx   — estado vazio com ícone
-      types.ts         — tipos Match, Standing
+      BottomNav.tsx    — navegação inferior mobile
+      SearchModal.tsx  — modal de pesquisa
+      GameCard.tsx     — card de jogo
     pages/
-      Dashboard.tsx    — home (próximo jogo, resultados, próximos)
-      Games.tsx        — agenda + resultados (segment: AGENDA/RESULTADOS)
-      Game.tsx         — ficha de jogo individual
-      Standings.tsx    — tabela classificativa
+      Landing.tsx      — página inicial
+      SearchPage.tsx   — pesquisa dedicada
+      club/            — páginas de clube (home, games, teams)
+      Game.tsx         — ficha de jogo
+      Standings.tsx    — classificações
+      AssociationCompetitions.tsx — competições por associação
       About.tsx        — sobre o projeto
-      Install.tsx      — instruções PWA
   api/
-    fpb.ts             — Vercel Edge Function (proxy para fpb.pt)
-database/
-  schema.sql           — schema principal
-  migrate_seasons.sql  — tabelas por época
-  migrations/          — migrations incrementais
-```
+    fpb.ts            — Vercel Edge Function (proxy FPB)
+    tugabasket.ts     — Vercel Edge Function (proxy TugaBasket)
+\\\
+
+## Fluxo de Dados (Jogos)
+
+\\\
+Browser → Vercel Edge Function (/api/fpb)
+         → fetches https://www.fpb.pt (HTML)
+         → parser no browser → Match[]
+         → upsert Supabase (cache partilhado)
+         → mostra na UI
+\\\
+
+- **1ª visita:** Busca da FPB via Edge Function → parser → mostra + guarda em Supabase
+- **< 15 min:** Lê de Supabase
+- **> 15 min:** Mostra dados da localStorage + atualiza em background
 
 ## Deploy
 
 Git push → Vercel auto-deploy.
 
-```bash
+\\\ash
 git push origin main
-```
+\\\
 
-Para deploy manual no dashboard da Vercel:
-1. Ir a https://vercel.com/mefrraz/gaiensespt
-2. Deployments → último commit → Redeploy
+## Scrapers
 
-## API FPB
+\\\
+scrapers/
+  discover-competitions.py — scraper Python de competições TugaBasket
+\\\
 
-A app consome a API pública da Federação Portuguesa de Basquetebol.
-Referência completa: [`fpb_api_reference.md`](./fpb_api_reference.md)
+## Licença
 
-Endpoints usados via Edge Function (proxy):
-- `/api/fpb?page=calendario&clube=119&epoca=2025/2026` — agenda completa
-- `/api/fpb?page=resultados&clube=119&epoca=2025/2026` — resultados
-
-## Rollback
-
-```bash
-git tag              # ver versões disponíveis
-git checkout v0.1.0  # voltar ao estado antes das alterações visuais
-```
-
-Para reverter o deploy na Vercel:
-- Deployments → ⋮ (três pontos) → Promote to Production da tag desejada
+MIT

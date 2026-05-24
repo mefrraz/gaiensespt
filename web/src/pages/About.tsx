@@ -32,10 +32,10 @@ function About() {
                         <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">
                             "Desenvolvi esta aplicação para facilitar a visualização dos jogos e resultados de basquetebol em Portugal. Instala como App para teres tudo à mão!"
                         </p>
-                        <a href="https://www.instagram.com/gaiensespt" target="_blank" rel="noopener noreferrer"
+                        <a href="https://www.instagram.com/dribly" target="_blank" rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-white/10 text-xs font-bold text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-white/20 transition-colors">
                             <Instagram size={14} />
-                            @gaiensespt
+                            @dribly
                         </a>
                     </div>
                 </div>
