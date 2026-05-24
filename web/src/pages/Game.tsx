@@ -378,7 +378,7 @@ function TeamBlock({ name, logo, clubSlug }: { name: string; logo: string | null
         </div>
     );
     if (clubSlug) {
-        return <Link to={"/clube/" + clubSlug + "/home"} className="hover:opacity-80 transition-opacity">{content}</Link>;
+        return <Link to={"/clube/" + clubSlug + "/home"} className="flex-1 hover:opacity-80 transition-opacity">{content}</Link>;
     }
     return content;
 }
