@@ -2,7 +2,11 @@ import { Link, useLocation } from 'react-router-dom'
 import { Home, Calendar, BarChart2, Building2 } from 'lucide-react'
 import { useClub } from '../lib/ClubContext'
 
-function BottomNav() {
+interface BottomNavProps {
+    onOpenSearch: () => void
+}
+
+function BottomNav({ onOpenSearch }: BottomNavProps) {
     const location = useLocation()
     const path = location.pathname
     const { favoriteClub, selectedClub } = useClub()
@@ -14,8 +18,15 @@ function BottomNav() {
         return false
     }
 
-    const clubHomePath = activeClub ? `/clube/${activeClub.slug}/home` : '/'
-    const clubGamesPath = activeClub ? `/clube/${activeClub.slug}/games` : '/'
+    const clubHomePath = activeClub ? `/clube/${activeClub.slug}/home` : '#'
+    const clubGamesPath = activeClub ? `/clube/${activeClub.slug}/games` : '#'
+
+    const handleClubClick = (e: React.MouseEvent) => {
+        if (!activeClub) {
+            e.preventDefault()
+            onOpenSearch()
+        }
+    }
 
     return (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-t border-zinc-200 dark:border-white/10 pb-safe md:hidden">
@@ -30,6 +41,7 @@ function BottomNav() {
 
                 <Link
                     to={clubHomePath}
+                    onClick={handleClubClick}
                     className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive(`/clube/${activeClub?.slug}/home`) ? 'text-dribly-purple' : 'text-zinc-400 dark:text-zinc-500'}`}
                 >
                     <Home size={18} strokeWidth={isActive(`/clube/${activeClub?.slug}/home`) ? 2.5 : 2} />
@@ -38,6 +50,7 @@ function BottomNav() {
 
                 <Link
                     to={clubGamesPath}
+                    onClick={handleClubClick}
                     className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive(`/clube/${activeClub?.slug}/games`) ? 'text-dribly-purple' : 'text-zinc-400 dark:text-zinc-500'}`}
                 >
                     <Calendar size={18} strokeWidth={isActive(`/clube/${activeClub?.slug}/games`) ? 2.5 : 2} />

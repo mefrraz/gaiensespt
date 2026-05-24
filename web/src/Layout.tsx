@@ -81,14 +81,13 @@ function Layout() {
 
                     {/* RIGHT side */}
                     <div className="flex items-center gap-1">
-                        {/* Search chip — visible on both mobile and desktop */}
+                        {/* Search / Club selector — visible on both mobile and desktop */}
                         <button onClick={() => setSearchOpen(true)}
                             className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/5">
-                            <Search size={14} />
                             {activeClub ? (
-                                <span className="max-w-[80px] sm:max-w-[100px] truncate hidden sm:inline">{activeClub.name}</span>
+                                <><span className="sm:hidden">{activeClub.name}</span><span className="hidden sm:flex items-center gap-1.5"><Search size={14} />{activeClub.name}</span></>
                             ) : (
-                                <span className="hidden sm:inline">Pesquisar</span>
+                                <><span className="sm:hidden font-bold text-dribly-purple">+ Selecionar clube</span><span className="hidden sm:flex items-center gap-1.5"><Search size={14} />Selecionar clube</span></>
                             )}
                         </button>
 
@@ -131,7 +130,7 @@ function Layout() {
                 </div>
             </footer>
 
-            <BottomNav />
+            <BottomNav onOpenSearch={() => setSearchOpen(true)} />
             <PWAInstallBanner />
             <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
         </div>
