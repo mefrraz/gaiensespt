@@ -1,3 +1,6 @@
+// RULE: Landing page has NO width constraints (no max-w-* mx-auto)
+// Sections use px-4 but span full width for edge-to-edge carousels.
+
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Search, ChevronRight, ChevronLeft, BarChart2, TrendingUp, ArrowRight } from 'lucide-react'
@@ -96,12 +99,12 @@ function Landing() {
             </div>
 
             {/* Stats */}
-            <div className="bg-white dark:bg-zinc-950 border-b border-zinc-100 dark:border-white/5"><div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-center gap-6 md:gap-16"><div className="text-center"><span className="text-lg font-black text-zinc-900 dark:text-white">79</span><p className="text-[10px] text-zinc-500 uppercase tracking-wide mt-0.5">Clubes</p></div><div className="w-px h-8 bg-zinc-200 dark:bg-white/10" /><div className="text-center"><span className="text-lg font-black text-zinc-900 dark:text-white">411</span><p className="text-[10px] text-zinc-500 uppercase tracking-wide mt-0.5">Competições</p></div><div className="w-px h-8 bg-zinc-200 dark:bg-white/10" /><div className="text-center"><span className="text-lg font-black text-zinc-900 dark:text-white">24</span><p className="text-[10px] text-zinc-500 uppercase tracking-wide mt-0.5">Associações</p></div></div></div>
+            <div className="bg-white dark:bg-zinc-950 border-b border-zinc-100 dark:border-white/5"><div className="px-4 py-4 flex items-center justify-center gap-6 md:gap-16"><div className="text-center"><span className="text-lg font-black text-zinc-900 dark:text-white">79</span><p className="text-[10px] text-zinc-500 uppercase tracking-wide mt-0.5">Clubes</p></div><div className="w-px h-8 bg-zinc-200 dark:bg-white/10" /><div className="text-center"><span className="text-lg font-black text-zinc-900 dark:text-white">411</span><p className="text-[10px] text-zinc-500 uppercase tracking-wide mt-0.5">Competições</p></div><div className="w-px h-8 bg-zinc-200 dark:bg-white/10" /><div className="text-center"><span className="text-lg font-black text-zinc-900 dark:text-white">24</span><p className="text-[10px] text-zinc-500 uppercase tracking-wide mt-0.5">Associações</p></div></div></div>
 
             {/* Jogos em Destaque — gradient fades both sides, wider cards */}
             <div className="py-8">
-                <div className="max-w-2xl mx-auto px-4 mb-4"><div className="flex items-center justify-between"><h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-dribly-purple animate-pulse" />Jogos em Destaque</h2><div className="flex gap-1"><button onClick={() => scrollCarousel(-1)} disabled={carouselScroll === 0} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronLeft size={16} /></button><button onClick={() => scrollCarousel(1)} disabled={carouselScroll >= maxScroll} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronRight size={16} /></button></div></div></div>
-                <div className="max-w-2xl mx-auto px-4 relative">
+                <div className="px-4 mb-4"><div className="flex items-center justify-between"><h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-dribly-purple animate-pulse" />Jogos em Destaque</h2><div className="flex gap-1"><button onClick={() => scrollCarousel(-1)} disabled={carouselScroll === 0} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronLeft size={16} /></button><button onClick={() => scrollCarousel(1)} disabled={carouselScroll >= maxScroll} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronRight size={16} /></button></div></div></div>
+                <div className="px-4 relative">
                     {gamesLoading ? (<div className="flex gap-3 overflow-hidden">{[1,2,3].map(i => <div key={i} className="min-w-[320px] h-48 rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse shrink-0" />)}</div>) : games.length === 0 ? (<p className="text-xs text-zinc-400 text-center py-8">Nenhum jogo em destaque de momento.</p>) : (<div className="relative"><div className="absolute left-0 top-0 bottom-2 w-12 bg-gradient-to-r from-zinc-50 dark:from-zinc-950 to-transparent pointer-events-none z-10" /><div ref={carouselRef} onScroll={() => carouselRef.current && setCarouselScroll(carouselRef.current.scrollLeft)} className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">{games.map(match => (<div key={match.slug || match.id} className="min-w-[320px] shrink-0"><GameCard match={match} mode="agenda" /></div>))}</div><div className="absolute right-0 top-0 bottom-2 w-12 bg-gradient-to-l from-zinc-50 dark:from-zinc-950 to-transparent pointer-events-none z-10" /></div>)}
                 </div>
             </div>
@@ -129,46 +132,46 @@ function Landing() {
                 </div>
             </div>
 
-            {/* Data info — cards per data type */}
-            <div className="max-w-2xl mx-auto px-4 py-8">
-                <h2 className="text-sm font-bold text-zinc-900 dark:text-white mb-4 text-center">O que encontras no Dribly</h2>
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                    <div className="glass-card p-4 flex flex-col items-center text-center gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            {/* Data info — full-width, bigger cards */}
+            <div className="px-4 py-10">
+                <h2 className="text-base font-bold text-zinc-900 dark:text-white mb-6 text-center">O que encontras no Dribly</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 max-w-4xl mx-auto">
+                    <div className="glass-card p-5 flex flex-col items-center text-center gap-3 hover:border-dribly-purple/20 group transition-all">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-dribly-purple to-dribly-purple-dim flex items-center justify-center shadow-sm">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                         </div>
-                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white">Jogos e Agenda</h3>
-                        <p className="text-[10px] text-zinc-500">Próximos jogos de cada clube</p>
+                        <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Jogos e Agenda</h3>
+                        <p className="text-xs text-zinc-500 leading-relaxed">Próximos jogos de cada clube</p>
                     </div>
-                    <div className="glass-card p-4 flex flex-col items-center text-center gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <div className="glass-card p-5 flex flex-col items-center text-center gap-3 hover:border-dribly-purple/20 group transition-all">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-dribly-purple to-dribly-purple-dim flex items-center justify-center shadow-sm">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                         </div>
-                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white">Resultados</h3>
-                        <p className="text-[10px] text-zinc-500">Fichas de jogo completas</p>
+                        <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Resultados</h3>
+                        <p className="text-xs text-zinc-500 leading-relaxed">Fichas de jogo completas</p>
                     </div>
-                    <div className="glass-card p-4 flex flex-col items-center text-center gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    <div className="glass-card p-5 flex flex-col items-center text-center gap-3 hover:border-dribly-purple/20 group transition-all">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-dribly-purple to-dribly-purple-dim flex items-center justify-center shadow-sm">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                         </div>
-                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white">Classificações</h3>
-                        <p className="text-[10px] text-zinc-500">Tabelas de competições</p>
+                        <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Classificações</h3>
+                        <p className="text-xs text-zinc-500 leading-relaxed">Tabelas de competições</p>
                     </div>
-                    <div className="glass-card p-4 flex flex-col items-center text-center gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <div className="glass-card p-5 flex flex-col items-center text-center gap-3 hover:border-dribly-purple/20 group transition-all">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-dribly-purple to-dribly-purple-dim flex items-center justify-center shadow-sm">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                         </div>
-                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white">79 Clubes</h3>
-                        <p className="text-[10px] text-zinc-500">De todas as divisões</p>
+                        <h3 className="text-sm font-bold text-zinc-900 dark:text-white">79 Clubes</h3>
+                        <p className="text-xs text-zinc-500 leading-relaxed">De todas as divisões</p>
                     </div>
                 </div>
-                <p className="text-[11px] text-zinc-400 text-center max-w-sm mx-auto leading-relaxed">
+                <p className="text-xs text-zinc-400 text-center max-w-sm mx-auto leading-relaxed">
                     Os dados são obtidos do site oficial da FPB e atualizados sempre que abres o Dribly.
                 </p>
             </div>
 
             {/* Quick Links */}
-            <div className="max-w-2xl mx-auto px-4 py-4"><div className="grid grid-cols-2 gap-3"><Link to="/standings" className="glass-card p-4 flex items-center gap-3 hover:border-dribly-purple/20 group"><div className="w-10 h-10 rounded-xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0"><BarChart2 size={20} className="text-dribly-purple" /></div><div><h3 className="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-dribly-purple transition-colors">Classificações</h3><p className="text-[10px] text-zinc-500">Consultar tabelas</p></div></Link><Link to="/about" className="glass-card p-4 flex items-center gap-3 hover:border-dribly-purple/20 group"><div className="w-10 h-10 rounded-xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0"><TrendingUp size={20} className="text-dribly-purple" /></div><div><h3 className="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-dribly-purple transition-colors">Sobre</h3><p className="text-[10px] text-zinc-500">Como funciona</p></div></Link></div></div>
+            <div className="px-4 py-4"><div className="grid grid-cols-2 gap-3 max-w-4xl mx-auto"><Link to="/standings" className="glass-card p-4 flex items-center gap-3 hover:border-dribly-purple/20 group"><div className="w-10 h-10 rounded-xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0"><BarChart2 size={20} className="text-dribly-purple" /></div><div><h3 className="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-dribly-purple transition-colors">Classificações</h3><p className="text-[10px] text-zinc-500">Consultar tabelas</p></div></Link><Link to="/about" className="glass-card p-4 flex items-center gap-3 hover:border-dribly-purple/20 group"><div className="w-10 h-10 rounded-xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0"><TrendingUp size={20} className="text-dribly-purple" /></div><div><h3 className="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-dribly-purple transition-colors">Sobre</h3><p className="text-[10px] text-zinc-500">Como funciona</p></div></Link></div></div>
         </div>
     )
 }
