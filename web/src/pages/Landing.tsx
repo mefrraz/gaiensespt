@@ -87,7 +87,7 @@ function Landing() {
     return (
         <div className="pb-24">
             {/* Hero */}
-            <div className="relative overflow-hidden bg-gradient-to-b from-dribly-purple/5 via-transparent to-transparent dark:from-dribly-purple/10 dark:via-transparent dark:to-transparent -mt-4 md:-mt-6">
+            <div className="relative bg-gradient-to-b from-dribly-purple/5 via-transparent to-transparent dark:from-dribly-purple/10 dark:via-transparent dark:to-transparent -mt-4 md:-mt-6">
                 <div className="max-w-2xl mx-auto px-4 pt-16 md:pt-20 pb-10 text-center relative">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 text-dribly-purple text-[11px] font-bold uppercase tracking-wider mb-6 animate-fade-in"><span className="w-1.5 h-1.5 rounded-full bg-dribly-purple animate-pulse" />Época 2025/2026</div>
                     <h1 className="text-3xl md:text-5xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight mb-2 animate-slide-up">Dribly<span className="text-dribly-purple">.</span></h1>
