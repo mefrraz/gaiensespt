@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
-import { Calendar, Trophy, ChevronRight, Clock, MapPin, RefreshCw } from 'lucide-react'
+import { Calendar, Trophy, ChevronRight, Clock, MapPin, RefreshCw, AlertCircle } from 'lucide-react'
 import { useGames } from '../../hooks/useGames'
 import { SkeletonHero } from '../../components/Skeleton'
 import { Match } from '../../components/types'
@@ -8,7 +8,7 @@ import { type Club } from '../../lib/ClubContext'
 
 function ClubHome() {
     const { club } = useOutletContext<{ club: Club }>()
-    const { games: allGames, loading } = useGames('2025/2026', club.id, club.name)
+    const { games: allGames, loading, error, refresh } = useGames('2025/2026', club.id, club.name)
     const [showLoadingMsg, setShowLoadingMsg] = useState(false)
     const games = allGames || []
 
@@ -86,6 +86,24 @@ function ClubHome() {
                 <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse h-32" />
                     <div className="rounded-2xl bg-[var(--club-color)]/30 animate-pulse h-32" />
+                </div>
+            </div>
+        )
+    }
+
+    if (error && games.length === 0) {
+        return (
+            <div className="max-w-xl mx-auto space-y-5 pb-20 px-3">
+                <div className="glass-card p-6 text-center">
+                    <AlertCircle size={32} className="mx-auto text-amber-500 mb-3" />
+                    <p className="text-sm text-zinc-600 dark:text-zinc-300 mb-4">{error}</p>
+                    <button
+                        onClick={() => refresh()}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--club-color)] text-white text-sm font-bold hover:opacity-90 transition-opacity"
+                    >
+                        <RefreshCw size={14} />
+                        Tentar novamente
+                    </button>
                 </div>
             </div>
         )

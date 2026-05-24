@@ -9,7 +9,17 @@ export default defineConfig({
             '/api/fpb': {
                 target: 'https://www.fpb.pt',
                 changeOrigin: true,
-                rewrite: (path) => '/wp-admin/admin-ajax.php'
+                rewrite: (path) => {
+                    // Map /api/fpb?page=calendario&clube=169&epoca=2025/2026
+                    // to /calendario/clube_169/?epoca=2025/2026&escalao=Sénior&genero=masculino
+                    const qIndex = path.indexOf('?')
+                    const qs = qIndex >= 0 ? path.slice(qIndex) : ''
+                    const params = new URLSearchParams(qs)
+                    const page = params.get('page') || 'calendario'
+                    const clube = params.get('clube') || '119'
+                    const epoca = params.get('epoca') || '2025/2026'
+                    return `/${page}/clube_${clube}/?epoca=${epoca}&escalao=S%C3%A9nior&genero=masculino`
+                }
             }
         }
     },

@@ -10,26 +10,43 @@ export default async function handler(request: Request) {
 
     const fpbUrl = `https://www.fpb.pt/${page}/clube_${clube}/?epoca=${epoca}&escalao=S%C3%A9nior&genero=masculino`
 
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 8000)
+
     try {
         const fpbRes = await fetch(fpbUrl, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'text/html,application/xhtml+xml',
+            },
+            signal: controller.signal,
         })
+
+        clearTimeout(timeout)
+
+        if (!fpbRes.ok) {
+            return new Response(JSON.stringify({ error: `FPB returned ${fpbRes.status}` }), {
+                status: 502,
+                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+            })
+        }
 
         const text = await fpbRes.text()
 
         return new Response(text, {
-            status: fpbRes.status,
+            status: 200,
             headers: {
                 'Content-Type': 'text/html; charset=utf-8',
-                'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=60'
+                'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=60',
+                'Access-Control-Allow-Origin': '*'
             }
         })
-    } catch (err) {
-        return new Response(JSON.stringify({ error: 'Failed to fetch FPB' }), {
+    } catch (err: any) {
+        clearTimeout(timeout)
+        const message = err?.name === 'AbortError' ? 'FPB request timed out' : 'Failed to fetch FPB'
+        return new Response(JSON.stringify({ error: message }), {
             status: 502,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
         })
     }
 }
