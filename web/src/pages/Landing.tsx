@@ -320,8 +320,8 @@ function Landing() {
                             </div>
                         </div>
                         <div className="glass-card p-4 flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#CA8A04" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            <div className="w-12 h-12 rounded-xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                             </div>
                             <div>
                                 <h3 className="text-xs font-bold text-zinc-900 dark:text-white">TugaBasket</h3>
@@ -333,8 +333,8 @@ function Landing() {
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                             </div>
                             <div>
-                                <h3 className="text-xs font-bold text-zinc-900 dark:text-white">Cache próprio</h3>
-                                <p className="text-[10px] text-zinc-500">Dados rápidos mesmo offline</p>
+                                <h3 className="text-xs font-bold text-zinc-900 dark:text-white">Base de dados própria</h3>
+                                <p className="text-[10px] text-zinc-500">Dados sincronizados e sempre disponíveis</p>
                             </div>
                         </div>
                     </div>
