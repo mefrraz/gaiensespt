@@ -105,7 +105,7 @@ function Landing() {
             <div className="py-8">
                 <div className="max-w-5xl mx-auto px-4 mb-4"><div className="flex items-center justify-between"><h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-dribly-purple animate-pulse" />Jogos em Destaque</h2><div className="flex gap-1"><button onClick={() => scrollCarousel(-1)} disabled={carouselScroll === 0} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronLeft size={16} /></button><button onClick={() => scrollCarousel(1)} disabled={carouselScroll >= maxScroll} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronRight size={16} /></button></div></div></div>
                 <div className="max-w-5xl mx-auto px-4 relative">
-                    {gamesLoading ? (<div className="flex gap-3 overflow-hidden">{[1,2,3].map(i => <div key={i} className="min-w-[320px] h-48 rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse shrink-0" />)}</div>) : games.length === 0 ? (<p className="text-xs text-zinc-400 text-center py-8">Nenhum jogo em destaque de momento.</p>) : (<div className="relative"><div className="absolute left-0 top-0 bottom-2 w-20 bg-gradient-to-r from-zinc-50 dark:from-zinc-950 to-transparent pointer-events-none z-10" /><div ref={carouselRef} onScroll={() => carouselRef.current && setCarouselScroll(carouselRef.current.scrollLeft)} className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">{games.map(match => (<div key={match.slug || match.id} className="min-w-[320px] shrink-0"><GameCard match={match} mode="agenda" /></div>))}</div><div className="absolute right-0 top-0 bottom-2 w-20 bg-gradient-to-l from-zinc-50 dark:from-zinc-950 to-transparent pointer-events-none z-10" /></div>)}
+                    {gamesLoading ? (<div className="flex gap-3 overflow-hidden">{[1,2,3].map(i => <div key={i} className="min-w-[320px] h-48 rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse shrink-0" />)}</div>) : games.length === 0 ? (<p className="text-xs text-zinc-400 text-center py-8">Nenhum jogo em destaque de momento.</p>) : (<div className="relative"><div className="absolute left-0 top-0 bottom-2 w-32 bg-gradient-to-r from-zinc-50 dark:from-zinc-950 to-transparent pointer-events-none z-10" /><div ref={carouselRef} onScroll={() => carouselRef.current && setCarouselScroll(carouselRef.current.scrollLeft)} className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">{games.map(match => (<div key={match.slug || match.id} className="min-w-[320px] shrink-0"><GameCard match={match} mode="agenda" /></div>))}</div><div className="absolute right-0 top-0 bottom-2 w-32 bg-gradient-to-l from-zinc-50 dark:from-zinc-950 to-transparent pointer-events-none z-10" /></div>)}
                 </div>
             </div>
 
@@ -217,8 +217,15 @@ function Landing() {
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Site / Plataforma web</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                                 <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                            </tr>
+                            <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Open Source</td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Contas / Login</td>
@@ -298,15 +305,41 @@ function Landing() {
                     O Dribly é a única plataforma gratuita, mobile-first e com suporte offline para acompanhares todo o basquetebol português com dados sempre atualizados.
                 </p>
             </div>
-            {/* Como obtemos os dados — after comparison */}
-            <div className="bg-white dark:bg-zinc-950 border-t border-b border-zinc-100 dark:border-white/5 py-8">
-                <div className="max-w-2xl mx-auto px-4 text-center">
-                    <h2 className="text-sm font-bold text-zinc-900 dark:text-white mb-4">Dados sempre atualizados</h2>
-                    <p className="text-xs text-zinc-500 leading-relaxed max-w-lg mx-auto">
-                        O Dribly utiliza várias fontes para te oferecer a melhor experiência. Os dados de jogos e calendários vêm do site oficial da <strong className="text-zinc-700 dark:text-zinc-300">Federação Portuguesa de Basquetebol (FPB)</strong>, enquanto as classificações e competições são complementadas com informação do <strong className="text-zinc-700 dark:text-zinc-300">TugaBasket</strong> e outras fontes públicas.
-                    </p>
-                    <p className="text-xs text-zinc-500 leading-relaxed max-w-lg mx-auto mt-3">
-                        Sempre que abres a aplicação, os dados são sincronizados e guardados para acesso rápido, mesmo offline.
+            {/* Como obtemos os dados — visual improved */}
+            <div className="bg-white dark:bg-zinc-950 border-t border-b border-zinc-100 dark:border-white/5 py-10">
+                <div className="px-4">
+                    <h2 className="text-sm font-bold text-zinc-900 dark:text-white mb-6 text-center">Fontes dos dados</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto mb-6">
+                        <div className="glass-card p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            </div>
+                            <div>
+                                <h3 className="text-xs font-bold text-zinc-900 dark:text-white">FPB</h3>
+                                <p className="text-[10px] text-zinc-500">Jogos, resultados e calendários</p>
+                            </div>
+                        </div>
+                        <div className="glass-card p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#CA8A04" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            </div>
+                            <div>
+                                <h3 className="text-xs font-bold text-zinc-900 dark:text-white">TugaBasket</h3>
+                                <p className="text-[10px] text-zinc-500">Classificações e competições</p>
+                            </div>
+                        </div>
+                        <div className="glass-card p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            </div>
+                            <div>
+                                <h3 className="text-xs font-bold text-zinc-900 dark:text-white">Cache próprio</h3>
+                                <p className="text-[10px] text-zinc-500">Dados rápidos mesmo offline</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p className="text-[10px] text-zinc-400 text-center max-w-md mx-auto leading-relaxed">
+                        Os dados são sincronizados sempre que abres o Dribly e ficam disponíveis offline.
                     </p>
                 </div>
             </div>
