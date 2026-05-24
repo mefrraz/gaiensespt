@@ -75,7 +75,7 @@ function Layout() {
                         </div>
 
                         {/* CENTER: Club selector — truly centered */}
-                        <div className="flex justify-center">
+                        <div className="flex justify-center md:hidden">
                             <button onClick={() => setSearchOpen(true)}
                                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-dribly-purple/30 text-dribly-purple hover:bg-dribly-purple/5 hover:border-dribly-purple/60 active:scale-[0.97]">
                                 <Star size={14} strokeWidth={activeClub ? 2 : 1.5} className={activeClub ? 'fill-dribly-purple text-dribly-purple' : 'text-dribly-purple'} />
@@ -87,6 +87,11 @@ function Layout() {
                         <div className="flex items-center gap-1 justify-end">
                             <button onClick={() => setSearchOpen(true)} className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs font-bold transition-all text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-700 dark:hover:text-zinc-200">
                                 <Search size={14} />
+                            </button>
+                            <button onClick={() => setSearchOpen(true)}
+                                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-dribly-purple/30 text-dribly-purple hover:bg-dribly-purple/5 hover:border-dribly-purple/60 active:scale-[0.97]">
+                                <Star size={14} strokeWidth={activeClub ? 2 : 1.5} className={activeClub ? 'fill-dribly-purple text-dribly-purple' : 'text-dribly-purple'} />
+                                <span className="max-w-[80px] truncate">{activeClub ? activeClub.name : 'Clube'}</span>
                             </button>
                             <Link to="/about" className={`hidden sm:flex ${navPill} ${isActive('/about') ? navPillActive : navPillInactive}`}>
                                 <Info size={14} /> Sobre
