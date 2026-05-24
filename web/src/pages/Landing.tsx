@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Search, ChevronRight, ChevronLeft, BarChart2, TrendingUp, Trophy, ArrowRight } from 'lucide-react'
+import { Search, ChevronRight, ChevronLeft, BarChart2, TrendingUp, ArrowRight } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { GameCard } from '../components/GameCard'
 import { useClub, type Club } from '../lib/ClubContext'
@@ -104,11 +104,10 @@ function Landing() {
                     <div className="relative overflow-hidden">
                         <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white dark:from-zinc-950 to-transparent pointer-events-none z-10" />
                         <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white dark:from-zinc-950 to-transparent pointer-events-none z-10" />
-                        <div className="flex gap-4 py-2" style={{ transform: 'translateX(' + assoOffset + 'px)', transition: 'none', width: (associations.length * 2 * 200) + 'px' }}>
+                        <div className="flex gap-4 py-2" style={{ transform: 'translateX(' + assoOffset + 'px)', transition: 'none', width: (associations.length * 2 * 132) + 'px' }}>
                             {[...associations, ...associations].map((a, i) => (
-                                <Link key={a.association_id + '-' + i} to={'/standings/' + a.association_id} className="min-w-[180px] shrink-0 glass-card p-4 flex flex-col items-center justify-center text-center gap-2 hover:border-dribly-purple/30 group transition-colors">
-                                    <div className="w-10 h-10 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center"><Trophy size={18} className="text-dribly-purple" /></div>
-                                    <span className="text-xs font-bold text-zinc-900 dark:text-white line-clamp-2 leading-tight">{a.association_name}</span>
+                                <Link key={a.association_id + '-' + i} to={'/standings/' + a.association_id} className="w-[100px] h-[100px] shrink-0 rounded-2xl flex items-center justify-center overflow-hidden hover:scale-105 transition-transform duration-300 shadow-sm" style={{ backgroundColor: ["#7C3AED","#3B82F6","#059669","#DC2626","#EA580C","#CA8A04","#0891B2","#9333EA","#4F46E5","#0D9488","#DB2777"][a.association_id % 11] }}>
+                                    <span className="text-white font-black text-lg">{a.association_name.replace('AB ','').substring(0,3).toUpperCase()}</span>
                                 </Link>
                             ))}
                         </div>
@@ -117,6 +116,19 @@ function Landing() {
                 <div className="text-center mt-6">
                     <Link to="/standings" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-dribly-purple text-white text-sm font-bold hover:bg-dribly-purple-dim transition-colors shadow-sm group">Ver todas as classificações<ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" /></Link>
                 </div>
+            </div>
+
+            {/* Data info */}
+            <div className="max-w-2xl mx-auto px-4 py-8 text-center">
+                <h2 className="text-sm font-bold text-zinc-900 dark:text-white mb-4">Dados disponiveis</h2>
+                <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
+                    <span className="px-3 py-1.5 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 text-dribly-purple text-xs font-bold">79 clubes</span>
+                    <span className="px-3 py-1.5 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 text-dribly-purple text-xs font-bold">411 competicoes</span>
+                    <span className="px-3 py-1.5 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 text-dribly-purple text-xs font-bold">23 associacoes</span>
+                </div>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs mx-auto leading-relaxed">
+                    Os dados sao obtidos diretamente do site da FPB e atualizados sempre que abres o Dribly.
+                </p>
             </div>
 
             {/* Quick Links */}
