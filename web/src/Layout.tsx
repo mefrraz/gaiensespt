@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { Sun, Moon, Instagram, Github, Info, BarChart2, Search, Home, Calendar } from 'lucide-react'
+import { Sun, Moon, Instagram, Github, Info, BarChart2, Home, Calendar, Star } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
 import { SearchModal } from './components/SearchModal'
@@ -41,72 +41,61 @@ function Layout() {
         <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 transition-colors duration-300 flex flex-col font-sans">
 
             <nav className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-white/10 shadow-sm">
-                <div className="max-w-5xl mx-auto px-4 h-14 sm:h-16 flex items-center gap-2 sm:gap-3">
+                <div className="max-w-5xl mx-auto px-4 h-14 sm:h-16">
+                    <div className="grid grid-cols-3 items-center h-full">
 
-                    {/* Logo — bigger, always visible with text */}
-                    <Link to="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 mr-1">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center overflow-hidden">
-                            <img src="/logo.svg" alt="Dribly" className="w-full h-full object-contain" />
+                        {/* LEFT: Logo + desktop nav pills */}
+                        <div className="flex items-center gap-2 sm:gap-3 justify-start">
+                            <Link to="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 mr-1">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center overflow-hidden">
+                                    <img src="/logo.svg" alt="Dribly" className="w-full h-full object-contain" />
+                                </div>
+                                <span className="flex items-baseline font-bold text-sm sm:text-base text-zinc-900 dark:text-zinc-100">
+                                    Dribly<span className="text-dribly-purple">.</span>
+                                </span>
+                            </Link>
+                            <div className="hidden sm:flex items-center gap-1 ml-1">
+                                <Link to="/" className={`${navPill} ${isActive('/') ? navPillActive : navPillInactive}`}>
+                                    <Home size={14} /> Início
+                                </Link>
+                                {activeClub && (
+                                    <Link to={`/clube/${activeClub.slug}/home`} className={`${navPill} ${isActive(`/clube/${activeClub.slug}/home`) ? navPillActive : navPillInactive}`}>
+                                        <Home size={14} /> Meu Clube
+                                    </Link>
+                                )}
+                                {activeClub && (
+                                    <Link to={`/clube/${activeClub.slug}/games`} className={`${navPill} ${isActive(`/clube/${activeClub.slug}/games`) ? navPillActive : navPillInactive}`}>
+                                        <Calendar size={14} /> Jogos
+                                    </Link>
+                                )}
+                                <Link to="/standings" className={`${navPill} ${isActive('/standings') ? navPillActive : navPillInactive}`}>
+                                    <BarChart2 size={14} /> Classificações
+                                </Link>
+                            </div>
                         </div>
-                        <span className="flex items-baseline font-bold text-sm sm:text-base text-zinc-900 dark:text-zinc-100">
-                            Dribly<span className="text-dribly-purple">.</span>
-                        </span>
-                    </Link>
 
-                    {/* LEFT navigation — desktop only pills */}
-                    <div className="hidden sm:flex items-center gap-1 ml-1">
-                        <Link to="/" className={`${navPill} ${isActive('/') ? navPillActive : navPillInactive}`}>
-                            <Home size={14} />
-                            Início
-                        </Link>
-                        {activeClub && (
-                            <Link to={`/clube/${activeClub.slug}/home`} className={`${navPill} ${isActive(`/clube/${activeClub.slug}/home`) ? navPillActive : navPillInactive}`}>
-                                <Home size={14} />
-                                Meu Clube
+                        {/* CENTER: Club selector — truly centered */}
+                        <div className="flex justify-center">
+                            <button onClick={() => setSearchOpen(true)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-dribly-purple/30 text-dribly-purple hover:bg-dribly-purple/5 hover:border-dribly-purple/60 active:scale-[0.97]">
+                                <Star size={14} strokeWidth={activeClub ? 2 : 1.5} className={activeClub ? 'fill-dribly-purple text-dribly-purple' : 'text-dribly-purple'} />
+                                {activeClub ? activeClub.name : 'Escolher clube'}
+                            </button>
+                        </div>
+
+                        {/* RIGHT: About + Theme */}
+                        <div className="flex items-center gap-1 justify-end">
+                            <Link to="/about" className={`hidden sm:flex ${navPill} ${isActive('/about') ? navPillActive : navPillInactive}`}>
+                                <Info size={14} /> Sobre
                             </Link>
-                        )}
-                        {activeClub && (
-                            <Link to={`/clube/${activeClub.slug}/games`} className={`${navPill} ${isActive(`/clube/${activeClub.slug}/games`) ? navPillActive : navPillInactive}`}>
-                                <Calendar size={14} />
-                                Jogos
+                            <Link to="/about" className={`sm:hidden ${navIcon} ${isActive('/about') ? 'text-dribly-purple bg-dribly-purple/10' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5'}`} aria-label="Sobre">
+                                <Info size={18} />
                             </Link>
-                        )}
-                        <Link to="/standings" className={`${navPill} ${isActive('/standings') ? navPillActive : navPillInactive}`}>
-                            <BarChart2 size={14} />
-                            Classificações
-                        </Link>
-                    </div>
+                            <button onClick={toggleTheme} className={`${navIcon} text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5`} aria-label="Tema">
+                                {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+                            </button>
+                        </div>
 
-                    <div className="flex-1 sm:flex-initial" />
-
-                    {/* Club selector — centered, purple, prominent */}
-                    <button onClick={() => setSearchOpen(true)}
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold transition-all bg-dribly-purple text-white shadow-sm hover:bg-dribly-purple-dim hover:shadow-md active:scale-[0.97]">
-                        {activeClub ? (
-                            <>{activeClub.name}</>
-                        ) : (
-                            <><Search size={13} /> Selecionar clube</>
-                        )}
-                    </button>
-
-                    <div className="flex-1" />
-
-                    {/* RIGHT side */}
-                    <div className="flex items-center gap-1">
-
-                        {/* Sobre — pill on desktop, icon on mobile */}
-                        <Link to="/about" className={`hidden sm:flex ${navPill} ${isActive('/about') ? navPillActive : navPillInactive}`}>
-                            <Info size={14} />
-                            Sobre
-                        </Link>
-                        <Link to="/about" className={`sm:hidden ${navIcon} ${isActive('/about') ? 'text-dribly-purple bg-dribly-purple/10' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5'}`} aria-label="Sobre">
-                            <Info size={18} />
-                        </Link>
-
-                        {/* Theme toggle */}
-                        <button onClick={toggleTheme} className={`${navIcon} text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5`} aria-label="Tema">
-                            {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
-                        </button>
                     </div>
                 </div>
             </nav>
