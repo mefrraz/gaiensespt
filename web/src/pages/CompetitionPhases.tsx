@@ -1,10 +1,14 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Loader2, ArrowLeft } from 'lucide-react'
+import { Loader2, ArrowLeft, Search } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useStandings } from '../hooks/useStandings'
 import { StandingsTable } from '../components/StandingsTable'
 import { Standing } from '../components/types'
+
+function normalize(s: string): string {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+}
 
 export default function CompetitionPhases() {
     const { associationId, competitionId } = useParams<{ associationId: string; competitionId: string }>()
@@ -15,6 +19,7 @@ export default function CompetitionPhases() {
     const [compName, setCompName] = useState('')
     const [assocName, setAssocName] = useState('')
     const [showLoadingMsg, setShowLoadingMsg] = useState(false)
+    const [clubSearch, setClubSearch] = useState('')
 
     const { standings, loading, error } = useStandings(season, compId || null)
 
@@ -47,6 +52,18 @@ export default function CompetitionPhases() {
     const groups = useMemo(() => [...new Set(standings.map(s => s.grupo))].sort((a, b) => b.localeCompare(a)), [standings])
     const toggleGroup = (g: string) => setOpenGroups(p => ({ ...p, [g]: !p[g] }))
     const isOpen = (g: string) => openGroups[g] ?? false
+
+    // Club search
+    const q = normalize(clubSearch)
+    const filteredStandings = q.length > 0
+        ? standings.filter(s => normalize(s.equipa).includes(q))
+        : standings
+
+    const filteredGroups = useMemo(() => {
+        if (q.length === 0) return groups
+        const matching = new Set(filteredStandings.map(s => s.grupo))
+        return groups.filter(g => matching.has(g))
+    }, [q, groups, filteredStandings])
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-[#09090b] dark:via-zinc-950 dark:to-[#09090b]">
@@ -85,10 +102,18 @@ export default function CompetitionPhases() {
                     </div>
                 ) : (
                     <>
+                        {/* Club search */}
+                        <div className="relative mb-5">
+                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                            <input type="text" value={clubSearch} onChange={e => setClubSearch(e.target.value)}
+                                placeholder="Pesquisar clube nesta competição..."
+                                className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-xl text-xs font-medium text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple" />
+                        </div>
+
                         <div className="space-y-3 mb-10">
-                            {groups.map(g => {
-                                const t = standings.filter(s => s.grupo === g)
-                                return <StandingsTable key={g} grupo={g} teams={t} isOpen={isOpen(g)} onToggle={() => toggleGroup(g)} status={getStatus(t)} />
+                            {filteredGroups.map(g => {
+                                const t = (q.length > 0 ? filteredStandings : standings).filter(s => s.grupo === g)
+                                return <StandingsTable key={g} grupo={g} teams={t} isOpen={isOpen(g) || q.length > 0} onToggle={() => toggleGroup(g)} status={getStatus(t)} />
                             })}
                         </div>
                         <div className="text-center border-t border-zinc-200 dark:border-zinc-800 pt-6">

@@ -1,18 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { Loader2, Trophy, Users, Calendar, ArrowLeft } from 'lucide-react'
+import { Loader2, Trophy, Users, Calendar, ArrowLeft, Search } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { associationLogoUrl } from '../lib/associationLogos'
 
-const TUGABASKET_ASSETS = 'https://resultados.tugabasket.com/assets/images/logos'
-const ASSOCIATION_LOGOS: Record<number, string> = {
-    50: 'fpb.jpg', 1: 'ablisboa.jpg', 2: 'absetubal.jpg', 3: 'abaveiro.jpg',
-    4: 'abporto.jpg', 5: 'abbraga.jpg', 6: 'abmadeira.jpg', 7: 'absantarem_novo.jpg',
-    8: 'abcoimbra.jpg', 9: 'abalgarve.jpg', 10: 'abviseu.jpg', 11: 'ableiria.jpg',
-    12: 'abalentejo.jpg', 13: 'abit.jpg', 14: 'abcastelobranco.jpg', 15: 'abbraganca.jpg',
-    16: 'absaomiguel.jpg', 17: 'abviana.jpg', 18: 'abvilareal.jpg', 19: 'abifp.jpg',
-    20: 'abguarda.jpg', 22: 'absantamaria.jpg', 24: 'abacores.jpg',
+function normalize(s: string): string {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
 }
-function logoUrl(id: number) { const f = ASSOCIATION_LOGOS[id]; return f ? `${TUGABASKET_ASSETS}/${f}` : '' }
 
 function detectGender(n: string): 'M' | 'F' | 'O' {
     const u = n.toUpperCase()
@@ -38,6 +32,7 @@ export default function AssociationCompetitions() {
     const [loading, setLoading] = useState(true)
     const [totalTeams, setTotalTeams] = useState(0)
     const [activeTab, setActiveTab] = useState<'M' | 'F' | 'O'>('M')
+    const [searchQuery, setSearchQuery] = useState('')
 
     useEffect(() => {
         if (!id) return
@@ -76,6 +71,10 @@ export default function AssociationCompetitions() {
     const feminine = useMemo(() => comps.filter(c => c.gender === 'F'), [comps])
     const other = useMemo(() => comps.filter(c => c.gender === 'O'), [comps])
 
+    const activeList = activeTab === 'M' ? masculine : activeTab === 'F' ? feminine : other
+    const q = normalize(searchQuery)
+    const filtered = q ? activeList.filter(c => normalize(c.competition_name).includes(q)) : activeList
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-[#09090b] dark:via-zinc-950 dark:to-[#09090b]">
             <div className="max-w-4xl mx-auto px-3 sm:px-5 pt-6 sm:pt-8 pb-16">
@@ -93,7 +92,7 @@ export default function AssociationCompetitions() {
                     <>
                         <div className="bg-white dark:bg-zinc-900/90 rounded-3xl border border-zinc-200/60 dark:border-zinc-800/60 p-5 sm:p-6 shadow-sm mb-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
                             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-800/50 flex items-center justify-center p-3 shrink-0 border border-zinc-100 dark:border-zinc-700/50 shadow-inner">
-                                <img src={logoUrl(id)} alt={name} className="w-full h-full object-contain"
+                                <img src={associationLogoUrl(id) || ''} alt={name} className="w-full h-full object-contain"
                                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
                             </div>
                             <div className="flex-1 text-center sm:text-left min-w-0">
@@ -114,34 +113,51 @@ export default function AssociationCompetitions() {
                         </div>
 
                         {(masculine.length > 0 || feminine.length > 0 || other.length > 0) && (
-                            <div className="flex gap-1.5 mb-5 bg-white dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-1.5 w-fit shadow-sm">
-                                {[{ label: 'Masculinas', key: 'M' as const, data: masculine },
-                                  { label: 'Femininas', key: 'F' as const, data: feminine },
-                                  { label: 'Outras', key: 'O' as const, data: other }]
-                                  .filter(t => t.data.length > 0)
-                                  .map(t => (
-                                    <button key={t.key} onClick={() => setActiveTab(t.key)}
-                                        className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ${
-                                            activeTab === t.key ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-md' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                                        }`}>
-                                        {t.label}<span className="ml-1.5 opacity-50 text-[10px]">{t.data.length}</span>
-                                    </button>
-                                ))}
-                            </div>
+                            <>
+                                <div className="flex gap-1.5 mb-4 bg-white dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-1.5 shadow-sm overflow-x-auto">
+                                    {[{ label: 'Masculinas', key: 'M' as const, data: masculine },
+                                      { label: 'Femininas', key: 'F' as const, data: feminine },
+                                      { label: 'Outras', key: 'O' as const, data: other }]
+                                      .filter(t => t.data.length > 0)
+                                      .map(t => (
+                                        <button key={t.key} onClick={() => { setActiveTab(t.key); setSearchQuery('') }}
+                                            className={`shrink-0 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ${
+                                                activeTab === t.key ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-md' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                            }`}>
+                                            {t.label}<span className="ml-1.5 opacity-50 text-[10px]">{t.data.length}</span>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Search competitions */}
+                                <div className="relative mb-4">
+                                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                                    <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                                        placeholder="Pesquisar competição..."
+                                        className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-xl text-xs font-medium text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple" />
+                                </div>
+                            </>
                         )}
 
                         {(() => {
-                            const list = activeTab === 'M' ? masculine : activeTab === 'F' ? feminine : other
-                            if (!list.length) return <div className="text-center py-20 bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60"><p className="text-zinc-400 font-medium">Nenhuma competição nesta categoria.</p></div>
+                            if (!filtered.length) {
+                                return <div className="text-center py-20 bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60">
+                                    <p className="text-zinc-400 font-medium">{searchQuery ? 'Nenhuma competição encontrada.' : 'Nenhuma competição nesta categoria.'}</p>
+                                </div>
+                            }
                             return (
                                 <div className="space-y-2">
-                                    {list.map(c => (
+                                    {filtered.map(c => (
                                         <button key={c.competition_id}
                                             onClick={() => navigate(`/standings/${id}/${c.competition_id}`)}
                                             className="w-full text-left bg-white dark:bg-zinc-900/90 hover:bg-zinc-50 dark:hover:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 hover:border-dribly-purple/30 dark:hover:border-dribly-purple/30 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 group flex items-center justify-between gap-4">
-                                            <div className="min-w-0">
-                                                <h4 className="text-sm sm:text-base font-bold text-zinc-800 dark:text-zinc-200 group-hover:text-dribly-purple dark:group-hover:text-dribly-purple transition-colors leading-snug">{c.competition_name}</h4>
-                                                <p className="text-[11px] sm:text-xs text-zinc-400 mt-1">{c.club_count} equipas</p>
+                                            <div className="min-w-0 flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-800/50 flex items-center justify-center shrink-0 border border-zinc-100 dark:border-zinc-700/50 shadow-sm">
+                                                    <Trophy size={16} className="text-dribly-purple" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-sm sm:text-base font-bold text-zinc-800 dark:text-zinc-200 group-hover:text-dribly-purple dark:group-hover:text-dribly-purple transition-colors leading-snug">{c.competition_name}</h4>
+                                                </div>
                                             </div>
                                             <svg className="w-5 h-5 shrink-0 text-zinc-300 dark:text-zinc-600 group-hover:text-dribly-purple transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
                                         </button>
