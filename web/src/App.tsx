@@ -10,6 +10,7 @@ import AssociationCompetitions from './pages/AssociationCompetitions'
 import CompetitionPhases from './pages/CompetitionPhases'
 import About from './pages/About'
 import Install from './pages/Install'
+import SearchPage from './pages/SearchPage'
 import { ClubProvider } from './lib/ClubContext'
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
                         <Route path="standings" element={<Standings />} />
                         <Route path="standings/:associationId" element={<AssociationCompetitions />} />
                         <Route path="standings/:associationId/:competitionId" element={<CompetitionPhases />} />
+                        <Route path="search" element={<SearchPage />} />
                         <Route path="about" element={<About />} />
                         <Route path="install" element={<Install />} />
                     </Route>

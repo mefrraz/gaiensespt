@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Search, ChevronRight, ChevronLeft, ArrowRight } from 'lucide-react'
+import { Search, ChevronRight, ChevronLeft, ArrowRight, Trophy } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { GameCard } from '../components/GameCard'
 import { useClub, type Club } from '../lib/ClubContext'
@@ -26,6 +26,7 @@ const ASSOCIATION_LOGOS: Record<number, string> = {
 }
 function logoUrl(id: number) { const f = ASSOCIATION_LOGOS[id]; return f ? TUGABASKET_ASSETS + '/' + f : '' }
 interface Association { association_id: number; association_name: string }
+interface CompetitionResult { competition_id: number; competition_name: string; association_id: number; association_name: string }
 
 function Landing() {
     const [query, setQuery] = useState('')
@@ -37,6 +38,8 @@ function Landing() {
     const [carouselScroll, setCarouselScroll] = useState(0)
     const [associations, setAssociations] = useState<Association[]>([])
     const [assoOffset, setAssoOffset] = useState(0)
+    const [compResults, setCompResults] = useState<CompetitionResult[]>([])
+    const [allComps, setAllComps] = useState<CompetitionResult[]>([])
     const carouselRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
     const dropdownRef = useRef<HTMLDivElement>(null)
@@ -61,6 +64,9 @@ function Landing() {
         })
     }, [])
 
+        // Fetch all competitions for search
+    useEffect(() => { supabase.from('competitions').select('competition_id, competition_name, association_id, association_name').eq('season','2025/2026').then(({data}) => { if (data) { const seen: Record<number, CompetitionResult> = {}; (data as CompetitionResult[]).forEach(r => { if (!seen[r.competition_id]) seen[r.competition_id] = r }); setAllComps(Object.values(seen)) } }) }, [])
+
     // Auto-scroll associations carousel every 2s
     useEffect(() => {
         if (associations.length === 0) return
@@ -74,11 +80,12 @@ function Landing() {
         return () => clearInterval(id)
     }, [associations.length])
 
-    // Search effects
-    useEffect(() => { if (!query.trim()) { setResults([]); setShowDropdown(false); setSelectedIdx(-1); return }; const q = normalize(query); setResults(normalizedClubs.filter(c => c._n.includes(q)).slice(0, 20)); setShowDropdown(true); setSelectedIdx(-1) }, [query, normalizedClubs])
+        // Search effects (clubs + competitions, max 3 each)
+    useEffect(() => { if (!query.trim()) { setResults([]); setCompResults([]); setShowDropdown(false); setSelectedIdx(-1); return }; const q = normalize(query); setResults(normalizedClubs.filter(c => c._n.includes(q)).slice(0, 3)); if (allComps.length > 0) { const filtered = allComps.filter(r => normalize(r.competition_name).includes(q)).slice(0, 3); setCompResults(filtered) }; setShowDropdown(true); setSelectedIdx(-1) }, [query, normalizedClubs, allComps])
     useEffect(() => { const f = (e: MouseEvent) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node) && inputRef.current && !inputRef.current.contains(e.target as Node)) setShowDropdown(false) }; document.addEventListener('mousedown', f); return () => document.removeEventListener('mousedown', f) }, [])
 
-    const handleKeyDown = (e: React.KeyboardEvent) => { if (!showDropdown || results.length === 0) return; if (e.key === 'ArrowDown') { e.preventDefault(); setSelectedIdx(i => Math.min(i + 1, results.length - 1)) } else if (e.key === 'ArrowUp') { e.preventDefault(); setSelectedIdx(i => Math.max(i - 1, -1)) } else if (e.key === 'Enter' && selectedIdx >= 0) { e.preventDefault(); selectClub(results[selectedIdx]) } else if (e.key === 'Escape') { setShowDropdown(false) } }
+        const totalResults = results.length + compResults.length
+    const handleKeyDown = (e: React.KeyboardEvent) => { if (!showDropdown || totalResults === 0) return; if (e.key === 'ArrowDown') { e.preventDefault(); setSelectedIdx(i => Math.min(i + 1, totalResults - 1)) } else if (e.key === 'ArrowUp') { e.preventDefault(); setSelectedIdx(i => Math.max(i - 1, -1)) } else if (e.key === 'Enter' && selectedIdx >= 0) { e.preventDefault(); if (selectedIdx < results.length) selectClub(results[selectedIdx]); else { const comp = compResults[selectedIdx - results.length]; navigate('/standings/' + comp.association_id + '/' + comp.competition_id); setQuery(''); setShowDropdown(false) } } else if (e.key === 'Escape') { setShowDropdown(false) } }
 
     const selectClub = (club: Club) => { navigate('/clube/' + club.slug + '/home'); setQuery(''); setShowDropdown(false) }
     const scrollCarousel = (dir: number) => { if (!carouselRef.current) return; carouselRef.current.scrollBy({ left: dir * 312, behavior: 'smooth' }); setTimeout(() => carouselRef.current && setCarouselScroll(carouselRef.current.scrollLeft), 400) }
@@ -93,7 +100,7 @@ function Landing() {
                     <h1 className="text-3xl md:text-5xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight mb-2 animate-slide-up">Dribly<span className="text-dribly-purple">.</span></h1>
                     <p className="text-sm md:text-base text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto leading-relaxed mb-6 animate-slide-up">Resultados de todos os clubes de basquetebol em Portugal</p>
                     <div className="flex flex-wrap justify-center gap-2 mb-6 animate-slide-up">{FEATURED_CLUBS.map(name => { const c = clubs.find(x => name.toLowerCase().includes(x.name.toLowerCase().substring(0, 4))); if (!c) return null; return (<button key={c.slug} onClick={() => selectClub(c)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:border-dribly-purple/30 hover:text-dribly-purple hover:shadow-sm transition-all"><span className="w-5 h-5 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center text-[9px] font-bold text-dribly-purple shrink-0">{name.charAt(0).toUpperCase()}</span>{name}</button>) })}</div>
-                    <div className="max-w-lg mx-auto relative animate-slide-up" ref={dropdownRef}><div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none"><Search size={20} className="text-zinc-400" /></div><input ref={inputRef} type="text" value={query} onChange={e => { setQuery(e.target.value); setSelectedIdx(-1) }} onKeyDown={handleKeyDown} onFocus={() => query.trim() && setShowDropdown(true)} placeholder="Pesquisar clube..." className="w-full pl-12 pr-4 py-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none shadow-lg shadow-zinc-200/50 dark:shadow-black/20 transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple" />{showDropdown && results.length > 0 && (<div className="absolute top-full mt-2 left-0 right-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50 text-left overflow-y-auto">{results.map((club,i) => (<button key={club.slug} onClick={() => selectClub(club)} className={'w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ' + (selectedIdx === i ? 'bg-dribly-purple/10 dark:bg-dribly-purple/20' : 'hover:bg-zinc-50 dark:hover:bg-white/5')}><div className="w-9 h-9 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0"><span className="text-xs font-bold text-dribly-purple">{club.name.charAt(0).toUpperCase()}</span></div><span className="text-sm font-medium text-zinc-900 dark:text-white truncate">{club.name}</span></button>))}</div>)}</div>
+                    <div className="max-w-lg mx-auto relative animate-slide-up" ref={dropdownRef}><div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none"><Search size={20} className="text-zinc-400" /></div><input ref={inputRef} type="text" value={query} onChange={e => { setQuery(e.target.value); setSelectedIdx(-1) }} onKeyDown={handleKeyDown} onFocus={() => query.trim() && setShowDropdown(true)} placeholder="Pesquisar clubes e competições..." className="w-full pl-12 pr-4 py-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none shadow-lg shadow-zinc-200/50 dark:shadow-black/20 transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple" />{showDropdown && totalResults > 0 && (<div className="absolute top-full mt-2 left-0 right-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50 text-left">{results.length > 0 && (<div><div className="px-4 py-2 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Clubes</div>{results.map((club,i) => (<button key={club.slug} onClick={() => selectClub(club)} className={'w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ' + (selectedIdx === i ? 'bg-dribly-purple/10 dark:bg-dribly-purple/20' : 'hover:bg-zinc-50 dark:hover:bg-white/5')}><div className="w-9 h-9 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0"><span className="text-xs font-bold text-dribly-purple">{club.name.charAt(0).toUpperCase()}</span></div><span className="text-sm font-medium text-zinc-900 dark:text-white truncate">{club.name}</span></button>))}</div>)}{compResults.length > 0 && (<div className={results.length > 0 ? 'border-t border-zinc-100 dark:border-white/5' : ''}><div className="px-4 py-2 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Competições</div>{compResults.map((comp,i) => { const idx = results.length + i; return (<button key={'comp-'+comp.competition_id} onClick={() => { navigate('/standings/' + comp.association_id + '/' + comp.competition_id); setQuery(''); setShowDropdown(false) }} className={'w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ' + (selectedIdx === idx ? 'bg-dribly-purple/10 dark:bg-dribly-purple/20' : 'hover:bg-zinc-50 dark:hover:bg-white/5')}><div className="w-9 h-9 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0"><Trophy size={16} className="text-dribly-purple" /></div><div className="min-w-0"><span className="text-sm font-medium text-zinc-900 dark:text-white truncate block">{comp.competition_name}</span><span className="text-[10px] text-zinc-400">{comp.association_name}</span></div></button>) })}</div>)}{(results.length === 3 || compResults.length === 3) && (<Link to={'/search?q=' + encodeURIComponent(query)} onClick={() => setShowDropdown(false)} className="block w-full text-center py-3 text-xs font-bold text-dribly-purple hover:bg-dribly-purple/5 border-t border-zinc-100 dark:border-white/5 transition-colors">Ver todos os resultados</Link>)}</div>)}</div>
                     {favoriteClub && (<Link to={'/clube/' + favoriteClub.slug + '/home'} className="inline-flex items-center gap-2 mt-5 px-4 py-2 rounded-full bg-dribly-purple/5 dark:bg-dribly-purple/10 text-dribly-purple text-xs font-bold border border-dribly-purple/20 hover:bg-dribly-purple/10 dark:hover:bg-dribly-purple/20 transition-all group animate-slide-up"><HomeIcon size={14} /><span>Continuar com {favoriteClub.name}</span><ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" /></Link>)}
                 </div>
             </div>

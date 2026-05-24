@@ -119,7 +119,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         value={query}
                         onChange={e => { setQuery(e.target.value); setSelectedIndex(-1) }}
                         onKeyDown={handleKeyDown}
-                        placeholder="Pesquisar clube ou competição..."
+                            placeholder="Pesquisar clubes e competições..."
                         className="flex-1 bg-transparent text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none"
                     />
                     {query && (
