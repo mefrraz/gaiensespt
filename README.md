@@ -35,21 +35,21 @@ O Dribly resolve isto:
 
 | Funcionalidade | Dribly | FPB | Swish | TugaBasket | FPB TV |
 |---|---|---|---|---|---|
-| Mobile-first | sim | sim | sim | nao | sim |
-| PWA instalavel | sim | nao | sim | nao | nao |
-| Open Source | sim | nao | nao | nao | nao |
-| Gratuito | sim | sim | nao | sim | sim |
-| Multi-clube | sim | sim | limitado | nao | nao |
-| Multi-escalao | sim | sim | limitado | nao | nao |
-| Offline parcial | sim | nao | nao | nao | nao |
-| Mapas | sim | nao | nao | nao | nao |
-| Modo claro/escuro | sim | nao | sim | nao | nao |
+| Mobile-first | sim | sim | sim | não | sim |
+| PWA instalavel | sim | não | sim | não | não |
+| Open Source | sim | não | não | não | não |
+| Gratuito | sim | sim | não | sim | sim |
+| Multi-clube | sim | sim | limitado | não | não |
+| Multi-escalao | sim | sim | limitado | não | não |
+| Offline parcial | sim | não | não | não | não |
+| Mapas | sim | não | não | não | não |
+| Modo claro/escuro | sim | não | sim | não | não |
 
 ## Funcionalidades
 
 - **Pesquisa de clubes** — 281 clubes FPB com cores e logotipos
 - **Jogos e agenda** — proximos jogos, resultados, fichas de jogo
-- **Classificacoes** — todas as competicoes por associacao
+- **Classificações** — todas as competições por associacao
 - **Multi-clube** — segue varios clubes ao mesmo tempo
 - **PWA** — instala como app no telemovel
 - **Modo escuro** — tema claro/escuro
@@ -65,7 +65,7 @@ npm install
 npm run dev
 ```
 
-Variaveis de ambiente (ver Supabase Dashboard > Settings > API):
+Variáveis de ambiente (ver Supabase Dashboard > Settings > API):
 
 ```
 VITE_SUPABASE_URL=https://[project].supabase.co
@@ -79,30 +79,30 @@ web/
   src/
     lib/
       fpbApi.ts            parser HTML da FPB (DOMParser)
-      tugabasketApi.ts     parser TugaBasket (classificacoes)
+      TugabasketApi.ts     parser TugaBasket (classificações)
       ClubContext.tsx       estado global de clubes (React Context)
       associationLogos.ts  mapeamento logos das associacoes
       supabase.ts          cliente Supabase
     hooks/
       useGames.ts          jogos com cache 15 min + localStorage
-      useStandings.ts      classificacoes com cache
+      useStandings.ts      classificações com cache
     components/
       BottomNav.tsx        navegacao inferior mobile
-      SearchModal.tsx      pesquisa de clubes e competicoes
+      SearchModal.tsx      pesquisa de clubes e competições
       GameCard.tsx         cartao de jogo reutilizavel
     pages/
       Landing.tsx          pagina inicial com carrosseis
       SearchPage.tsx       pagina de pesquisa dedicada
       club/                paginas por clube
       Game.tsx             ficha de jogo individual
-      Standings.tsx        classificacoes por associacao
+      Standings.tsx        classificações por associacao
       AssociationCompetitions.tsx  competicao de cada associacao
       About.tsx            sobre o projeto
   api/
     fpb.ts                 Edge Function (proxy FPB)
-    tugabasket.ts          Edge Function (proxy TugaBasket)
+    Tugabasket.ts          Edge Function (proxy TugaBasket)
 scrapers/
-  discover-competitions.py scraper de competicoes (Python)
+  discover-competitions.py scraper de competições (Python)
 ```
 
 ## Fluxo de Dados (Tecnico)
@@ -119,14 +119,14 @@ Browser >> /api/fpb?page=calendario&clube=169&epoca=2025/2026
              >> upsert Supabase (cache partilhado)
 ```
 
-A FPB nao tem API publica. O Dribly faz scraping do HTML das paginas de calendario e resultados usando um parser no browser (DOMParser). A Vercel Edge Function serve de proxy para evitar CORS e adicionar cache (s-maxage=120). Os jogos sao mostrados imediatamente assim que o parser acaba, sem esperar pelo upsert no Supabase.
+A FPB não tem API publica. O Dribly faz scraping do HTML das paginas de calendario e resultados usando um parser no browser (DOMParser). A Vercel Edge Function serve de proxy para evitar CORS e adicionar cache (s-maxage=120). Os jogos sao mostrados imediatamente assim que o parser acaba, sem esperar pelo upsert no Supabase.
 
-### Classificacoes
+### Classificações
 
 ```
-Browser >> /api/tugabasket?path=getCompetitionDetails&competitionId=10906
+Browser >> /api/Tugabasket?path=getCompetitionDetails&competitionId=10906
              >> Vercel Edge Function
-             >> https://resultados.tugabasket.com/...
+             >> https://resultados.Tugabasket.com/...
              >> HTML >> parseAccordionStandings() >> Standing[]
              >> upsert Supabase (cache 15 min)
 ```
@@ -141,7 +141,7 @@ Cada clube tem uma cor primaria (primary_color) extraida dos cards oficiais da F
 |---|---|---|---|
 | Clubes | Supabase | Supabase | Supabase |
 | Jogos | FPB API + parser | Supabase | localStorage + refresh FPB |
-| Classificacoes | TugaBasket | Supabase | TugaBasket + refresh |
+| Classificações | TugaBasket | Supabase | TugaBasket + refresh |
 
 ## Deploy
 

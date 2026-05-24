@@ -2,13 +2,12 @@
 __pycache__/
 *.py[cod]
 venv/
-.env
+.env*
 .venv/
 
 # Node
 node_modules/
 dist/
-.env.local
 .cache/
 
 # Config
@@ -26,7 +25,14 @@ dist/
 Thumbs.db
 Desktop.ini
 
-# Project
-instaposts exemplo/
-web/.env
-.env
+# Project — temp/backup files, source data, scraped pages
+web_antiga/
+scripts/
+fpb_clubes*.json
+https___*.htm
+dribly_logos_finais.html
+tugabasket_api_reference.md
+fpb_api_reference.md
+dribly.svg
+*.html
+*.sql
