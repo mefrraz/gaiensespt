@@ -22,7 +22,7 @@ function BottomNav() {
             <div className="flex items-center justify-around h-16">
                 <Link
                     to="/"
-                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive('/') && !isActive(`/clube/${activeClub?.slug}`) ? 'text-dribly-purple' : 'text-zinc-400 dark:text-zinc-500'}`}
+                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive('/') ? 'text-dribly-purple' : 'text-zinc-400 dark:text-zinc-500'}`}
                 >
                     <Building2 size={18} strokeWidth={isActive('/') ? 2.5 : 2} />
                     <span className="text-[10px] font-medium">Início</span>

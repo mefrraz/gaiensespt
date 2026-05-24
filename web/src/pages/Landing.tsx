@@ -195,14 +195,14 @@ function Landing() {
                 <p className="text-xs text-zinc-500 text-center mb-8">Comparação completa com outras plataformas de basquetebol português</p>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
+                    <table className="w-full text-sm table-fixed">
                         <thead>
                             <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                                <th className="text-left py-3 pr-4 font-bold text-zinc-600 dark:text-zinc-400 w-40 md:w-52">Funcionalidade</th>
-                                <th className="text-center py-3 px-3 font-bold text-dribly-purple"><div className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-dribly-purple" />Dribly</div></th>
-                                <th className="text-center py-3 px-3 font-bold text-zinc-500 dark:text-zinc-400">FPB</th>
-                                <th className="text-center py-3 px-3 font-bold text-zinc-500 dark:text-zinc-400">Swish</th>
-                                <th className="hidden md:table-cell text-center py-3 px-3 font-bold text-zinc-500 dark:text-zinc-400">TugaBasket</th>
+                                <th className="text-left py-3 pr-4 font-bold text-zinc-600 dark:text-zinc-400 w-2/5">Funcionalidade</th>
+                                <th className="text-center py-3 px-1 sm:px-3 font-bold text-dribly-purple w-[15%]"><div className="inline-flex items-center justify-center gap-1"><span className="w-2 h-2 rounded-full bg-dribly-purple shrink-0" /><span>Dribly</span></div></th>
+                                <th className="text-center py-3 px-1 sm:px-3 font-bold text-zinc-500 dark:text-zinc-400 w-[15%]">FPB</th>
+                                <th className="text-center py-3 px-1 sm:px-3 font-bold text-zinc-500 dark:text-zinc-400 w-[15%]">Swish</th>
+                                <th className="hidden md:table-cell text-center py-3 px-1 sm:px-3 font-bold text-zinc-500 dark:text-zinc-400 w-[15%]">TugaBasket</th>
                             </tr>
                         </thead>
                         <tbody>
