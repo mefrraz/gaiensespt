@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { Sun, Moon, Instagram, Github, Info, BarChart2, Home, Calendar, Star } from 'lucide-react'
+import { Sun, Moon, Instagram, Github, Info, BarChart2, Home, Calendar, Star, Search } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
 import { SearchModal } from './components/SearchModal'
@@ -85,6 +85,9 @@ function Layout() {
 
                         {/* RIGHT: About + Theme */}
                         <div className="flex items-center gap-1 justify-end">
+                            <button onClick={() => setSearchOpen(true)} className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs font-bold transition-all text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-700 dark:hover:text-zinc-200">
+                                <Search size={14} />
+                            </button>
                             <Link to="/about" className={`hidden sm:flex ${navPill} ${isActive('/about') ? navPillActive : navPillInactive}`}>
                                 <Info size={14} /> Sobre
                             </Link>
