@@ -156,14 +156,22 @@ export function useGames(season = '2025/2026', clube = 119, clubName = '') {
       setError(null)
 
       try {
-        // Query Supabase — filter by club name if provided, otherwise get all
+        // Query Supabase for cached games
         let query = supabase.from(tableName).select('*')
         if (clubName) {
           query = query.or(
             `equipa_casa.ilike.%${clubName}%,equipa_fora.ilike.%${clubName}%`
           )
         }
-        const { data: cached } = await query.order('data', { ascending: true })
+        const supabasePromise = query.order('data', { ascending: true })
+
+        // Fetch FPB in parallel — always
+        const fpbPromise = refresh().catch(() => {})
+
+        // Wait for both
+        const [{ data: cached }] = await Promise.all([supabasePromise, fpbPromise])
+
+        if (cancelled) return
 
         if (cached && cached.length > 0) {
           const filtered = filterByClub(cached as Match[])
@@ -172,40 +180,19 @@ export function useGames(season = '2025/2026', clube = 119, clubName = '') {
           const isStale = updatedAt < staleThreshold
 
           if (!isStale && filtered.length > 0) {
-            // Fresh data - show immediately
-            if (!cancelled) {
-              setGames(filtered)
-              setLastUpdated(updatedAt)
-              setLoading(false)
-            }
-          } else if (!cancelled) {
-            // Stale data - try to refresh first, keep loading
-            try {
-              await refresh()
-            } catch {
-              // Refresh failed - show cached as fallback
-              if (filtered.length > 0) {
-                setGames(filtered)
-                setLastUpdated(updatedAt)
-              }
-            }
-            setLoading(false)
+            // Fresh cache — show it (FPB data already set via refresh)
+            setLastUpdated(updatedAt)
           }
-        } else if (!cancelled) {
-          // No cached data - fetch from API
-          try {
-            await refresh()
-          } catch {
-            setError('Não foi possível carregar os jogos.')
-          }
-          setLoading(false)
+          // If stale, FPB already refreshed via parallel call
         }
+        // If no cache, FPB already fetched via parallel call
       } catch (err) {
-        console.error('Failed to load from Supabase:', err)
+        console.error('Failed to load games:', err)
         if (!cancelled) {
           setError(err instanceof Error ? err.message : 'Erro ao carregar dados')
-          setLoading(false)
         }
+      } finally {
+        if (!cancelled) setLoading(false)
       }
     }
 
