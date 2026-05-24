@@ -105,7 +105,7 @@ function Landing() {
             <div className="py-8">
                 <div className="max-w-5xl mx-auto px-4 mb-4"><div className="flex items-center justify-between"><h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-dribly-purple animate-pulse" />Jogos em Destaque</h2><div className="flex gap-1"><button onClick={() => scrollCarousel(-1)} disabled={carouselScroll === 0} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronLeft size={16} /></button><button onClick={() => scrollCarousel(1)} disabled={carouselScroll >= maxScroll} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronRight size={16} /></button></div></div></div>
                 <div className="max-w-5xl mx-auto px-4 relative">
-                    {gamesLoading ? (<div className="flex gap-3 overflow-hidden">{[1,2,3].map(i => <div key={i} className="min-w-[320px] h-48 rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse shrink-0" />)}</div>) : games.length === 0 ? (<p className="text-xs text-zinc-400 text-center py-8">Nenhum jogo em destaque de momento.</p>) : (<div className="relative"><div className="absolute left-0 top-0 bottom-2 w-12 bg-gradient-to-r from-zinc-50 dark:from-zinc-950 to-transparent pointer-events-none z-10" /><div ref={carouselRef} onScroll={() => carouselRef.current && setCarouselScroll(carouselRef.current.scrollLeft)} className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">{games.map(match => (<div key={match.slug || match.id} className="min-w-[320px] shrink-0"><GameCard match={match} mode="agenda" /></div>))}</div><div className="absolute right-0 top-0 bottom-2 w-12 bg-gradient-to-l from-zinc-50 dark:from-zinc-950 to-transparent pointer-events-none z-10" /></div>)}
+                    {gamesLoading ? (<div className="flex gap-3 overflow-hidden">{[1,2,3].map(i => <div key={i} className="min-w-[320px] h-48 rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse shrink-0" />)}</div>) : games.length === 0 ? (<p className="text-xs text-zinc-400 text-center py-8">Nenhum jogo em destaque de momento.</p>) : (<div className="relative"><div className="absolute left-0 top-0 bottom-2 w-20 bg-gradient-to-r from-zinc-50 dark:from-zinc-950 to-transparent pointer-events-none z-10" /><div ref={carouselRef} onScroll={() => carouselRef.current && setCarouselScroll(carouselRef.current.scrollLeft)} className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">{games.map(match => (<div key={match.slug || match.id} className="min-w-[320px] shrink-0"><GameCard match={match} mode="agenda" /></div>))}</div><div className="absolute right-0 top-0 bottom-2 w-20 bg-gradient-to-l from-zinc-50 dark:from-zinc-950 to-transparent pointer-events-none z-10" /></div>)}
                 </div>
             </div>
 
@@ -180,16 +180,7 @@ function Landing() {
                 </div>
             </div>
 
-            {/* Como obtemos os dados */}
-            <div className="bg-white dark:bg-zinc-950 border-t border-b border-zinc-100 dark:border-white/5 py-8">
-                <div className="max-w-2xl mx-auto px-4 text-center">
-                    <h2 className="text-sm font-bold text-zinc-900 dark:text-white mb-4">Dados sempre atualizados</h2>
-                    <p className="text-xs text-zinc-500 leading-relaxed max-w-lg mx-auto">
-                        O Dribly liga-se diretamente ao site oficial da <strong className="text-zinc-700 dark:text-zinc-300">Federação Portuguesa de Basquetebol</strong>.
-                        Sempre que abres a aplicação, os dados são sincronizados e guardados para acesso rápido, mesmo offline.
-                    </p>
-                </div>
-            </div>
+
 
             {/* Comparison: BIG table-like comparison */}
             <div className="px-4 py-12 max-w-4xl mx-auto">
@@ -223,6 +214,20 @@ function Landing() {
                                 <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Site / Plataforma web</td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                            </tr>
+                            <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Contas / Login</td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                            </tr>
+                            <tr className="border-b border-zinc-100 dark:border-zinc-800">
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Offline</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
@@ -237,10 +242,17 @@ function Landing() {
                                 <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Fichas de jogo + Mapas</td>
+                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Fichas de jogo</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                            </tr>
+                            <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Mapas / Localização</td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                                 <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
@@ -268,7 +280,7 @@ function Landing() {
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Gratuito</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-bold text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                                 <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
@@ -285,6 +297,18 @@ function Landing() {
                 <p className="text-[10px] text-zinc-400 text-center mt-6 leading-relaxed max-w-md mx-auto">
                     O Dribly é a única plataforma gratuita, mobile-first e com suporte offline para acompanhares todo o basquetebol português com dados sempre atualizados.
                 </p>
+            </div>
+            {/* Como obtemos os dados — after comparison */}
+            <div className="bg-white dark:bg-zinc-950 border-t border-b border-zinc-100 dark:border-white/5 py-8">
+                <div className="max-w-2xl mx-auto px-4 text-center">
+                    <h2 className="text-sm font-bold text-zinc-900 dark:text-white mb-4">Dados sempre atualizados</h2>
+                    <p className="text-xs text-zinc-500 leading-relaxed max-w-lg mx-auto">
+                        O Dribly utiliza várias fontes para te oferecer a melhor experiência. Os dados de jogos e calendários vêm do site oficial da <strong className="text-zinc-700 dark:text-zinc-300">Federação Portuguesa de Basquetebol (FPB)</strong>, enquanto as classificações e competições são complementadas com informação do <strong className="text-zinc-700 dark:text-zinc-300">TugaBasket</strong> e outras fontes públicas.
+                    </p>
+                    <p className="text-xs text-zinc-500 leading-relaxed max-w-lg mx-auto mt-3">
+                        Sempre que abres a aplicação, os dados são sincronizados e guardados para acesso rápido, mesmo offline.
+                    </p>
+                </div>
             </div>
         </div>
     )
