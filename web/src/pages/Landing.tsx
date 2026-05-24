@@ -103,8 +103,8 @@ function Landing() {
 
             {/* Jogos em Destaque — gradient fades both sides, wider cards */}
             <div className="py-8">
-                <div className="max-w-2xl mx-auto px-4 mb-4"><div className="flex items-center justify-between"><h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-dribly-purple animate-pulse" />Jogos em Destaque</h2><div className="flex gap-1"><button onClick={() => scrollCarousel(-1)} disabled={carouselScroll === 0} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronLeft size={16} /></button><button onClick={() => scrollCarousel(1)} disabled={carouselScroll >= maxScroll} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronRight size={16} /></button></div></div></div>
-                <div className="max-w-2xl mx-auto px-4 relative">
+                <div className="max-w-4xl mx-auto px-4 mb-4"><div className="flex items-center justify-between"><h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-dribly-purple animate-pulse" />Jogos em Destaque</h2><div className="flex gap-1"><button onClick={() => scrollCarousel(-1)} disabled={carouselScroll === 0} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronLeft size={16} /></button><button onClick={() => scrollCarousel(1)} disabled={carouselScroll >= maxScroll} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronRight size={16} /></button></div></div></div>
+                <div className="max-w-4xl mx-auto px-4 relative">
                     {gamesLoading ? (<div className="flex gap-3 overflow-hidden">{[1,2,3].map(i => <div key={i} className="min-w-[320px] h-48 rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse shrink-0" />)}</div>) : games.length === 0 ? (<p className="text-xs text-zinc-400 text-center py-8">Nenhum jogo em destaque de momento.</p>) : (<div className="relative"><div className="absolute left-0 top-0 bottom-2 w-12 bg-gradient-to-r from-zinc-50 dark:from-zinc-950 to-transparent pointer-events-none z-10" /><div ref={carouselRef} onScroll={() => carouselRef.current && setCarouselScroll(carouselRef.current.scrollLeft)} className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">{games.map(match => (<div key={match.slug || match.id} className="min-w-[320px] shrink-0"><GameCard match={match} mode="agenda" /></div>))}</div><div className="absolute right-0 top-0 bottom-2 w-12 bg-gradient-to-l from-zinc-50 dark:from-zinc-950 to-transparent pointer-events-none z-10" /></div>)}
                 </div>
             </div>
@@ -191,54 +191,93 @@ function Landing() {
                 </div>
             </div>
 
-            {/* Comparison: Dribly vs FPB vs Swish vs TugaBasket */}
-            <div className="px-4 py-10 max-w-4xl mx-auto">
+            {/* Comparison: BIG table-like comparison */}
+            <div className="px-4 py-12 max-w-4xl mx-auto">
                 <h2 className="text-base font-bold text-zinc-900 dark:text-white mb-2 text-center">Porquê o Dribly?</h2>
-                <p className="text-xs text-zinc-500 text-center mb-6">Compara com outras plataformas de basquetebol</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="glass-card p-4 border-dribly-purple/30 bg-dribly-purple/5 dark:bg-dribly-purple/10">
-                        <h3 className="text-sm font-bold text-dribly-purple mb-2">Dribly</h3>
-                        <ul className="space-y-1.5 text-[10px] text-zinc-600 dark:text-zinc-400">
-                            <li className="flex items-center gap-1"><span className="text-dribly-purple font-bold">✓</span> Mobile-first</li>
-                            <li className="flex items-center gap-1"><span className="text-dribly-purple font-bold">✓</span> PWA instalável</li>
-                            <li className="flex items-center gap-1"><span className="text-dribly-purple font-bold">✓</span> Pesquisa rápida</li>
-                            <li className="flex items-center gap-1"><span className="text-dribly-purple font-bold">✓</span> Clubes favoritos</li>
-                            <li className="flex items-center gap-1"><span className="text-dribly-purple font-bold">✓</span> Fichas de jogo</li>
-                            <li className="flex items-center gap-1"><span className="text-dribly-purple font-bold">✓</span> Classificações</li>
-                            <li className="flex items-center gap-1"><span className="text-dribly-purple font-bold">✓</span> Offline</li>
-                        </ul>
-                    </div>
-                    <div className="glass-card p-4">
-                        <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 mb-2">FPB</h3>
-                        <ul className="space-y-1.5 text-[10px] text-zinc-400">
-                            <li className="flex items-center gap-1"><span className="text-zinc-300">✓</span> Dados oficiais</li>
-                            <li className="flex items-center gap-1"><span className="text-zinc-300">✓</span> Gestão competitiva</li>
-                            <li><span className="text-zinc-300">✗</span> Navegação complexa</li>
-                            <li><span className="text-zinc-300">✗</span> Mobile difícil</li>
-                            <li><span className="text-zinc-300">✗</span> Sem app dedicada</li>
-                        </ul>
-                    </div>
-                    <div className="glass-card p-4">
-                        <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 mb-2">Swish</h3>
-                        <ul className="space-y-1.5 text-[10px] text-zinc-400">
-                            <li className="flex items-center gap-1"><span className="text-zinc-300">✓</span> Estatísticas</li>
-                            <li className="flex items-center gap-1"><span className="text-zinc-300">✓</span> App moderna</li>
-                            <li><span className="text-zinc-300">✗</span> Depende de feeds</li>
-                            <li><span className="text-zinc-300">✗</span> Cobertura limitada</li>
-                            <li><span className="text-zinc-300">✗</span> Foco individual</li>
-                        </ul>
-                    </div>
-                    <div className="glass-card p-4">
-                        <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 mb-2">TugaBasket</h3>
-                        <ul className="space-y-1.5 text-[10px] text-zinc-400">
-                            <li className="flex items-center gap-1"><span className="text-zinc-300">✓</span> Cobertura ampla</li>
-                            <li className="flex items-center gap-1"><span className="text-zinc-300">✓</span> Histórico</li>
-                            <li><span className="text-zinc-300">✗</span> Visual antigo</li>
-                            <li><span className="text-zinc-300">✗</span> Mobile limitado</li>
-                            <li><span className="text-zinc-300">✗</span> Navegação densa</li>
-                        </ul>
-                    </div>
+                <p className="text-xs text-zinc-500 text-center mb-8">Comparação completa com outras plataformas de basquetebol português</p>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                                <th className="text-left py-3 pr-4 font-bold text-zinc-600 dark:text-zinc-400 w-40 md:w-52">Funcionalidade</th>
+                                <th className="text-center py-3 px-3 font-bold text-dribly-purple"><div className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-dribly-purple" />Dribly</div></th>
+                                <th className="text-center py-3 px-3 font-bold text-zinc-500 dark:text-zinc-400">FPB</th>
+                                <th className="text-center py-3 px-3 font-bold text-zinc-500 dark:text-zinc-400">Swish</th>
+                                <th className="text-center py-3 px-3 font-bold text-zinc-500 dark:text-zinc-400">TugaBasket</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Mobile-first</td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                            </tr>
+                            <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">PWA / App instalável</td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                            </tr>
+                            <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Offline</td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                            </tr>
+                            <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Pesquisa de clubes</td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                            </tr>
+                            <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Fichas de jogo + Mapas</td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                            </tr>
+                            <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Classificações</td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                            </tr>
+                            <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Favoritos / Seguir clubes</td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                            </tr>
+                            <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Atualização automática</td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                            </tr>
+                            <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Todos os clubes FPB</td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
+
+                <p className="text-[10px] text-zinc-400 text-center mt-6 leading-relaxed max-w-md mx-auto">
+                    O Dribly é a única plataforma gratuita e mobile-first para acompanhares todo o basquetebol português, com dados atualizados automaticamente e disponível em qualquer dispositivo.
+                </p>
             </div>
         </div>
     )
