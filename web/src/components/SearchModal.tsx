@@ -152,12 +152,11 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                                 : 'hover:bg-zinc-50 dark:hover:bg-white/5'
                                         }`}
                                     >
-                                        <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0">
+                                        <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
                                             {club.logo_url ? (
-                                                <img src={club.logo_url} alt="" className="w-5 h-5 object-contain" />
-                                            ) : (
-                                                <span className="text-xs font-bold text-zinc-500">{club.name.charAt(0)}</span>
-                                            )}
+                                                <img src={club.logo_url} alt="" className="w-5 h-5 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                                            ) : null}
+                                            <span className={club.logo_url ? 'hidden' : 'text-xs font-bold text-zinc-500'}>{club.name.charAt(0)}</span>
                                         </div>
                                         <span className="text-sm font-medium text-zinc-900 dark:text-white truncate">{club.name}</span>
                                     </button>
@@ -183,27 +182,27 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                                     : 'hover:bg-zinc-50 dark:hover:bg-white/5'
                                             }`}
                                         >
-                                        <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
-                                            {associationLogoUrl(comp.association_id) ? (
-                                                <img src={associationLogoUrl(comp.association_id)!} alt="" className="w-5 h-5 object-contain" />
-                                            ) : (
-                                                <Trophy size={14} className="text-zinc-400" />
-                                            )}
-                                        </div>
+                                            <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
+                                                {associationLogoUrl(comp.association_id) ? (
+                                                    <img src={associationLogoUrl(comp.association_id)!} alt="" className="w-5 h-5 object-contain" />
+                                                ) : (
+                                                    <Trophy size={14} className="text-zinc-400" />
+                                                )}
+                                            </div>
                                             <div className="min-w-0">
                                                 <span className="text-sm font-medium text-zinc-900 dark:text-white truncate block">{comp.competition_name}</span>
                                                 <span className="text-[10px] text-zinc-400">{comp.association_name}</span>
                                             </div>
-                                        </button>
-                                    )
-                                })}
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {query && totalResults === 0 && (
-                    <div className="px-4 py-8 text-center text-sm text-zinc-400">
+                                         </button>
+                                     )
+                                 })}
+                             </div>
+                         )}
+                     </div>
+                  )}
+ 
+                 {query && totalResults === 0 && (
+                     <div className="px-4 py-8 text-center text-sm text-zinc-400">
                         Nenhum resultado encontrado para "{query}"
                     </div>
                 )}

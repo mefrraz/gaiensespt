@@ -112,8 +112,11 @@ function SearchPage() {
                                         onClick={() => navigate('/clube/' + club.slug + '/home')}
                                         className="w-full text-left glass-card p-4 flex items-center gap-3 hover:border-dribly-purple/20 group transition-colors"
                                     >
-                                        <div className="w-10 h-10 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0">
-                                            <span className="text-sm font-bold text-dribly-purple">{club.name.charAt(0).toUpperCase()}</span>
+                                        <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
+                                            {club.logo_url ? (
+                                                <img src={club.logo_url} alt="" className="w-7 h-7 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                                            ) : null}
+                                            <span className={club.logo_url ? 'hidden' : 'text-sm font-bold text-zinc-500'}>{club.name.charAt(0).toUpperCase()}</span>
                                         </div>
                                         <span className="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-dribly-purple transition-colors truncate">{club.name}</span>
                                     </button>
