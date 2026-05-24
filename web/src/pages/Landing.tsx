@@ -11,11 +11,11 @@ import { type Match } from '../components/types'
 
 function normalize(s: string): string { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim() }
 
-const POPULAR_TEAMS = ['FC PORTO', 'SL Benfica', 'Sporting CP', 'FC GAIA', 'Ovarense', 'Belenenses', 'Academica Coimbra', 'Farense']
 const FEATURED_CLUBS = [
     { name: 'FC Porto', slug: 'fc-porto' },
     { name: 'SL Benfica', slug: 'sl-benfica' },
     { name: 'Sporting CP', slug: 'sporting-cp' },
+    { name: 'UD Oliveirense', slug: 'ud-oliveirense' },
 ]
 
 
@@ -61,7 +61,7 @@ function Landing() {
 
     useEffect(() => { loadClubs() }, [loadClubs])
 
-    useEffect(() => { supabase.from('games_2025_2026').select('*').or('equipa_casa.ilike.%PORTO%,equipa_casa.ilike.%Benfica%,equipa_casa.ilike.%Sporting%,equipa_casa.ilike.%GAIA%,equipa_casa.ilike.%Ovarense%,equipa_casa.ilike.%Belenenses%,equipa_casa.ilike.%Academica%,equipa_casa.ilike.%Farense%').neq('status','FINALIZADO').gte('data', new Date().toISOString().split('T')[0]).order('data',{ascending:true}).limit(20).then(({data})=>{if(data&&data.length>0){const d=data as Match[];setGames(d.filter(m=>POPULAR_TEAMS.some(t=>(m.equipa_casa+' '+m.equipa_fora).toUpperCase().includes(t.toUpperCase()))))}setGamesLoading(false)}) },[])
+    useEffect(() => { supabase.from('games_2025_2026').select('*').or('equipa_casa.ilike.%PORTO%,equipa_casa.ilike.%Benfica%,equipa_casa.ilike.%Sporting%,equipa_casa.ilike.%Oliveirense%').eq('status','FINALIZADO').lte('data', new Date().toISOString().split('T')[0]).order('data',{ascending:false}).limit(10).then(({data})=>{if(data&&data.length>0){setGames(data as Match[])}setGamesLoading(false)}) },[])
 
     useEffect(() => {
         supabase.from('competitions').select('association_id,association_name').eq('season','2025/2026').order('association_name').then(({data}) => {
