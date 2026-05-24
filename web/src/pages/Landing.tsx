@@ -211,8 +211,8 @@ function Landing() {
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Mobile-first</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
                                 <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
@@ -232,21 +232,21 @@ function Landing() {
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Pesquisa de clubes</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
                                 <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Fichas de jogo + Mapas</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
                                 <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Classificações</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
                                 <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
                             </tr>
@@ -254,7 +254,7 @@ function Landing() {
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Favoritos / Seguir clubes</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
                                 <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
@@ -265,7 +265,14 @@ function Landing() {
                                 <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
-                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Todos os clubes FPB</td>
+                                <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Gratuito</td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-bold text-xs">✗</span></td>
+                                <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                            </tr>
+                            <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                <td className="py.3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Todos os clubes FPB</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
@@ -276,7 +283,7 @@ function Landing() {
                 </div>
 
                 <p className="text-[10px] text-zinc-400 text-center mt-6 leading-relaxed max-w-md mx-auto">
-                    O Dribly é a única plataforma gratuita e mobile-first para acompanhares todo o basquetebol português, com dados atualizados automaticamente e disponível em qualquer dispositivo.
+                    O Dribly é a única plataforma gratuita, mobile-first e com suporte offline para acompanhares todo o basquetebol português com dados sempre atualizados.
                 </p>
             </div>
         </div>
