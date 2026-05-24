@@ -70,7 +70,7 @@ export default function CompetitionPhases() {
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-24 gap-4">
-                        <Loader2 className="animate-spin text-amber-500" size={32} />
+                        <Loader2 className="animate-spin text-dribly-purple" size={32} />
                         <span className={`text-sm text-zinc-400 font-medium transition-opacity duration-600 ${showLoadingMsg ? 'opacity-100' : 'opacity-0'}`}>
                             A atualizar classificações...
                         </span>

@@ -12,7 +12,7 @@ import { type Match } from '../components/types'
 function normalize(s: string): string { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim() }
 
 const POPULAR_TEAMS = ['FC PORTO', 'SL Benfica', 'Sporting CP', 'FC GAIA', 'Ovarense', 'Belenenses', 'Academica Coimbra', 'Farense']
-const FEATURED_CLUBS = ['FC PORTO', 'SL Benfica-B', 'Sporting CP', 'FC GAIA', 'Belenenses', 'Academica Coimbra']
+const FEATURED_CLUBS = ['FC PORTO', 'SL Benfica-B', 'Sporting CP']
 
 
 const TUGABASKET_ASSETS = 'https://resultados.tugabasket.com/assets/images/logos'
@@ -103,8 +103,8 @@ function Landing() {
 
             {/* Jogos em Destaque — gradient fades both sides, wider cards */}
             <div className="py-8">
-                <div className="max-w-4xl mx-auto px-4 mb-4"><div className="flex items-center justify-between"><h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-dribly-purple animate-pulse" />Jogos em Destaque</h2><div className="flex gap-1"><button onClick={() => scrollCarousel(-1)} disabled={carouselScroll === 0} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronLeft size={16} /></button><button onClick={() => scrollCarousel(1)} disabled={carouselScroll >= maxScroll} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronRight size={16} /></button></div></div></div>
-                <div className="max-w-4xl mx-auto px-4 relative">
+                <div className="max-w-5xl mx-auto px-4 mb-4"><div className="flex items-center justify-between"><h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-dribly-purple animate-pulse" />Jogos em Destaque</h2><div className="flex gap-1"><button onClick={() => scrollCarousel(-1)} disabled={carouselScroll === 0} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronLeft size={16} /></button><button onClick={() => scrollCarousel(1)} disabled={carouselScroll >= maxScroll} className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"><ChevronRight size={16} /></button></div></div></div>
+                <div className="max-w-5xl mx-auto px-4 relative">
                     {gamesLoading ? (<div className="flex gap-3 overflow-hidden">{[1,2,3].map(i => <div key={i} className="min-w-[320px] h-48 rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse shrink-0" />)}</div>) : games.length === 0 ? (<p className="text-xs text-zinc-400 text-center py-8">Nenhum jogo em destaque de momento.</p>) : (<div className="relative"><div className="absolute left-0 top-0 bottom-2 w-12 bg-gradient-to-r from-zinc-50 dark:from-zinc-950 to-transparent pointer-events-none z-10" /><div ref={carouselRef} onScroll={() => carouselRef.current && setCarouselScroll(carouselRef.current.scrollLeft)} className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">{games.map(match => (<div key={match.slug || match.id} className="min-w-[320px] shrink-0"><GameCard match={match} mode="agenda" /></div>))}</div><div className="absolute right-0 top-0 bottom-2 w-12 bg-gradient-to-l from-zinc-50 dark:from-zinc-950 to-transparent pointer-events-none z-10" /></div>)}
                 </div>
             </div>
@@ -204,7 +204,7 @@ function Landing() {
                                 <th className="text-center py-3 px-3 font-bold text-dribly-purple"><div className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-dribly-purple" />Dribly</div></th>
                                 <th className="text-center py-3 px-3 font-bold text-zinc-500 dark:text-zinc-400">FPB</th>
                                 <th className="text-center py-3 px-3 font-bold text-zinc-500 dark:text-zinc-400">Swish</th>
-                                <th className="text-center py-3 px-3 font-bold text-zinc-500 dark:text-zinc-400">TugaBasket</th>
+                                <th className="hidden md:table-cell text-center py-3 px-3 font-bold text-zinc-500 dark:text-zinc-400">TugaBasket</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -213,63 +213,63 @@ function Landing() {
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">PWA / App instalável</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Offline</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Pesquisa de clubes</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Fichas de jogo + Mapas</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Classificações</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Favoritos / Seguir clubes</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Atualização automática</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
+                                <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
                             </tr>
                             <tr className="border-b border-zinc-100 dark:border-zinc-800">
                                 <td className="py-3.5 pr-4 font-medium text-zinc-800 dark:text-zinc-200 text-xs">Todos os clubes FPB</td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-dribly-purple/10 text-dribly-purple font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
                                 <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">✗</span></td>
-                                <td className="text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
+                                <td className="hidden md:table-cell text-center py-3.5 px-3"><span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-xs">✓</span></td>
                             </tr>
                         </tbody>
                     </table>

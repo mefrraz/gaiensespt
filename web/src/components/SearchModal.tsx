@@ -186,8 +186,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                                     : 'hover:bg-zinc-50 dark:hover:bg-white/5'
                                             }`}
                                         >
-                                            <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
-                                                <Trophy size={14} className="text-amber-600 dark:text-amber-400" />
+                                            <div className="w-8 h-8 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0">
+                                                <Trophy size={14} className="text-dribly-purple" />
                                             </div>
                                             <div className="min-w-0">
                                                 <span className="text-sm font-medium text-zinc-900 dark:text-white truncate block">{comp.competition_name}</span>
