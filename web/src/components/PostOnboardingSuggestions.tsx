@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Star, Heart, Trophy, ArrowRight, Loader2 } from 'lucide-react'
+import { Star, Heart, Trophy, ArrowRight, Loader2, Check, X } from 'lucide-react'
 import { useClub, type Club } from '../lib/ClubContext'
 import { useFollows } from '../hooks/useFollows'
 import { supabase } from '../lib/supabase'
@@ -20,17 +20,14 @@ export function markSuggestionsDone(): void {
     localStorage.setItem(KEY, 'true')
 }
 
-// Clubs shown as favorite suggestion (first 4, user picks 1)
 const FAVORITE_SUGGESTIONS = ['fc-porto', 'sl-benfica', 'sporting-cp', 'ud-oliveirense']
 
-// Extra clubs to suggest following
 const FOLLOW_SUGGESTIONS = [
-    'fc-porto', 'sl-benfica', 'sporting-cp', 'ud-oliveirense',
     'sc-lusitania', 'vitoria-sc', 'galitos-barreiro', 'cd-povoa',
+    'sangalhos-dc', 'ovar-basquete',
 ]
 
-// Competition names to suggest following
-const COMPETITION_SUGGESTIONS = [
+const COMP_SUGGESTIONS = [
     'Liga Betclic', 'Proliga', 'Taça de Portugal',
     'Troféu António Pratas', 'Campeonato Nacional Sub-18',
 ]
@@ -44,17 +41,18 @@ export function PostOnboardingSuggestions({ onComplete }: Props) {
     const { toggleFollow, follows } = useFollows()
     const [competitions, setCompetitions] = useState<Competition[]>([])
     const [loading, setLoading] = useState(true)
+
+    // Wizard step: 0 = pick favorite, 1 = follow clubs & comps
+    const [step, setStep] = useState(0)
+    const [visible, setVisible] = useState(false)
+    const [exiting, setExiting] = useState(false)
+
     const [favoritedId, setFavoritedId] = useState<number | null>(favoriteClub?.id ?? null)
     const [followedClubIds, setFollowedClubIds] = useState<Set<number>>(new Set())
     const [followedCompIds, setFollowedCompIds] = useState<Set<number>>(new Set())
-    const [exiting, setExiting] = useState(false)
 
-    // Load clubs on mount
-    useEffect(() => {
-        loadClubs()
-    }, [])
+    useEffect(() => { loadClubs() }, [])
 
-    // Load competitions
     useEffect(() => {
         supabase
             .from('competitions')
@@ -63,7 +61,7 @@ export function PostOnboardingSuggestions({ onComplete }: Props) {
             .then(({ data }) => {
                 if (data) {
                     const seen = new Map<number, Competition>()
-                    ;(data as Competition[]).forEach((c) => {
+                    ;(data as Competition[]).forEach(c => {
                         if (!seen.has(c.competition_id)) seen.set(c.competition_id, c)
                     })
                     setCompetitions(Array.from(seen.values()))
@@ -72,36 +70,32 @@ export function PostOnboardingSuggestions({ onComplete }: Props) {
             })
     }, [])
 
-    // Sync followed IDs from useFollows
     useEffect(() => {
-        const clubSet = new Set(follows.filter(f => f.entity_type === 'club').map(f => f.entity_id))
-        const compSet = new Set(follows.filter(f => f.entity_type === 'competition').map(f => f.entity_id))
-        setFollowedClubIds(clubSet)
-        setFollowedCompIds(compSet)
+        setFollowedClubIds(new Set(follows.filter(f => f.entity_type === 'club').map(f => f.entity_id)))
+        setFollowedCompIds(new Set(follows.filter(f => f.entity_type === 'competition').map(f => f.entity_id)))
     }, [follows])
 
-    // Suggested clubs for favorite section
+    // Fade in
+    useEffect(() => {
+        const t = setTimeout(() => setVisible(true), 300)
+        return () => clearTimeout(t)
+    }, [])
+
     const favClubs = FAVORITE_SUGGESTIONS
         .map(slug => clubs.find(c => c.slug === slug))
         .filter(Boolean) as Club[]
 
-    // Suggested clubs for follow section (exclude already-favorited)
     const followClubs = FOLLOW_SUGGESTIONS
         .map(slug => clubs.find(c => c.slug === slug))
-        .filter((c): c is Club => !!c && c.id !== favoritedId)
-        .slice(0, 6)
+        .filter(Boolean) as Club[]
 
-    // Suggested competitions (filter by name match)
-    const suggestedComps = competitions.filter(c =>
-        COMPETITION_SUGGESTIONS.some(name =>
-            c.competition_name.toLowerCase().includes(name.toLowerCase())
-        )
-    ).slice(0, 5)
+    const suggestedComps = competitions
+        .filter(c => COMP_SUGGESTIONS.some(n => c.competition_name.toLowerCase().includes(n.toLowerCase())))
+        .slice(0, 5)
 
     const handleFavorite = async (club: Club) => {
         setFavoriteClub(club)
         setFavoritedId(club.id)
-        // Also auto-follow the favorited club
         if (!followedClubIds.has(club.id)) {
             await toggleFollow('club', club.id)
             setFollowedClubIds(prev => new Set(prev).add(club.id))
@@ -112,8 +106,7 @@ export function PostOnboardingSuggestions({ onComplete }: Props) {
         await toggleFollow('club', clubId)
         setFollowedClubIds(prev => {
             const next = new Set(prev)
-            if (next.has(clubId)) next.delete(clubId)
-            else next.add(clubId)
+            next.has(clubId) ? next.delete(clubId) : next.add(clubId)
             return next
         })
     }
@@ -122,10 +115,17 @@ export function PostOnboardingSuggestions({ onComplete }: Props) {
         await toggleFollow('competition', compId)
         setFollowedCompIds(prev => {
             const next = new Set(prev)
-            if (next.has(compId)) next.delete(compId)
-            else next.add(compId)
+            next.has(compId) ? next.delete(compId) : next.add(compId)
             return next
         })
+    }
+
+    const goNext = () => {
+        setVisible(false)
+        setTimeout(() => {
+            setStep(1)
+            setTimeout(() => setVisible(true), 80)
+        }, 200)
     }
 
     const finish = () => {
@@ -138,203 +138,194 @@ export function PostOnboardingSuggestions({ onComplete }: Props) {
 
     return (
         <div
-            className={`fixed inset-0 z-[199] flex flex-col bg-zinc-50 dark:bg-zinc-950 transition-all duration-400 ${
+            className={`fixed inset-0 z-[199] flex items-center justify-center p-4 transition-all duration-400 ${
                 exiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
             }`}
         >
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 pt-12 pb-4">
-                <div>
-                    <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
-                        Quase pronto!
-                    </h1>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-                        Personaliza a tua experiência
-                    </p>
-                </div>
-                <button
-                    onClick={finish}
-                    className="px-4 py-2 rounded-full bg-dribly-purple text-white text-sm font-bold hover:bg-dribly-purple/90 transition-all active:scale-[0.97] shadow-sm shadow-dribly-purple/20"
-                >
-                    Continuar
-                </button>
-            </div>
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
-            {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto px-5 pb-28 space-y-8">
+            {/* Card */}
+            <div
+                className={`relative z-10 w-full max-w-sm bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-200 dark:border-white/10 p-6 transition-all duration-300 ${
+                    visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-[0.97]'
+                }`}
+            >
                 {loading ? (
-                    <div className="flex items-center justify-center py-20">
+                    <div className="flex items-center justify-center py-12">
                         <Loader2 size={24} className="animate-spin text-dribly-purple" />
                     </div>
-                ) : (
+                ) : step === 0 ? (
+                    /* ---- Step 0: Pick favorite club ---- */
                     <>
-                        {/* Section 1: Pick a favorite club */}
-                        {favClubs.length > 0 && (
-                            <section>
-                                <div className="flex items-center gap-2 mb-3">
-                                    <div className="w-7 h-7 rounded-full bg-yellow-100 dark:bg-yellow-500/10 flex items-center justify-center">
-                                        <Star size={14} className="text-yellow-500 fill-yellow-500" />
-                                    </div>
-                                    <h2 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">
-                                        Escolhe o teu clube favorito
-                                    </h2>
-                                </div>
-                                <p className="text-[11px] text-zinc-400 mb-3">
-                                    Vai aparecer no topo da navegação para acesso rápido.
-                                </p>
-                                <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-                                    {favClubs.map(club => {
+                        <button
+                            onClick={finish}
+                            className="absolute top-4 right-4 p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
+                        >
+                            <X size={16} />
+                        </button>
+
+                        <div className="w-12 h-12 mx-auto rounded-full bg-yellow-100 dark:bg-yellow-500/10 flex items-center justify-center mb-4">
+                            <Star size={22} className="text-yellow-500 fill-yellow-500" />
+                        </div>
+                        <h3 className="text-lg font-black text-zinc-900 dark:text-white text-center mb-1">
+                            Escolhe o teu clube
+                        </h3>
+                        <p className="text-xs text-zinc-400 text-center mb-5">
+                            Vai aparecer no topo da navegação.
+                        </p>
+
+                        <div className="space-y-2 mb-5">
+                            {favClubs.map(club => {
+                                const isFav = favoritedId === club.id
+                                return (
+                                    <button
+                                        key={club.id}
+                                        onClick={() => handleFavorite(club)}
+                                        className={`w-full flex items-center gap-3 p-3 rounded-xl border text-sm font-medium transition-all active:scale-[0.98] ${
+                                            isFav
+                                                ? 'bg-yellow-50 dark:bg-yellow-500/10 border-yellow-300 dark:border-yellow-500/40 text-yellow-700 dark:text-yellow-400'
+                                                : 'bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:border-yellow-200 dark:hover:border-yellow-500/20'
+                                        }`}
+                                    >
+                                        {club.logo_url ? (
+                                            <img src={club.logo_url} alt="" className="w-8 h-8 object-contain rounded-full shrink-0" />
+                                        ) : (
+                                            <span className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center text-xs font-bold shrink-0">
+                                                {club.name.charAt(0)}
+                                            </span>
+                                        )}
+                                        <span className="flex-1 text-left">{club.name}</span>
+                                        {isFav && <Check size={16} className="text-yellow-500" />}
+                                    </button>
+                                )
+                            })}
+                        </div>
+
+                        {/* Dots */}
+                        <div className="flex items-center justify-center gap-1.5 mb-4">
+                            <div className="w-6 h-1.5 rounded-full bg-dribly-purple" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-700" />
+                        </div>
+
+                        <button
+                            onClick={goNext}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-full bg-dribly-purple text-white text-sm font-bold hover:bg-dribly-purple/90 transition-all active:scale-[0.97] shadow-sm shadow-dribly-purple/20"
+                        >
+                            Seguinte <ArrowRight size={15} />
+                        </button>
+                        <button
+                            onClick={finish}
+                            className="block mx-auto mt-3 text-[11px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                        >
+                            Saltar
+                        </button>
+                    </>
+                ) : (
+                    /* ---- Step 1: Follow clubs & competitions ---- */
+                    <>
+                        <button
+                            onClick={finish}
+                            className="absolute top-4 right-4 p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
+                        >
+                            <X size={16} />
+                        </button>
+
+                        <div className="w-12 h-12 mx-auto rounded-full bg-red-100 dark:bg-red-500/10 flex items-center justify-center mb-4">
+                            <Heart size={22} className="text-red-500 fill-red-500" />
+                        </div>
+                        <h3 className="text-lg font-black text-zinc-900 dark:text-white text-center mb-1">
+                            Segue clubes e ligas
+                        </h3>
+                        <p className="text-xs text-zinc-400 text-center mb-5">
+                            Os jogos aparecem nos Seguidos.
+                        </p>
+
+                        {/* Clubs to follow */}
+                        {followClubs.length > 0 && (
+                            <div className="mb-4">
+                                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Clubes</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {followClubs.map(club => {
                                         const isFav = favoritedId === club.id
+                                        const isF = followedClubIds.has(club.id) || isFav
                                         return (
                                             <button
                                                 key={club.id}
-                                                onClick={() => handleFavorite(club)}
-                                                className={`flex items-center gap-2 px-4 py-2.5 rounded-full border text-sm font-bold transition-all active:scale-[0.97] shrink-0 ${
-                                                    isFav
-                                                        ? 'bg-yellow-50 dark:bg-yellow-500/10 border-yellow-300 dark:border-yellow-500/40 text-yellow-600 dark:text-yellow-400 shadow-sm'
-                                                        : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-400 hover:border-yellow-300 dark:hover:border-yellow-500/30'
+                                                onClick={() => !isFav && handleFollowClub(club.id)}
+                                                disabled={isFav}
+                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-[0.97] ${
+                                                    isF
+                                                        ? 'bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400'
+                                                        : isFav
+                                                        ? 'bg-yellow-50/50 dark:bg-yellow-500/5 border border-yellow-200/50 dark:border-yellow-500/20 text-yellow-600/70'
+                                                        : 'bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-400 hover:border-red-200'
                                                 }`}
                                             >
                                                 {club.logo_url ? (
-                                                    <img src={club.logo_url} alt="" className="w-5 h-5 object-contain rounded-full" />
+                                                    <img src={club.logo_url} alt="" className="w-4 h-4 object-contain rounded-full" />
                                                 ) : (
-                                                    <span className="w-5 h-5 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center text-[9px] font-bold">
-                                                        {club.name.charAt(0)}
-                                                    </span>
+                                                    <span className="text-[9px]">{club.name.charAt(0)}</span>
                                                 )}
                                                 {club.name}
+                                                <Heart
+                                                    size={12}
+                                                    className={isF ? 'fill-red-500 text-red-500' : isFav ? 'fill-yellow-500 text-yellow-500' : 'text-zinc-300'}
+                                                />
                                             </button>
                                         )
                                     })}
                                 </div>
-                            </section>
+                            </div>
                         )}
 
-                        {/* Section 2: Follow more clubs */}
-                        {followClubs.length > 0 && (
-                            <section>
-                                <div className="flex items-center gap-2 mb-3">
-                                    <div className="w-7 h-7 rounded-full bg-red-100 dark:bg-red-500/10 flex items-center justify-center">
-                                        <Heart size={14} className="text-red-500 fill-red-500" />
-                                    </div>
-                                    <h2 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">
-                                        Segue mais clubes
-                                    </h2>
-                                </div>
-                                <p className="text-[11px] text-zinc-400 mb-3">
-                                    Os jogos destes clubes aparecem todos na página Seguidos.
-                                </p>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {followClubs.map(club => {
-                                        const isF = followedClubIds.has(club.id)
-                                        const isFav = favoritedId === club.id
-                                        return (
-                                            <button
-                                                key={club.id}
-                                                onClick={() => handleFollowClub(club.id)}
-                                                disabled={isFav}
-                                                className={`flex items-center gap-2.5 p-3 rounded-xl border text-sm font-medium transition-all active:scale-[0.97] text-left ${
-                                                    isF
-                                                        ? 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30'
-                                                        : isFav
-                                                        ? 'bg-yellow-50/50 dark:bg-yellow-500/5 border-yellow-200/50 dark:border-yellow-500/20 opacity-70'
-                                                        : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/10 hover:border-red-200 dark:hover:border-red-500/20'
-                                                }`}
-                                            >
-                                                {club.logo_url ? (
-                                                    <img src={club.logo_url} alt="" className="w-7 h-7 object-contain rounded-full shrink-0" />
-                                                ) : (
-                                                    <span className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center text-[10px] font-bold shrink-0">
-                                                        {club.name.charAt(0)}
-                                                    </span>
-                                                )}
-                                                <span className="truncate text-xs">{club.name}</span>
-                                                <div className="ml-auto shrink-0">
-                                                    {isF ? (
-                                                        <Heart size={14} className="text-red-500 fill-red-500" />
-                                                    ) : isFav ? (
-                                                        <Star size={14} className="text-yellow-500 fill-yellow-500" />
-                                                    ) : (
-                                                        <Heart size={14} className="text-zinc-300 dark:text-zinc-600" />
-                                                    )}
-                                                </div>
-                                            </button>
-                                        )
-                                    })}
-                                </div>
-                            </section>
-                        )}
-
-                        {/* Section 3: Follow competitions */}
+                        {/* Competitions to follow */}
                         {suggestedComps.length > 0 && (
-                            <section>
-                                <div className="flex items-center gap-2 mb-3">
-                                    <div className="w-7 h-7 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center">
-                                        <Trophy size={14} className="text-dribly-purple" />
-                                    </div>
-                                    <h2 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">
-                                        Segue competições
-                                    </h2>
-                                </div>
-                                <p className="text-[11px] text-zinc-400 mb-3">
-                                    Acompanha os resultados das tuas ligas favoritas.
-                                </p>
-                                <div className="space-y-2">
+                            <div className="mb-5">
+                                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Ligas</p>
+                                <div className="space-y-1.5">
                                     {suggestedComps.map(comp => {
                                         const isF = followedCompIds.has(comp.competition_id)
                                         return (
                                             <button
                                                 key={comp.competition_id}
                                                 onClick={() => handleFollowComp(comp.competition_id)}
-                                                className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all active:scale-[0.98] text-left ${
+                                                className={`w-full flex items-center gap-2.5 p-2.5 rounded-xl border text-xs font-medium transition-all active:scale-[0.98] ${
                                                     isF
-                                                        ? 'bg-dribly-purple/5 dark:bg-dribly-purple/10 border-dribly-purple/30'
-                                                        : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/10 hover:border-dribly-purple/20'
+                                                        ? 'bg-dribly-purple/5 dark:bg-dribly-purple/10 border-dribly-purple/30 text-dribly-purple'
+                                                        : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-400 hover:border-dribly-purple/20'
                                                 }`}
                                             >
-                                                <div className="w-9 h-9 rounded-lg bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center shrink-0">
-                                                    <Trophy size={16} className="text-dribly-purple" />
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200 truncate">
-                                                        {comp.competition_name}
-                                                    </p>
-                                                    <p className="text-[11px] text-zinc-400">{comp.association_name}</p>
-                                                </div>
-                                                <Heart
-                                                    size={16}
-                                                    className={`shrink-0 transition-all ${
-                                                        isF
-                                                            ? 'text-dribly-purple fill-dribly-purple'
-                                                            : 'text-zinc-300 dark:text-zinc-600'
-                                                    }`}
-                                                />
+                                                <Trophy size={14} className={isF ? 'text-dribly-purple' : 'text-zinc-300'} />
+                                                <span className="flex-1 text-left truncate">{comp.competition_name}</span>
+                                                {isF && <Check size={13} className="text-dribly-purple shrink-0" />}
                                             </button>
                                         )
                                     })}
                                 </div>
-                            </section>
+                            </div>
                         )}
+
+                        {/* Dots */}
+                        <div className="flex items-center justify-center gap-1.5 mb-4">
+                            <div className="w-1.5 h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-700" />
+                            <div className="w-6 h-1.5 rounded-full bg-dribly-purple" />
+                        </div>
+
+                        <button
+                            onClick={finish}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-full bg-green-500 text-white text-sm font-bold hover:bg-green-600 transition-all active:scale-[0.97] shadow-sm shadow-green-500/25"
+                        >
+                            Começar <Check size={16} />
+                        </button>
+                        <button
+                            onClick={finish}
+                            className="block mx-auto mt-3 text-[11px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                        >
+                            Mais tarde
+                        </button>
                     </>
                 )}
-            </div>
-
-            {/* Bottom bar */}
-            <div className="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-t border-zinc-200 dark:border-white/10 px-5 py-4">
-                <div className="flex items-center gap-3 max-w-lg mx-auto">
-                    <button
-                        onClick={finish}
-                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-full bg-dribly-purple text-white text-sm font-bold hover:bg-dribly-purple/90 transition-all active:scale-[0.97] shadow-sm shadow-dribly-purple/20"
-                    >
-                        Continuar <ArrowRight size={16} />
-                    </button>
-                </div>
-                <button
-                    onClick={finish}
-                    className="block mx-auto mt-2 text-[11px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
-                >
-                    Mais tarde
-                </button>
             </div>
         </div>
     )
