@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, User, Mail, AtSign, FileText, Check, Loader2, LogOut } from 'lucide-react'
+import { ArrowLeft, User, AtSign, FileText, Check, Loader2, LogOut } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
+import { supabase } from '../lib/supabase'
 
 export default function ProfilePage() {
     const { user, signOut } = useAuth()
@@ -34,7 +35,7 @@ export default function ProfilePage() {
     const handleSave = async () => {
         setSaving(true)
         setSaved(false)
-        const { error } = await user.update({
+        const { error } = await supabase.auth.updateUser({
             data: {
                 username: username || undefined,
                 first_name: firstName || undefined,

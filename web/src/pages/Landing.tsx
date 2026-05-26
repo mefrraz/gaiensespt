@@ -56,6 +56,7 @@ function Landing() {
     const dropdownRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate()
     const { clubs, loadClubs, favoriteClub } = useClub()
+    const { user } = useAuth()
 
     const normalizedClubs = useMemo(() => clubs.map(c => ({ ...c, _n: normalize(c.search_name || c.name) })), [clubs])
 
