@@ -70,30 +70,6 @@ function ClubHome() {
         return null
     }
 
-    const seasonRecord = useMemo(() => {
-        const finished = games.filter(g => g.status === 'FINALIZADO')
-        let wins = 0, losses = 0
-        const form: ('W' | 'L')[] = []
-        const sorted = [...finished].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
-        sorted.forEach(g => {
-            const isHome = matchName(g.equipa_casa)
-            const isAway = matchName(g.equipa_fora)
-            const clubWon = isHome
-                ? g.resultado_casa! > g.resultado_fora!
-                : isAway
-                    ? g.resultado_fora! > g.resultado_casa!
-                    : false
-            if (g.resultado_casa !== null && g.resultado_fora !== null) {
-                if (clubWon) wins++
-                else losses++
-                if (form.length < 5) form.push(clubWon ? 'W' : 'L')
-            }
-        })
-        const total = wins + losses
-        const pct = total > 0 ? Math.round(wins / total * 100) : null
-        return { wins, losses, total, pct, form }
-    }, [games, club.name])
-
     if (loading) {
         return (
             <div className="max-w-xl mx-auto space-y-5 pb-20 px-3">
@@ -255,107 +231,6 @@ function ClubHome() {
                 </div>
             )}
 
-            {/* Season Record */}
-            {seasonRecord.total > 0 && (
-                <div className="animate-slide-up">
-                    <div className="flex items-center gap-2 mb-3">
-                        <Trophy size={14} className="text-[var(--club-color)]" strokeWidth={2.5} />
-                        <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Registo da Época 2025/26</h3>
-                    </div>
-                    <div className="bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-900/80 border border-zinc-200 dark:border-white/10 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300">
-                        {/* Desktop: two-column layout, Mobile: stacked */}
-                        <div className="sm:flex sm:items-start sm:gap-6">
-                            {/* Left: W/L stats */}
-                            <div className="sm:flex-1">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-4xl font-black tabular-nums" style={{ color: 'var(--club-color)' }}>
-                                            {seasonRecord.pct}
-                                        </span>
-                                        <span className="text-lg font-bold text-zinc-400 dark:text-zinc-500">%</span>
-                                    </div>
-                                    <div className="flex items-center gap-4 text-sm">
-                                        <div className="text-center">
-                                            <span className="text-lg font-black text-emerald-600 dark:text-emerald-400 tabular-nums">{seasonRecord.wins}</span>
-                                            <p className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-wider">V</p>
-                                        </div>
-                                        <div className="text-center">
-                                            <span className="text-lg font-black text-red-500 dark:text-red-400 tabular-nums">{seasonRecord.losses}</span>
-                                            <p className="text-[10px] font-bold text-red-500/70 dark:text-red-400/70 uppercase tracking-wider">D</p>
-                                        </div>
-                                        <div className="text-center">
-                                            <span className="text-lg font-black text-zinc-500 dark:text-zinc-400 tabular-nums">{seasonRecord.total}</span>
-                                            <p className="text-[10px] font-bold text-zinc-400/70 dark:text-zinc-500/70 uppercase tracking-wider">J</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Visual win/loss bar */}
-                                <div className="relative h-2.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
-                                    <div
-                                        className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
-                                        style={{
-                                            width: `${seasonRecord.pct}%`,
-                                            background: 'linear-gradient(90deg, var(--club-color), color-mix(in srgb, var(--club-color) 70%, #22c55e))',
-                                        }}
-                                    />
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <span className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mix-blend-multiply dark:mix-blend-screen">
-                                            {seasonRecord.wins}V — {seasonRecord.losses}D
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Right: Form (desktop) */}
-                            <div className="hidden sm:block sm:w-[130px] shrink-0">
-                                <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2">Forma</p>
-                                <div className="flex gap-1.5">
-                                    {seasonRecord.form.length > 0 ? (
-                                        [...seasonRecord.form].reverse().map((r, i) => (
-                                            <div
-                                                key={i}
-                                                className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black ${
-                                                    r === 'W'
-                                                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
-                                                        : 'bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400'
-                                                }`}
-                                            >
-                                                {r}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <span className="text-[10px] text-zinc-400 py-1">—</span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Form on mobile (below bar) */}
-                        {seasonRecord.form.length > 0 && (
-                            <div className="sm:hidden mt-3 pt-3 border-t border-zinc-100 dark:border-white/5">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Forma</span>
-                                    <div className="flex gap-1">
-                                        {[...seasonRecord.form].reverse().map((r, i) => (
-                                            <div
-                                                key={i}
-                                                className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black ${
-                                                    r === 'W'
-                                                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
-                                                        : 'bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400'
-                                                }`}
-                                            >
-                                                {r}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
         </div>
     )
 }
