@@ -75,6 +75,19 @@ function ClubHome() {
         return null
     }
 
+    const isFavorited = favoriteClub?.id === club.id
+    const followed = user ? isFollowing('club', club.id) : false
+    const [followLoading, setFollowLoading] = useState(false)
+    const [needsLogin, setNeedsLogin] = useState(false)
+
+    const handleFavorite = () => setFavoriteClub(isFavorited ? null : club)
+    const handleFollow = async () => {
+        if (!user) { setNeedsLogin(true); setTimeout(() => setNeedsLogin(false), 2500); return }
+        setFollowLoading(true)
+        await toggleFollow('club', club.id)
+        setFollowLoading(false)
+    }
+
     if (loading) {
         return (
             <div className="max-w-xl mx-auto space-y-5 pb-20 px-3">
@@ -99,29 +112,14 @@ function ClubHome() {
                 <div className="glass-card p-6 text-center">
                     <AlertCircle size={32} className="mx-auto text-amber-500 mb-3" />
                     <p className="text-sm text-zinc-600 dark:text-zinc-300 mb-4">{error}</p>
-                    <button
-                        onClick={() => refresh()}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--club-color)] text-white text-sm font-bold hover:opacity-90 transition-opacity"
-                    >
+                    <button onClick={() => refresh()}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--club-color)] text-white text-sm font-bold hover:opacity-90 transition-opacity">
                         <RefreshCw size={14} />
                         Tentar novamente
                     </button>
                 </div>
             </div>
         )
-    }
-
-    const isFavorited = favoriteClub?.id === club.id
-    const followed = user ? isFollowing('club', club.id) : false
-    const [followLoading, setFollowLoading] = useState(false)
-    const [needsLogin, setNeedsLogin] = useState(false)
-
-    const handleFavorite = () => setFavoriteClub(isFavorited ? null : club)
-    const handleFollow = async () => {
-        if (!user) { setNeedsLogin(true); setTimeout(() => setNeedsLogin(false), 2500); return }
-        setFollowLoading(true)
-        await toggleFollow('club', club.id)
-        setFollowLoading(false)
     }
 
     return (

@@ -58,6 +58,9 @@ export default defineConfig({
                 ]
             },
             workbox: {
+                // Force SW to take control immediately (avoids stale bundles)
+                skipWaiting: true,
+                clientsClaim: true,
                 // Cache Supabase API responses for offline access
                 runtimeCaching: [
                     {

@@ -20,11 +20,17 @@ export function useFollows() {
             return
         }
         setLoading(true)
-        const { data } = await supabase
-            .from('user_follows')
-            .select('*')
-            .order('created_at', { ascending: false })
-        setFollows((data as Follow[]) || [])
+        try {
+            const { data, error } = await supabase
+                .from('user_follows')
+                .select('*')
+                .order('created_at', { ascending: false })
+            if (error) throw error
+            setFollows((data as Follow[]) || [])
+        } catch {
+            // Table may not exist yet — fail silently
+            setFollows([])
+        }
         setLoading(false)
     }, [user])
 
