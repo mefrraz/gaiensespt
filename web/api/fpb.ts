@@ -43,12 +43,21 @@ export default async function handler(request: Request) {
         })
     }
 
-    // Original HTML scraping mode
-    const clube = url.searchParams.get('clube') || '119'
-    const epoca = url.searchParams.get('epoca') || '2025/2026'
+    // HTML scraping mode
     const page = url.searchParams.get('page') || 'calendario'
+    const clube = url.searchParams.get('clube')
+    const competicao = url.searchParams.get('competicao')
 
-    const fpbUrl = `https://www.fpb.pt/${page}/clube_${clube}/?epoca=${epoca}&escalao=S%C3%A9nior&genero=masculino`
+    let fpbUrl: string
+
+    if (competicao) {
+        // Competition page: /calendario/10902/?competicao=10902&
+        fpbUrl = `https://www.fpb.pt/${page}/${competicao}/?competicao=${competicao}&`
+    } else {
+        const clubId = clube || '119'
+        const epoca = url.searchParams.get('epoca') || '2025/2026'
+        fpbUrl = `https://www.fpb.pt/${page}/clube_${clubId}/?epoca=${epoca}&escalao=S%C3%A9nior&genero=masculino`
+    }
 
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 8000)
