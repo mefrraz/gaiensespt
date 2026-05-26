@@ -1,13 +1,18 @@
 import { useMemo, useState, useEffect } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
-import { Calendar, Trophy, ChevronRight, Clock, MapPin, RefreshCw, AlertCircle } from 'lucide-react'
+import { Calendar, Trophy, ChevronRight, Clock, MapPin, RefreshCw, AlertCircle, Star, Heart } from 'lucide-react'
 import { useGames } from '../../hooks/useGames'
+import { useFollows } from '../../hooks/useFollows'
+import { useAuth } from '../../lib/AuthContext'
 import { SkeletonHero } from '../../components/Skeleton'
 import { Match } from '../../components/types'
-import { type Club } from '../../lib/ClubContext'
+import { useClub, type Club } from '../../lib/ClubContext'
 
 function ClubHome() {
     const { club } = useOutletContext<{ club: Club }>()
+    const { user } = useAuth()
+    const { favoriteClub, setFavoriteClub } = useClub()
+    const { isFollowing, toggleFollow } = useFollows()
     const { games: allGames, loading, error, refresh } = useGames('2025/2026', club.id, club.name)
     const [showLoadingMsg, setShowLoadingMsg] = useState(false)
     const games = allGames || []
@@ -106,8 +111,57 @@ function ClubHome() {
         )
     }
 
+    const isFavorited = favoriteClub?.id === club.id
+    const followed = user ? isFollowing('club', club.id) : false
+    const [followLoading, setFollowLoading] = useState(false)
+    const [needsLogin, setNeedsLogin] = useState(false)
+
+    const handleFavorite = () => setFavoriteClub(isFavorited ? null : club)
+    const handleFollow = async () => {
+        if (!user) { setNeedsLogin(true); setTimeout(() => setNeedsLogin(false), 2500); return }
+        setFollowLoading(true)
+        await toggleFollow('club', club.id)
+        setFollowLoading(false)
+    }
+
     return (
         <div className="max-w-xl mx-auto space-y-5 pb-20 px-3">
+            {/* Club header bar with actions */}
+            <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+                    {club.logo_url ? (
+                        <img src={club.logo_url} alt="" className="w-7 h-7 object-contain" />
+                    ) : (
+                        <span className="text-sm font-bold text-zinc-500">{club.name.charAt(0)}</span>
+                    )}
+                </div>
+                <h1 className="text-lg font-bold text-zinc-900 dark:text-white truncate flex-1">{club.name}</h1>
+                <div className="flex items-center gap-1">
+                    <button onClick={handleFavorite}
+                        className={`p-2 rounded-full transition-all active:scale-[0.9] ${
+                            isFavorited ? 'text-yellow-500 bg-yellow-50 dark:bg-yellow-500/10' : 'text-zinc-400 hover:text-yellow-500 hover:bg-zinc-100 dark:hover:bg-white/5'
+                        }`}
+                        title={isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}>
+                        <Star size={18} strokeWidth={isFavorited ? 2.5 : 2} fill={isFavorited ? 'currentColor' : 'none'} />
+                    </button>
+                    <button onClick={handleFollow}
+                        className={`p-2 rounded-full transition-all active:scale-[0.9] ${
+                            followLoading ? 'opacity-50' : ''
+                        } ${
+                            followed ? 'text-dribly-purple bg-dribly-purple/10' : 'text-zinc-400 hover:text-dribly-purple hover:bg-zinc-100 dark:hover:bg-white/5'
+                        }`}
+                        title={followed ? 'Deixar de seguir' : 'Seguir clube'}
+                        disabled={followLoading}>
+                        <Heart size={18} strokeWidth={followed ? 2.5 : 2} fill={followed ? 'currentColor' : 'none'} />
+                    </button>
+                </div>
+            </div>
+            {needsLogin && (
+                <div className="text-center text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-xl py-2 px-3 animate-fade-in">
+                    Inicia sessão para seguir clubes.
+                </div>
+            )}
+
             {games.length === 0 && !loading && !error && (
                 <div className="glass-card p-6 text-center animate-fade-in">
                     <Calendar size={32} className="mx-auto text-zinc-300 dark:text-zinc-600 mb-3" />

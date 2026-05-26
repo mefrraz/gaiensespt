@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { Sun, Moon, Instagram, Github, Info, BarChart2, Home, Star, Search, LogIn, Heart, Trophy, Calendar } from 'lucide-react'
+import { Sun, Moon, Instagram, Github, Info, BarChart2, Home, Star, Search, LogIn, Heart, Trophy } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
 import { SearchModal } from './components/SearchModal'
@@ -65,16 +65,6 @@ function Layout() {
                                 <Link to="/seguidos" className={`${navPill} ${isActive('/seguidos') ? navPillActive : navPillInactive}`}>
                                     <Heart size={14} /> Seguidos
                                 </Link>
-                                {activeClub && (
-                                    <Link to={`/clube/${activeClub.slug}/home`} className={`${navPill} ${isActive(`/clube/${activeClub.slug}/home`) ? navPillActive : navPillInactive}`}>
-                                        <Home size={14} /> Meu Clube
-                                    </Link>
-                                )}
-                                {activeClub && (
-                                    <Link to={`/clube/${activeClub.slug}/games`} className={`${navPill} ${isActive(`/clube/${activeClub.slug}/games`) ? navPillActive : navPillInactive}`}>
-                                        <Calendar size={14} /> Jogos
-                                    </Link>
-                                )}
                                 <Link to="/ligas" className={`${navPill} ${isActive('/ligas') ? navPillActive : navPillInactive}`}>
                                     <Trophy size={14} /> Ligas
                                 </Link>

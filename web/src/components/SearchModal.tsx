@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, X, Building2, Trophy } from 'lucide-react'
+import { Search, X, Building2, Trophy, Star, Heart } from 'lucide-react'
 import { useClub, type Club } from '../lib/ClubContext'
+import { useAuth } from '../lib/AuthContext'
+import { useFollows } from '../hooks/useFollows'
 import { supabase } from '../lib/supabase'
 import { associationLogoUrl } from '../lib/associationLogos'
 
@@ -28,7 +30,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     const [selectedIndex, setSelectedIndex] = useState(-1)
     const inputRef = useRef<HTMLInputElement>(null)
     const navigate = useNavigate()
-    const { clubs, loadClubs } = useClub()
+    const { user } = useAuth()
+    const { favoriteClub, setFavoriteClub, clubs, loadClubs } = useClub()
+    const { isFollowing, toggleFollow } = useFollows()
     const [allComps, setAllComps] = useState<CompetitionResult[]>([])
 
     const normalizedClubs = useMemo(() =>
@@ -142,7 +146,10 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                     <Building2 size={10} />
                                     Clubes
                                 </div>
-                                {clubResults.map((club, i) => (
+                                {clubResults.map((club, i) => {
+                                    const isFav = favoriteClub?.id === club.id
+                                    const isFol = user ? isFollowing('club', club.id) : false
+                                    return (
                                     <button
                                         key={club.slug}
                                         onClick={() => selectItem(i)}
@@ -150,17 +157,34 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                             selectedIndex === i
                                                 ? 'bg-dribly-blue/10 dark:bg-dribly-blue/20'
                                                 : 'hover:bg-zinc-50 dark:hover:bg-white/5'
-                                        }`}
-                                    >
-                                        <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
-                                            {club.logo_url ? (
-                                                <img src={club.logo_url} alt="" className="w-5 h-5 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
-                                            ) : null}
-                                            <span className={club.logo_url ? 'hidden' : 'text-xs font-bold text-zinc-500'}>{club.name.charAt(0)}</span>
+                                        }`}>
+                                        <div className="flex-1 flex items-center gap-3 min-w-0">
+                                            <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
+                                                {club.logo_url ? (
+                                                    <img src={club.logo_url} alt="" className="w-5 h-5 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                                                ) : null}
+                                                <span className={club.logo_url ? 'hidden' : 'text-xs font-bold text-zinc-500'}>{club.name.charAt(0)}</span>
+                                            </div>
+                                            <span className="text-sm font-medium text-zinc-900 dark:text-white truncate flex-1">{club.name}</span>
                                         </div>
-                                        <span className="text-sm font-medium text-zinc-900 dark:text-white truncate">{club.name}</span>
+                                        <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+                                            <button onClick={() => setFavoriteClub(isFav ? null : club)}
+                                                className={`p-1 rounded-full transition-all ${
+                                                    isFav ? 'text-yellow-500' : 'text-zinc-400 hover:text-yellow-500'
+                                                }`}
+                                                title={isFav ? 'Remover dos favoritos' : 'Favoritar'}>
+                                                <Star size={15} strokeWidth={isFav ? 2.5 : 2} fill={isFav ? 'currentColor' : 'none'} />
+                                            </button>
+                                            <button onClick={() => user && toggleFollow('club', club.id)}
+                                                className={`p-1 rounded-full transition-all ${
+                                                    isFol ? 'text-dribly-purple' : 'text-zinc-400 hover:text-dribly-purple'
+                                                }`}
+                                                title={isFol ? 'Deixar de seguir' : 'Seguir'}>
+                                                <Heart size={15} strokeWidth={isFol ? 2.5 : 2} fill={isFol ? 'currentColor' : 'none'} />
+                                            </button>
+                                        </div>
                                     </button>
-                                ))}
+                                )})}
                             </div>
                         )}
 
@@ -172,6 +196,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                 </div>
                                 {compResults.map((comp, i) => {
                                     const idx = clubResults.length + i
+                                    const isFol = user ? isFollowing('competition', comp.competition_id) : false
                                     return (
                                         <button
                                             key={comp.competition_id}
@@ -182,16 +207,27 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                                     : 'hover:bg-zinc-50 dark:hover:bg-white/5'
                                             }`}
                                         >
-                                            <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
-                                                {associationLogoUrl(comp.association_id) ? (
-                                                    <img src={associationLogoUrl(comp.association_id)!} alt="" className="w-5 h-5 object-contain" />
-                                                ) : (
-                                                    <Trophy size={14} className="text-zinc-400" />
-                                                )}
+                                            <div className="flex-1 flex items-center gap-3 min-w-0">
+                                                <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
+                                                    {associationLogoUrl(comp.association_id) ? (
+                                                        <img src={associationLogoUrl(comp.association_id)!} alt="" className="w-5 h-5 object-contain" />
+                                                    ) : (
+                                                        <Trophy size={14} className="text-zinc-400" />
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <span className="text-sm font-medium text-zinc-900 dark:text-white truncate block">{comp.competition_name}</span>
+                                                    <span className="text-[10px] text-zinc-400">{comp.association_name}</span>
+                                                </div>
                                             </div>
-                                            <div className="min-w-0">
-                                                <span className="text-sm font-medium text-zinc-900 dark:text-white truncate block">{comp.competition_name}</span>
-                                                <span className="text-[10px] text-zinc-400">{comp.association_name}</span>
+                                            <div className="shrink-0" onClick={e => e.stopPropagation()}>
+                                                <button onClick={() => user && toggleFollow('competition', comp.competition_id)}
+                                                    className={`p-1 rounded-full transition-all ${
+                                                        isFol ? 'text-dribly-purple' : 'text-zinc-400 hover:text-dribly-purple'
+                                                    }`}
+                                                    title={isFol ? 'Deixar de seguir' : 'Seguir competição'}>
+                                                    <Heart size={15} strokeWidth={isFol ? 2.5 : 2} fill={isFol ? 'currentColor' : 'none'} />
+                                                </button>
                                             </div>
                                          </button>
                                      )
