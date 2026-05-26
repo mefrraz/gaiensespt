@@ -5,7 +5,7 @@ import { useClub, type Club } from '../../lib/ClubContext'
 
 export default function ClubLayout() {
     const { slug } = useParams<{ slug: string }>()
-    const { setSelectedClub, setFavoriteClub, getClubBySlug } = useClub()
+    const { setSelectedClub, getClubBySlug } = useClub()
     const [club, setClub] = useState<Club | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -19,7 +19,6 @@ export default function ClubLayout() {
                 if (c) {
                     setClub(c)
                     setSelectedClub(c)
-                    setFavoriteClub(c)
                 } else {
                     setError('Clube não encontrado')
                 }
@@ -30,7 +29,7 @@ export default function ClubLayout() {
                 setLoading(false)
             })
         return () => { setSelectedClub(null) }
-    }, [slug, setSelectedClub, setFavoriteClub, getClubBySlug])
+    }, [slug, setSelectedClub, getClubBySlug])
 
     useEffect(() => {
         if (!club) return
