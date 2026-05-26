@@ -13,6 +13,7 @@ import Install from './pages/Install'
 import SearchPage from './pages/SearchPage'
 import Following from './pages/Following'
 import ClubsPage from './pages/ClubsPage'
+import ProfilePage from './pages/ProfilePage'
 import Leagues from './pages/Leagues'
 import CompetitionDetail from './pages/CompetitionDetail'
 import NotFound from './pages/NotFound'
@@ -38,6 +39,7 @@ function App() {
                         <Route path="standings/:associationId/:competitionId" element={<CompetitionPhases />} />
                         <Route path="search" element={<SearchPage />} />
                         <Route path="seguidos" element={<Following />} />
+                        <Route path="perfil" element={<ProfilePage />} />
                         <Route path="clubes" element={<ClubsPage />} />
                         <Route path="ligas" element={<Leagues />} />
                         <Route path="competicao/:competitionId" element={<CompetitionDetail />} />

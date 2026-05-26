@@ -105,23 +105,28 @@ function Layout() {
                                 <Star size={14} strokeWidth={activeClub ? 2 : 1.5} className={activeClub ? 'fill-dribly-purple text-dribly-purple' : 'text-dribly-purple'} />
                                 <span className="max-w-[80px] truncate">{activeClub ? activeClub.name : 'Clube'}</span>
                             </button>
-                            <Link to="/about" className={`hidden sm:flex ${navPill} ${isActive('/about') ? navPillActive : navPillInactive}`}>
-                                <Info size={14} /> Sobre
+                            <Link to="/about" className={`hidden sm:flex ${navIcon} ${isActive('/about') ? 'text-dribly-purple bg-dribly-purple/10' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5'}`} aria-label="Sobre">
+                                <Info size={17} />
                             </Link>
                             <Link to="/about" className={`sm:hidden ${navIcon} ${isActive('/about') ? 'text-dribly-purple bg-dribly-purple/10' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5'}`} aria-label="Sobre">
                                 <Info size={18} />
                             </Link>
-                            <button
-                                onClick={() => setAuthOpen(true)}
-                                className={`${navIcon} ${user ? 'text-dribly-purple bg-dribly-purple/10' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5'}`}
-                                aria-label={user ? 'Conta' : 'Iniciar sessão'}
-                            >
-                                {user ? (
-                                    <span className="text-[10px] font-bold">{user.email?.charAt(0).toUpperCase()}</span>
-                                ) : (
+                            {user ? (
+                                <Link to="/perfil"
+                                    className={`${navIcon} text-dribly-purple bg-dribly-purple/10`}
+                                    aria-label="Perfil">
+                                    <div className="w-7 h-7 rounded-full bg-dribly-purple text-white flex items-center justify-center">
+                                        <span className="text-[11px] font-bold">{user.email?.charAt(0).toUpperCase()}</span>
+                                    </div>
+                                </Link>
+                            ) : (
+                                <button
+                                    onClick={() => setAuthOpen(true)}
+                                    className={`${navIcon} text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5`}
+                                    aria-label="Iniciar sessão">
                                     <LogIn size={17} />
-                                )}
-                            </button>
+                                </button>
+                            )}
                             <button onClick={toggleTheme} className={`${navIcon} text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5`} aria-label="Tema">
                                 {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
                             </button>
