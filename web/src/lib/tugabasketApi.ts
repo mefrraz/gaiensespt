@@ -91,6 +91,10 @@ function markFinishedGroups(standings: Standing[], html: string): void {
 
     const tables = doc.querySelectorAll('table')
     for (const table of tables) {
+        // Skip tables inside accordion sections — those are standings tables we already parsed
+        // (standings tables have 6 columns too, which would confuse the detection)
+        if (table.closest('.accordion')) continue
+
         const rows = table.querySelectorAll('tbody tr')
         rows.forEach(row => {
             const cols = row.querySelectorAll('td')
@@ -105,10 +109,45 @@ function markFinishedGroups(standings: Standing[], html: string): void {
                 phaseHasPending[phaseText] = false
             }
 
-            if (!resultText.includes(':')) {
+            // A game has been played if result contains ":" (e.g. "78:65")
+            // or digits separated by "-" (e.g. "78 - 65")
+            const hasScore = resultText.includes(':') || /\d+\s*-\s*\d+/.test(resultText)
+            if (!hasScore) {
                 phaseHasPending[phaseText] = true
             }
         })
+    }
+
+    // Fallback: if no game tables found, try tables outside accordions that
+    // have more than 7 columns (typical TugaBasket game schedule format)
+    if (Object.keys(phaseHasPending).length === 0) {
+        for (const table of tables) {
+            if (table.closest('.accordion')) continue
+            const firstRow = table.querySelector('tbody tr')
+            if (!firstRow) continue
+            const cols = firstRow.querySelectorAll('td')
+            if (cols.length >= 7) {
+                const rows = table.querySelectorAll('tbody tr')
+                let hasAnyResult = false
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td')
+                    const resultText = cells[3]?.textContent?.trim() || ''
+                    const hasScore = resultText.includes(':') || /\d+\s*-\s*\d+/.test(resultText)
+                    if (hasScore) hasAnyResult = true
+                })
+                // If this is a game table but we couldn't extract phase names,
+                // check if ALL rows have results (meaning the whole section is finished)
+                if (hasAnyResult) {
+                    const allFinished = Array.from(rows).every(r => {
+                        const cells = r.querySelectorAll('td')
+                        const rt = cells[3]?.textContent?.trim() || ''
+                        return rt.includes(':') || /\d+\s*-\s*\d+/.test(rt)
+                    })
+                    // Store a generic finished marker
+                    phaseHasPending['__all_finished__'] = !allFinished
+                }
+            }
+        }
     }
 
     standings.forEach(s => {
@@ -118,8 +157,15 @@ function markFinishedGroups(standings: Standing[], html: string): void {
             return
         }
 
+        // Apply generic all-finished marker to all groups
+        if (phaseHasPending['__all_finished__'] !== undefined && !phaseHasPending['__all_finished__']) {
+            s.is_finished = true
+            return
+        }
+
         let matched = false
         for (const [gamePhase, pending] of Object.entries(phaseHasPending)) {
+            if (gamePhase === '__all_finished__') continue
             if (s.grupo.includes(gamePhase) || gamePhase.includes(s.grupo)) {
                 s.is_finished = !pending
                 matched = true
@@ -130,6 +176,7 @@ function markFinishedGroups(standings: Standing[], html: string): void {
         if (!matched && Object.keys(phaseHasPending).length > 0) {
             const normalizedGroup = s.grupo.toLowerCase().replace(/[.\s]+/g, '')
             for (const [gamePhase, pending] of Object.entries(phaseHasPending)) {
+                if (gamePhase === '__all_finished__') continue
                 const normalizedPhase = gamePhase.toLowerCase().replace(/[.\s]+/g, '')
                 if (normalizedGroup === normalizedPhase) {
                     s.is_finished = !pending

@@ -12,11 +12,15 @@ interface GameCardProps {
 function isClubWin(match: Match, clubName: string): boolean | 'draw' | null {
   if (match.resultado_casa === null || match.resultado_fora === null) return null
   if (match.resultado_casa === match.resultado_fora) return 'draw'
-  const clubUpper = clubName.toUpperCase()
-  const clubHome = match.equipa_casa.toUpperCase().includes(clubUpper)
-  return clubHome
-    ? match.resultado_casa > match.resultado_fora
-    : match.resultado_fora > match.resultado_casa
+  const upper = clubName.toUpperCase()
+  const homeUpper = match.equipa_casa.toUpperCase()
+  const awayUpper = match.equipa_fora.toUpperCase()
+  // Bidirectional matching: the club name may be a full name or abbreviation
+  const isHome = homeUpper.includes(upper) || upper.includes(homeUpper)
+  if (isHome) return match.resultado_casa > match.resultado_fora
+  const isAway = awayUpper.includes(upper) || upper.includes(awayUpper)
+  if (isAway) return match.resultado_fora > match.resultado_casa
+  return null
 }
 
 function hasHora(hora: string | null | undefined): boolean {

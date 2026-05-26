@@ -53,16 +53,28 @@ function ClubHome() {
 
     const isClubWin = (match: Match) => {
         if (match.resultado_casa === null || match.resultado_fora === null) return null
-        const clubHome = match.equipa_casa.toUpperCase().includes(clubNameUpper)
-        return clubHome ? match.resultado_casa > match.resultado_fora : match.resultado_fora > match.resultado_casa
+        const homeUpper = match.equipa_casa.toUpperCase()
+        const awayUpper = match.equipa_fora.toUpperCase()
+        const isHome = homeUpper.includes(clubNameUpper) || clubNameUpper.includes(homeUpper)
+        if (isHome) return match.resultado_casa > match.resultado_fora
+        const isAway = awayUpper.includes(clubNameUpper) || clubNameUpper.includes(awayUpper)
+        if (isAway) return match.resultado_fora > match.resultado_casa
+        return null
     }
 
     const seasonRecord = useMemo(() => {
         const finished = games.filter(g => g.status === 'FINALIZADO')
         let wins = 0, losses = 0
         finished.forEach(g => {
-            const clubHome = g.equipa_casa.toUpperCase().includes(clubNameUpper)
-            const clubWon = clubHome ? g.resultado_casa! > g.resultado_fora! : g.resultado_fora! > g.resultado_casa!
+            const homeUpper = g.equipa_casa.toUpperCase()
+            const awayUpper = g.equipa_fora.toUpperCase()
+            const isHome = homeUpper.includes(clubNameUpper) || clubNameUpper.includes(homeUpper)
+            const isAway = awayUpper.includes(clubNameUpper) || clubNameUpper.includes(awayUpper)
+            const clubWon = isHome
+                ? g.resultado_casa! > g.resultado_fora!
+                : isAway
+                    ? g.resultado_fora! > g.resultado_casa!
+                    : false
             if (g.resultado_casa !== null && g.resultado_fora !== null) {
                 if (clubWon) wins++
                 else losses++
@@ -236,25 +248,49 @@ function ClubHome() {
 
             {/* Season Record */}
             {seasonRecord.total > 0 && (
-                <div className="glass-card p-5 animate-slide-up">
-                    <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3">Registo da Época</h3>
-                    <div className="flex items-center gap-6">
-                        <div className="text-center">
-                            <span className="text-3xl font-bold text-zinc-900 dark:text-white">{seasonRecord.pct}%</span>
-                            <p className="text-[10px] text-zinc-500 uppercase tracking-wide mt-1">Vitórias</p>
+                <div className="animate-slide-up">
+                    <div className="flex items-center gap-2 mb-3">
+                        <Trophy size={14} className="text-[var(--club-color)]" strokeWidth={2.5} />
+                        <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Registo da Época 2025/26</h3>
+                    </div>
+                    <div className="bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-900/80 border border-zinc-200 dark:border-white/10 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300">
+                        {/* Win % big number */}
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-4xl font-black tabular-nums" style={{ color: 'var(--club-color)' }}>
+                                    {seasonRecord.pct}
+                                </span>
+                                <span className="text-lg font-bold text-zinc-400 dark:text-zinc-500">%</span>
+                            </div>
+                            <div className="flex items-center gap-4 text-sm">
+                                <div className="text-center">
+                                    <span className="text-lg font-black text-emerald-600 dark:text-emerald-400 tabular-nums">{seasonRecord.wins}</span>
+                                    <p className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-wider">V</p>
+                                </div>
+                                <div className="text-center">
+                                    <span className="text-lg font-black text-red-500 dark:text-red-400 tabular-nums">{seasonRecord.losses}</span>
+                                    <p className="text-[10px] font-bold text-red-500/70 dark:text-red-400/70 uppercase tracking-wider">D</p>
+                                </div>
+                                <div className="text-center">
+                                    <span className="text-lg font-black text-zinc-500 dark:text-zinc-400 tabular-nums">{seasonRecord.total}</span>
+                                    <p className="text-[10px] font-bold text-zinc-400/70 dark:text-zinc-500/70 uppercase tracking-wider">J</p>
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex gap-4 text-sm">
-                            <div>
-                                <span className="font-bold text-green-600 dark:text-green-400">{seasonRecord.wins}</span>
-                                <span className="text-zinc-400 ml-1">V</span>
-                            </div>
-                            <div>
-                                <span className="font-bold text-red-600 dark:text-red-400">{seasonRecord.losses}</span>
-                                <span className="text-zinc-400 ml-1">D</span>
-                            </div>
-                            <div>
-                                <span className="font-bold text-zinc-700 dark:text-zinc-300">{seasonRecord.total}</span>
-                                <span className="text-zinc-400 ml-1">J</span>
+
+                        {/* Visual win/loss bar */}
+                        <div className="relative h-2.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                            <div
+                                className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
+                                style={{
+                                    width: `${seasonRecord.pct}%`,
+                                    background: 'linear-gradient(90deg, var(--club-color), color-mix(in srgb, var(--club-color) 70%, #22c55e))',
+                                }}
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mix-blend-multiply dark:mix-blend-screen">
+                                    {seasonRecord.wins}V — {seasonRecord.losses}D
+                                </span>
                             </div>
                         </div>
                     </div>

@@ -45,7 +45,17 @@ export default function CompetitionPhases() {
 
     const getStatus = (teams: Standing[]): 'active' | 'finished' => {
         if (!teams.length) return 'finished'
-        return teams.every(t => t.is_finished === true) ? 'finished' : 'active'
+        const hasFinishedData = teams.some(t => t.is_finished !== undefined)
+        if (hasFinishedData) {
+            return teams.every(t => t.is_finished === true) ? 'finished' : 'active'
+        }
+        if (teams.length >= 2 && teams.every(t => t.jogos > 0)) {
+            const maxGames = Math.max(...teams.map(t => t.jogos))
+            const minGames = Math.min(...teams.map(t => t.jogos))
+            const expected = (teams.length - 1) * 2
+            if (minGames >= expected * 0.9 && maxGames - minGames <= 2) return 'finished'
+        }
+        return 'active'
     }
 
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})

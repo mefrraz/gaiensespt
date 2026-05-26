@@ -43,7 +43,7 @@ function Layout() {
             <nav className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-white/10 shadow-sm">
                 <div className="max-w-5xl mx-auto px-4 h-14 sm:h-16">
                     <div className="flex items-center h-full gap-2 sm:gap-3">
-
+                        <div className="relative flex items-center h-full w-full">
                         {/* LEFT: Logo + desktop nav pills */}
                         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                             <Link to="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 mr-1">
@@ -74,11 +74,8 @@ function Layout() {
                             </div>
                         </div>
 
-                        {/* Spacer */}
-                        <div className="flex-1" />
-
-                        {/* Club selector — mobile centered, desktop on right */}
-                        <div className="sm:hidden">
+                        {/* Club selector — absolutely centered on mobile */}
+                        <div className="absolute left-1/2 -translate-x-1/2 sm:hidden z-10">
                             <button onClick={() => setSearchOpen(true)}
                                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-dribly-purple/30 text-dribly-purple hover:bg-dribly-purple/5 hover:border-dribly-purple/60 active:scale-[0.97]">
                                 <Star size={14} strokeWidth={activeClub ? 2 : 1.5} className={activeClub ? 'fill-dribly-purple text-dribly-purple' : 'text-dribly-purple'} />
@@ -86,10 +83,8 @@ function Layout() {
                             </button>
                         </div>
 
-                        <div className="flex-1 sm:flex-initial" />
-
                         {/* RIGHT: Search + Club selector (desktop) + About + Theme */}
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 ml-auto">
                             <button onClick={() => setSearchOpen(true)} className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs font-bold transition-all text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-700 dark:hover:text-zinc-200">
                                 <Search size={14} />
                             </button>
@@ -109,6 +104,7 @@ function Layout() {
                             </button>
                         </div>
 
+                    </div>
                     </div>
                 </div>
             </nav>

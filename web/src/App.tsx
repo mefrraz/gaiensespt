@@ -11,6 +11,7 @@ import CompetitionPhases from './pages/CompetitionPhases'
 import About from './pages/About'
 import Install from './pages/Install'
 import SearchPage from './pages/SearchPage'
+import NotFound from './pages/NotFound'
 import { ClubProvider } from './lib/ClubContext'
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
                         <Route path="search" element={<SearchPage />} />
                         <Route path="about" element={<About />} />
                         <Route path="install" element={<Install />} />
+                        <Route path="*" element={<NotFound />} />
                     </Route>
                 </Routes>
             </ClubProvider>
