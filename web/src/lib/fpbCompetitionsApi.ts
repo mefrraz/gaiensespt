@@ -55,10 +55,7 @@ export interface FPBPlayerStat {
 
 async function fetchFromProxy(path: string): Promise<any> {
     const res = await fetch(`${FPB_PROXY}?endpoint=${encodeURIComponent(path)}`)
-    if (!res.ok) {
-        if (res.status === 404) return null
-        throw new Error(`FPB API error: ${res.status}`)
-    }
+    if (!res.ok) throw new Error(`FPB API error: ${res.status}`)
     return res.json()
 }
 

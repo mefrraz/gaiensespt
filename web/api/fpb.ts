@@ -16,6 +16,20 @@ export default async function handler(request: Request) {
         })
 
         const text = await fpbRes.text()
+
+        // If upstream returns 404, return empty array with 200 to avoid console noise
+        if (fpbRes.status === 404) {
+            return new Response('[]', {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                    'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30',
+                },
+            })
+        }
+
         const contentType = fpbRes.headers.get('content-type') || 'application/json'
 
         return new Response(text, {
