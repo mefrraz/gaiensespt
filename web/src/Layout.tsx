@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { Sun, Moon, Instagram, Github, Info, BarChart2, Home, Star, Search, LogIn, Heart, Trophy } from 'lucide-react'
+import { Sun, Moon, Instagram, Github, Info, BarChart2, Home, Star, Search, LogIn, Heart, Trophy, Building2 } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
 import { SearchModal } from './components/SearchModal'
@@ -62,8 +62,18 @@ function Layout() {
                                 <Link to="/" className={`${navPill} ${isActive('/') ? navPillActive : navPillInactive}`}>
                                     <Home size={14} /> Início
                                 </Link>
-                                <Link to="/seguidos" className={`${navPill} ${isActive('/seguidos') ? navPillActive : navPillInactive}`}>
-                                    <Heart size={14} /> Seguidos
+                                {user && activeClub && (
+                                    <Link to={`/clube/${activeClub.slug}/home`} className={`${navPill} ${isActive(`/clube/${activeClub.slug}/home`) ? navPillActive : navPillInactive}`}>
+                                        <Star size={14} /> Meu Clube
+                                    </Link>
+                                )}
+                                {user && (
+                                    <Link to="/seguidos" className={`${navPill} ${isActive('/seguidos') ? navPillActive : navPillInactive}`}>
+                                        <Heart size={14} /> Seguidos
+                                    </Link>
+                                )}
+                                <Link to="/clubes" className={`${navPill} ${isActive('/clubes') ? navPillActive : navPillInactive}`}>
+                                    <Building2 size={14} /> Clubes
                                 </Link>
                                 <Link to="/ligas" className={`${navPill} ${isActive('/ligas') ? navPillActive : navPillInactive}`}>
                                     <Trophy size={14} /> Ligas
