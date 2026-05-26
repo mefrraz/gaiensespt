@@ -84,14 +84,16 @@ function Layout() {
                             </div>
                         </div>
 
-                        {/* Club selector — absolutely centered on mobile */}
-                        <div className="absolute left-1/2 -translate-x-1/2 sm:hidden z-10">
-                            <button onClick={() => setSearchOpen(true)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-dribly-purple/30 text-dribly-purple hover:bg-dribly-purple/5 hover:border-dribly-purple/60 active:scale-[0.97]">
-                                <Star size={14} strokeWidth={activeClub ? 2 : 1.5} className={activeClub ? 'fill-dribly-purple text-dribly-purple' : 'text-dribly-purple'} />
-                                {activeClub ? activeClub.name : 'Escolher clube'}
-                            </button>
-                        </div>
+                        {/* Club selector — absolutely centered on mobile, only when logged in */}
+                        {user && (
+                            <div className="absolute left-1/2 -translate-x-1/2 sm:hidden z-10">
+                                <button onClick={() => setSearchOpen(true)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-dribly-purple/30 text-dribly-purple hover:bg-dribly-purple/5 hover:border-dribly-purple/60 active:scale-[0.97]">
+                                    <Star size={14} strokeWidth={activeClub ? 2 : 1.5} className={activeClub ? 'fill-dribly-purple text-dribly-purple' : 'text-dribly-purple'} />
+                                    {activeClub ? activeClub.name : 'Escolher clube'}
+                                </button>
+                            </div>
+                        )}
 
                         {/* RIGHT: Search + Club selector (desktop) + About + Theme */}
                         <div className="flex items-center gap-1 ml-auto">

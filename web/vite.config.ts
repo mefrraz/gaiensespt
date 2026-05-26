@@ -76,23 +76,6 @@ export default defineConfig({
                         }
                     },
                     {
-                        // Cache FPB logos and static assets only (NOT API calls to sav2.fpb.pt)
-                        urlPattern: ({ url }: { url: URL }) =>
-                            url.hostname.includes('fpb.pt') &&
-                            (url.pathname.includes('/uploads/') || url.pathname.includes('/old_uploads/')),
-                        handler: 'CacheFirst',
-                        options: {
-                            cacheName: 'fpb-images-cache',
-                            expiration: {
-                                maxEntries: 100,
-                                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
-                            },
-                            cacheableResponse: {
-                                statuses: [0, 200]
-                            }
-                        }
-                    },
-                    {
                         // Cache Google Fonts
                         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
                         handler: 'CacheFirst',
