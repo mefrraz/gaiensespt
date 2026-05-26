@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { Sun, Moon, Instagram, Github, Info, BarChart2, Home, Star, Search, LogIn, Heart, Trophy, Building2 } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
 import { SearchModal } from './components/SearchModal'
 import { AuthModal } from './components/AuthModal'
+import { OnboardingTour, type TourTrigger } from './components/OnboardingTour'
 import { useClub } from './lib/ClubContext'
 import { useAuth } from './lib/AuthContext'
 
@@ -12,9 +13,18 @@ function Layout() {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
     const [searchOpen, setSearchOpen] = useState(false)
     const [authOpen, setAuthOpen] = useState(false)
+    const [onboardingTrigger, setOnboardingTrigger] = useState<TourTrigger | null>(null)
     const location = useLocation()
     const { favoriteClub, selectedClub } = useClub()
     const { user } = useAuth()
+
+    const handleAuthSuccess = useCallback((method: 'signin' | 'signup') => {
+        // Close auth modal, then show onboarding after a brief delay
+        // so the auth modal closing animation plays first
+        setTimeout(() => {
+            setOnboardingTrigger(method as TourTrigger)
+        }, 500)
+    }, [])
 
     const activeClub = selectedClub || favoriteClub
 
@@ -63,12 +73,12 @@ function Layout() {
                                     <Home size={14} /> Início
                                 </Link>
                                 {user && activeClub && (
-                                    <Link to={`/clube/${activeClub.slug}/home`} className={`${navPill} ${isActive(`/clube/${activeClub.slug}/home`) ? navPillActive : navPillInactive}`}>
+                                    <Link to={`/clube/${activeClub.slug}/home`} data-tour="my-club" className={`${navPill} ${isActive(`/clube/${activeClub.slug}/home`) ? navPillActive : navPillInactive}`}>
                                         <Star size={14} /> Meu Clube
                                     </Link>
                                 )}
                                 {user && (
-                                    <Link to="/seguidos" className={`${navPill} ${isActive('/seguidos') ? navPillActive : navPillInactive}`}>
+                                    <Link to="/seguidos" data-tour="seguidos-nav" className={`${navPill} ${isActive('/seguidos') ? navPillActive : navPillInactive}`}>
                                         <Heart size={14} /> Seguidos
                                     </Link>
                                 )}
@@ -164,7 +174,14 @@ function Layout() {
             <BottomNav onOpenSearch={() => setSearchOpen(true)} />
             <PWAInstallBanner />
             <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-            <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+            <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} onAuthSuccess={handleAuthSuccess} />
+            {onboardingTrigger && (
+                <OnboardingTour
+                    key={onboardingTrigger}
+                    trigger={onboardingTrigger}
+                    onComplete={() => setOnboardingTrigger(null)}
+                />
+            )}
         </div>
     )
 }

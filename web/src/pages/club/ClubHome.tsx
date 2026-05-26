@@ -138,14 +138,14 @@ function ClubHome() {
                 </div>
                 <h1 className="text-lg font-bold text-zinc-900 dark:text-white truncate flex-1">{club.name}</h1>
                 <div className="flex items-center gap-1">
-                    <button onClick={handleFavorite}
+                    <button onClick={handleFavorite} data-tour="favorite"
                         className={`p-2 rounded-full transition-all active:scale-[0.9] ${
                             isFavorited ? 'text-yellow-500 bg-yellow-50 dark:bg-yellow-500/10' : 'text-zinc-400 hover:text-yellow-500 hover:bg-zinc-100 dark:hover:bg-white/5'
                         }`}
                         title={isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}>
                         <Star size={18} strokeWidth={isFavorited ? 2.5 : 2} fill={isFavorited ? 'currentColor' : 'none'} />
                     </button>
-                    <button onClick={handleFollow}
+                    <button onClick={handleFollow} data-tour="follow"
                         className={`p-2 rounded-full transition-all active:scale-[0.9] ${
                             followLoading ? 'opacity-50' : ''
                         } ${

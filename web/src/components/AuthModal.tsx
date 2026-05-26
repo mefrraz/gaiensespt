@@ -5,9 +5,10 @@ import { useAuth } from '../lib/AuthContext'
 interface AuthModalProps {
     isOpen: boolean
     onClose: () => void
+    onAuthSuccess?: (method: 'signin' | 'signup') => void
 }
 
-export function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
     const { user, signUp, signIn, signOut } = useAuth()
     const [mode, setMode] = useState<'signin' | 'signup'>('signin')
     const [email, setEmail] = useState('')
@@ -51,6 +52,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         } else {
             reset()
             onClose()
+            onAuthSuccess?.(mode)
         }
     }
 
