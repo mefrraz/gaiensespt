@@ -6,6 +6,7 @@ import BottomNav from './components/BottomNav'
 import { SearchModal } from './components/SearchModal'
 import { AuthModal } from './components/AuthModal'
 import { OnboardingTour, type TourTrigger } from './components/OnboardingTour'
+import { PostOnboardingSuggestions } from './components/PostOnboardingSuggestions'
 import { useClub } from './lib/ClubContext'
 import { useAuth } from './lib/AuthContext'
 
@@ -14,6 +15,7 @@ function Layout() {
     const [searchOpen, setSearchOpen] = useState(false)
     const [authOpen, setAuthOpen] = useState(false)
     const [onboardingTrigger, setOnboardingTrigger] = useState<TourTrigger | null>(null)
+    const [showSuggestions, setShowSuggestions] = useState(false)
     const location = useLocation()
     const { favoriteClub, selectedClub } = useClub()
     const { user } = useAuth()
@@ -179,7 +181,15 @@ function Layout() {
                 <OnboardingTour
                     key={onboardingTrigger}
                     trigger={onboardingTrigger}
-                    onComplete={() => setOnboardingTrigger(null)}
+                    onComplete={() => {
+                        setOnboardingTrigger(null)
+                        setShowSuggestions(true)
+                    }}
+                />
+            )}
+            {showSuggestions && (
+                <PostOnboardingSuggestions
+                    onComplete={() => setShowSuggestions(false)}
                 />
             )}
         </div>
