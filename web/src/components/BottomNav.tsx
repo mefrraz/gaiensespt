@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Calendar, BarChart2, Building2 } from 'lucide-react'
+import { Calendar, BarChart2, Building2, Heart } from 'lucide-react'
 import { useClub } from '../lib/ClubContext'
 
 interface BottomNavProps {
@@ -18,7 +18,6 @@ function BottomNav({ onOpenSearch }: BottomNavProps) {
         return false
     }
 
-    const clubHomePath = activeClub ? `/clube/${activeClub.slug}/home` : '#'
     const clubGamesPath = activeClub ? `/clube/${activeClub.slug}/games` : '#'
 
     const handleClubClick = (e: React.MouseEvent) => {
@@ -41,12 +40,11 @@ function BottomNav({ onOpenSearch }: BottomNavProps) {
                 </Link>
 
                 <Link
-                    to={clubHomePath}
-                    onClick={handleClubClick}
-                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive(`/clube/${activeClub?.slug}/home`) ? 'text-dribly-purple' : 'text-zinc-400 dark:text-zinc-500'}`}
+                    to="/seguidos"
+                    className={`flex flex-col items-center justify-center w-full h-full gap-1 ${isActive('/seguidos') ? 'text-dribly-purple' : 'text-zinc-400 dark:text-zinc-500'}`}
                 >
-                    <Home size={18} strokeWidth={isActive(`/clube/${activeClub?.slug}/home`) ? 2.5 : 2} />
-                    <span className="text-[10px] font-medium">Meu Clube</span>
+                    <Heart size={18} strokeWidth={isActive('/seguidos') ? 2.5 : 2} />
+                    <span className="text-[10px] font-medium">Seguidos</span>
                 </Link>
 
                 <Link

@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { Sun, Moon, Instagram, Github, Info, BarChart2, Home, Calendar, Star, Search } from 'lucide-react'
+import { Sun, Moon, Instagram, Github, Info, BarChart2, Home, Star, Search, LogIn, Heart, Trophy } from 'lucide-react'
 import PWAInstallBanner from './components/PWAInstallBanner'
 import BottomNav from './components/BottomNav'
 import { SearchModal } from './components/SearchModal'
+import { AuthModal } from './components/AuthModal'
 import { useClub } from './lib/ClubContext'
+import { useAuth } from './lib/AuthContext'
 
 function Layout() {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
     const [searchOpen, setSearchOpen] = useState(false)
+    const [authOpen, setAuthOpen] = useState(false)
     const location = useLocation()
     const { favoriteClub, selectedClub } = useClub()
+    const { user } = useAuth()
 
     const activeClub = selectedClub || favoriteClub
 
@@ -58,16 +62,12 @@ function Layout() {
                                 <Link to="/" className={`${navPill} ${isActive('/') ? navPillActive : navPillInactive}`}>
                                     <Home size={14} /> Início
                                 </Link>
-                                {activeClub && (
-                                    <Link to={`/clube/${activeClub.slug}/home`} className={`${navPill} ${isActive(`/clube/${activeClub.slug}/home`) ? navPillActive : navPillInactive}`}>
-                                        <Home size={14} /> Meu Clube
-                                    </Link>
-                                )}
-                                {activeClub && (
-                                    <Link to={`/clube/${activeClub.slug}/games`} className={`${navPill} ${isActive(`/clube/${activeClub.slug}/games`) ? navPillActive : navPillInactive}`}>
-                                        <Calendar size={14} /> Jogos
-                                    </Link>
-                                )}
+                                <Link to="/seguidos" className={`${navPill} ${isActive('/seguidos') ? navPillActive : navPillInactive}`}>
+                                    <Heart size={14} /> Seguidos
+                                </Link>
+                                <Link to="/ligas" className={`${navPill} ${isActive('/ligas') ? navPillActive : navPillInactive}`}>
+                                    <Trophy size={14} /> Ligas
+                                </Link>
                                 <Link to="/standings" className={`${navPill} ${isActive('/standings') ? navPillActive : navPillInactive}`}>
                                     <BarChart2 size={14} /> Classificações
                                 </Link>
@@ -99,6 +99,17 @@ function Layout() {
                             <Link to="/about" className={`sm:hidden ${navIcon} ${isActive('/about') ? 'text-dribly-purple bg-dribly-purple/10' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5'}`} aria-label="Sobre">
                                 <Info size={18} />
                             </Link>
+                            <button
+                                onClick={() => setAuthOpen(true)}
+                                className={`${navIcon} ${user ? 'text-dribly-purple bg-dribly-purple/10' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5'}`}
+                                aria-label={user ? 'Conta' : 'Iniciar sessão'}
+                            >
+                                {user ? (
+                                    <span className="text-[10px] font-bold">{user.email?.charAt(0).toUpperCase()}</span>
+                                ) : (
+                                    <LogIn size={17} />
+                                )}
+                            </button>
                             <button onClick={toggleTheme} className={`${navIcon} text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5`} aria-label="Tema">
                                 {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
                             </button>
@@ -134,6 +145,7 @@ function Layout() {
             <BottomNav onOpenSearch={() => setSearchOpen(true)} />
             <PWAInstallBanner />
             <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+            <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
         </div>
     )
 }
