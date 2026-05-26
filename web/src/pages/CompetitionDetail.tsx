@@ -25,7 +25,6 @@ export default function CompetitionDetail() {
     const [teams, setTeams] = useState<FPBTeam[]>([])
     const [playerStats, setPlayerStats] = useState<FPBPlayerStat[]>([])
     const [loading, setLoading] = useState(true)
-    const [compName, setCompName] = useState('')
 
     // Fetch data based on active tab
     useEffect(() => {
@@ -56,9 +55,6 @@ export default function CompetitionDetail() {
                 }
                 if (results[2].status === 'fulfilled') {
                     setTeams(results[2].value)
-                    if (results[2].value.length > 0 && !compName) {
-                        // try to get comp name from teams data or API
-                    }
                 }
                 if (results[3].status === 'fulfilled') setPlayerStats(results[3].value)
             } catch (e) {
@@ -70,7 +66,7 @@ export default function CompetitionDetail() {
         loadData()
     }, [provaId, tab])
 
-    const tabs: { value: Tab; label: string; icon: React.ComponentType<{ size?: number }> }[] = [
+    const tabs: { value: Tab; label: string; icon: React.ComponentType<any> }[] = [
         { value: 'classificacao', label: 'Classificação', icon: BarChart3 },
         { value: 'resultados', label: 'Resultados', icon: Trophy },
         { value: 'calendario', label: 'Calendário', icon: Calendar },
@@ -105,7 +101,7 @@ export default function CompetitionDetail() {
 
                 <div className="flex items-center justify-between mb-6">
                     <h1 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
-                        {compName || `Competição ${provaId}`}
+                        Competição {provaId}
                     </h1>
                     {user && (
                         <button
