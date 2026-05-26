@@ -80,7 +80,10 @@ function ClubHome() {
     const [followLoading, setFollowLoading] = useState(false)
     const [needsLogin, setNeedsLogin] = useState(false)
 
-    const handleFavorite = () => setFavoriteClub(isFavorited ? null : club)
+    const handleFavorite = () => {
+        if (!user) { setNeedsLogin(true); setTimeout(() => setNeedsLogin(false), 2500); return }
+        setFavoriteClub(isFavorited ? null : club)
+    }
     const handleFollow = async () => {
         if (!user) { setNeedsLogin(true); setTimeout(() => setNeedsLogin(false), 2500); return }
         setFollowLoading(true)
@@ -156,7 +159,7 @@ function ClubHome() {
             </div>
             {needsLogin && (
                 <div className="text-center text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-xl py-2 px-3 animate-fade-in">
-                    Inicia sessão para seguir clubes.
+                    Inicia sessão para favoritar e seguir clubes.
                 </div>
             )}
 

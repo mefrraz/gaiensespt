@@ -168,11 +168,11 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                             <span className="text-sm font-medium text-zinc-900 dark:text-white truncate flex-1">{club.name}</span>
                                         </div>
                                         <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
-                                            <button onClick={() => setFavoriteClub(isFav ? null : club)}
+                                            <button onClick={() => user && setFavoriteClub(isFav ? null : club)}
                                                 className={`p-1 rounded-full transition-all ${
-                                                    isFav ? 'text-yellow-500' : 'text-zinc-400 hover:text-yellow-500'
+                                                    !user ? 'opacity-30 cursor-not-allowed' : isFav ? 'text-yellow-500' : 'text-zinc-400 hover:text-yellow-500'
                                                 }`}
-                                                title={isFav ? 'Remover dos favoritos' : 'Favoritar'}>
+                                                title={!user ? 'Inicia sessão para favoritar' : isFav ? 'Remover dos favoritos' : 'Favoritar'}>
                                                 <Star size={15} strokeWidth={isFav ? 2.5 : 2} fill={isFav ? 'currentColor' : 'none'} />
                                             </button>
                                             <button onClick={() => user && toggleFollow('club', club.id)}
