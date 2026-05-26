@@ -87,7 +87,11 @@ function ClubHome() {
     const handleFollow = async () => {
         if (!user) { setNeedsLogin(true); setTimeout(() => setNeedsLogin(false), 2500); return }
         setFollowLoading(true)
-        await toggleFollow('club', club.id)
+        try {
+            await toggleFollow('club', club.id)
+        } catch {
+            // Silently handle — follow state already managed by useFollows
+        }
         setFollowLoading(false)
     }
 
