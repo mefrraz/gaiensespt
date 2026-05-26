@@ -6,7 +6,8 @@ interface AuthContextType {
     user: User | null
     session: Session | null
     loading: boolean
-    signInWithEmail: (email: string) => Promise<{ error: string | null }>
+    signUp: (email: string, password: string, username: string) => Promise<{ error: string | null }>
+    signIn: (email: string, password: string) => Promise<{ error: string | null }>
     signOut: () => Promise<void>
 }
 
@@ -32,14 +33,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => subscription.unsubscribe()
     }, [])
 
-    const signInWithEmail = useCallback(async (email: string) => {
-        const { error } = await supabase.auth.signInWithOtp({
+    const signUp = useCallback(async (email: string, password: string, username: string) => {
+        const { data, error } = await supabase.auth.signUp({
             email,
+            password,
             options: {
-                emailRedirectTo: window.location.origin,
+                data: { username, display_name: username },
             },
         })
         if (error) return { error: error.message }
+        // If email confirmation is disabled, user is signed in immediately
+        if (data.user) {
+            setUser(data.user)
+            setSession(data.session)
+        }
+        return { error: null }
+    }, [])
+
+    const signIn = useCallback(async (email: string, password: string) => {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) return { error: error.message }
+        setUser(data.user)
+        setSession(data.session)
         return { error: null }
     }, [])
 
@@ -50,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, [])
 
     return (
-        <AuthContext.Provider value={{ user, session, loading, signInWithEmail, signOut }}>
+        <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
             {children}
         </AuthContext.Provider>
     )

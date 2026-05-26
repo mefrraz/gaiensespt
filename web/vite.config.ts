@@ -76,8 +76,10 @@ export default defineConfig({
                         }
                     },
                     {
-                        // Cache team logos from FPB
-                        urlPattern: /^https:\/\/.*\.fpb\.pt\/.*/i,
+                        // Cache FPB logos and static assets only (NOT API calls to sav2.fpb.pt)
+                        urlPattern: ({ url }: { url: URL }) =>
+                            url.hostname.includes('fpb.pt') &&
+                            (url.pathname.includes('/uploads/') || url.pathname.includes('/old_uploads/')),
                         handler: 'CacheFirst',
                         options: {
                             cacheName: 'fpb-images-cache',

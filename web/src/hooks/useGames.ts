@@ -111,9 +111,18 @@ export function useGames(season = '2025/2026', clube = 119, clubName = '') {
       setGames(withEpoch)
       setLastUpdated(new Date())
 
+      // Deduplicate by slug before upserting (avoids "ON CONFLICT DO UPDATE
+      // cannot affect row a second time" when FPB returns duplicate game entries)
+      const seen = new Map<string, boolean>()
+      const unique = withEpoch.filter(g => {
+        if (seen.has(g.slug)) return false
+        seen.set(g.slug, true)
+        return true
+      })
+
       // Try to persist to Supabase (fire-and-forget — don't block UI)
       supabase.from(tableName).upsert(
-        withEpoch.map(g => ({ ...g, updated_at: new Date().toISOString() })),
+        unique.map(g => ({ ...g, updated_at: new Date().toISOString() })),
         { onConflict: 'slug' }
       ).then(({ error }) => {
         if (error) console.warn('Failed to upsert games to Supabase:', error.message)
