@@ -32,16 +32,7 @@ export function StandingsTable({ grupo, teams, isOpen, onToggle, status }: Props
                         </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2.5 shrink-0">
-                    {status === 'active' ? (
-                        <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase tracking-wide">
-                            A Decorrer
-                        </span>
-                    ) : (
-                        <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full uppercase tracking-wide">
-                            Terminada
-                        </span>
-                    )}
+                <div className="flex items-center shrink-0">
                     <svg
                         className={`w-4 h-4 text-zinc-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
