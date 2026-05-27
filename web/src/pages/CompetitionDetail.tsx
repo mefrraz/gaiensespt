@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Loader2, Heart, Calendar, BarChart3, Trophy, Users } from 'lucide-react'
+import { ArrowLeft, Loader2, Heart, Calendar as CalendarIcon, BarChart3, Trophy, Users } from 'lucide-react'
 import { useFollows } from '../hooks/useFollows'
 import { useAuth } from '../lib/AuthContext'
 import { useClub } from '../lib/ClubContext'
@@ -116,8 +116,8 @@ export default function CompetitionDetail() {
 
     const tabs = [
         { value: 'classificacao', label: 'Classificação', icon: BarChart3 },
-        { value: 'resultados', label: 'Resultados', icon: Calendar },
-        { value: 'calendario', label: 'Calendário', icon: Calendar },
+        { value: 'resultados', label: 'Resultados', icon: CalendarIcon },
+        { value: 'calendario', label: 'Calendário', icon: CalendarIcon },
         { value: 'equipas', label: 'Equipas', icon: Users },
         ...(TOP_LEAGUES.includes(provaId) ? [{ value: 'estatisticas' as Tab, label: 'Estatísticas', icon: Trophy }] : []),
     ]
@@ -131,18 +131,40 @@ export default function CompetitionDetail() {
 
     const logoMap = useMemo(() => buildLogoMap(clubs), [clubs])
 
+    const formatDate = (dateStr: string) => {
+        const date = new Date(dateStr)
+        const formatted = date.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'long' })
+        return formatted.charAt(0).toUpperCase() + formatted.slice(1)
+    }
+
     // Separate games into schedule (without results) and results (with results)
     const scheduleList = useMemo(() =>
         games.filter(g => g.resultado_casa === undefined && g.resultado_fora === undefined)
             .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()),
         [games]
     )
+    const scheduleByDate = useMemo(() => {
+        const groups: Record<string, FPBGame[]> = {}
+        for (const g of scheduleList) {
+            if (!groups[g.data]) groups[g.data] = []
+            groups[g.data].push(g)
+        }
+        return Object.entries(groups)
+    }, [scheduleList])
 
     const resultsList = useMemo(() =>
         games.filter(g => g.resultado_casa !== undefined && g.resultado_fora !== undefined)
             .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()),
         [games]
     )
+    const resultsByDate = useMemo(() => {
+        const groups: Record<string, FPBGame[]> = {}
+        for (const g of resultsList) {
+            if (!groups[g.data]) groups[g.data] = []
+            groups[g.data].push(g)
+        }
+        return Object.entries(groups)
+    }, [resultsList])
 
     if (!provaId) {
         return (
@@ -237,14 +259,38 @@ export default function CompetitionDetail() {
                             {tab === 'resultados' && (
                                 resultsList.length === 0
                                     ? <Empty text="Sem resultados disponíveis." />
-                                    : <div className="space-y-2">{resultsList.map((g, i) => <GameCard key={i} match={fpbGameToMatch(g, logoMap)} mode="results" />)}</div>
+                                    : <div className="space-y-6 px-2 md:px-4">
+                                        {resultsByDate.map(([date, dateGames]) => (
+                                            <div key={date}>
+                                                <div className="flex items-center gap-3 mb-3 px-2">
+                                                    <h3 className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest">{formatDate(date)}</h3>
+                                                    <div className="flex-1 h-px bg-zinc-200 dark:bg-white/5" />
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                    {dateGames.map((g, i) => <GameCard key={i} match={fpbGameToMatch(g, logoMap)} mode="results" />)}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                             )}
 
                             {/* Schedule */}
                             {tab === 'calendario' && (
                                 scheduleList.length === 0
                                     ? <Empty text="Sem jogos agendados." />
-                                    : <div className="space-y-2">{scheduleList.map((g, i) => <GameCard key={i} match={fpbGameToMatch(g, logoMap)} mode="agenda" />)}</div>
+                                    : <div className="space-y-6 px-2 md:px-4">
+                                        {scheduleByDate.map(([date, dateGames]) => (
+                                            <div key={date}>
+                                                <div className="flex items-center gap-3 mb-3 px-2">
+                                                    <h3 className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest">{formatDate(date)}</h3>
+                                                    <div className="flex-1 h-px bg-zinc-200 dark:bg-white/5" />
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                    {dateGames.map((g, i) => <GameCard key={i} match={fpbGameToMatch(g, logoMap)} mode="agenda" />)}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                             )}
 
                             {/* Teams */}
