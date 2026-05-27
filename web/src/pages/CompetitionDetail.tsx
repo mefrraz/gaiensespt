@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Loader2, Heart, Calendar, BarChart3, Trophy, Users } from 'lucide-react'
 import { useFollows } from '../hooks/useFollows'
 import { useAuth } from '../lib/AuthContext'
+import { useClub } from '../lib/ClubContext'
 import {
     fetchStandings, fetchSchedule, fetchResults, fetchTeams, fetchPlayerStats,
     type FPBStandingTeam, type FPBGame, type FPBTeam, type FPBPlayerStat
@@ -15,7 +16,32 @@ const TOP_LEAGUES = [10902, 10906]
 
 type Tab = 'classificacao' | 'resultados' | 'calendario' | 'equipas' | 'estatisticas'
 
-function fpbGameToMatch(g: FPBGame): Match {
+function normalize(s: string): string {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+}
+
+/** Build a map from normalized team name → logo URL from the clubs list */
+function buildLogoMap(clubs: { name: string; logo_url: string | null }[]): Map<string, string> {
+    const map = new Map<string, string>()
+    for (const c of clubs) {
+        if (c.logo_url) map.set(normalize(c.name), c.logo_url)
+    }
+    return map
+}
+
+/** Match a team name to a logo using the logo map */
+function findLogo(teamName: string, logoMap: Map<string, string>): string | null {
+    const n = normalize(teamName)
+    // Exact match
+    if (logoMap.has(n)) return logoMap.get(n)!
+    // Partial: team name contains club name, or vice versa
+    for (const [clubName, logo] of logoMap) {
+        if (n.includes(clubName) || clubName.includes(n)) return logo
+    }
+    return null
+}
+
+function fpbGameToMatch(g: FPBGame, logoMap: Map<string, string>): Match {
     const slug = g.jogo_id || `${g.data}-${g.equipa_casa.toLowerCase().replace(/\s+/g, '-')}-${g.equipa_fora.toLowerCase().replace(/\s+/g, '-')}`
     const status: Match['status'] = g.estado === 'FINALIZADO' ? 'FINALIZADO' : 'AGENDADO'
     return {
@@ -30,8 +56,8 @@ function fpbGameToMatch(g: FPBGame): Match {
         escalao: '',
         competicao: '',
         local: g.pavilhao || null,
-        logotipo_casa: null,
-        logotipo_fora: null,
+        logotipo_casa: findLogo(g.equipa_casa, logoMap),
+        logotipo_fora: findLogo(g.equipa_fora, logoMap),
         status,
     }
 }
@@ -41,6 +67,7 @@ export default function CompetitionDetail() {
     const provaId = parseInt(competitionId || '0')
     const { user } = useAuth()
     const { isFollowing, toggleFollow } = useFollows()
+    const { clubs, loadClubs } = useClub()
 
     const [tab, setTab] = useState<Tab>('classificacao')
     const [standings, setStandings] = useState<FPBStandingTeam[]>([])
@@ -48,6 +75,8 @@ export default function CompetitionDetail() {
     const [teams, setTeams] = useState<FPBTeam[]>([])
     const [playerStats, setPlayerStats] = useState<FPBPlayerStat[]>([])
     const [loading, setLoading] = useState(true)
+
+    useEffect(() => { loadClubs() }, [])
 
     useEffect(() => {
         if (!provaId) return
@@ -99,6 +128,8 @@ export default function CompetitionDetail() {
         if (!user) return
         await toggleFollow('competition', provaId)
     }
+
+    const logoMap = useMemo(() => buildLogoMap(clubs), [clubs])
 
     // Separate games into schedule (without results) and results (with results)
     const scheduleList = useMemo(() =>
@@ -206,14 +237,14 @@ export default function CompetitionDetail() {
                             {tab === 'resultados' && (
                                 resultsList.length === 0
                                     ? <Empty text="Sem resultados disponíveis." />
-                                    : <div className="space-y-2">{resultsList.map((g, i) => <GameCard key={i} match={fpbGameToMatch(g)} mode="results" />)}</div>
+                                    : <div className="space-y-2">{resultsList.map((g, i) => <GameCard key={i} match={fpbGameToMatch(g, logoMap)} mode="results" />)}</div>
                             )}
 
                             {/* Schedule */}
                             {tab === 'calendario' && (
                                 scheduleList.length === 0
                                     ? <Empty text="Sem jogos agendados." />
-                                    : <div className="space-y-2">{scheduleList.map((g, i) => <GameCard key={i} match={fpbGameToMatch(g)} mode="agenda" />)}</div>
+                                    : <div className="space-y-2">{scheduleList.map((g, i) => <GameCard key={i} match={fpbGameToMatch(g, logoMap)} mode="agenda" />)}</div>
                             )}
 
                             {/* Teams */}
