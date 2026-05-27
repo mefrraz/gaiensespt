@@ -86,6 +86,8 @@ export default async function handler(request: Request) {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 'Accept': 'text/html,application/xhtml+xml',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache',
             },
             signal: controller.signal,
         })
