@@ -6,15 +6,27 @@ export default async function handler(request: Request) {
     const url = new URL(request.url)
     const endpoint = url.searchParams.get('endpoint')
 
-    // Proxy mode: forward to sav2.fpb.pt API (standings/stats only)
+    // Proxy mode: forward to sav2.fpb.pt API
     if (endpoint) {
-        const fpbRes = await fetch(`https://sav2.fpb.pt/api/${endpoint}`, {
-            headers: {
-                'User-Agent': 'Dribly/1.0',
-                'Accept': 'application/json',
-            },
-        })
+        let apiUrl: string
+        const headers: Record<string, string> = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+            'Accept': 'application/json',
+        }
 
+        // classificacao uses AJAX with fase param, not a simple URL path
+        const classMatch = endpoint.match(/^classificacao\/(\d+)$/)
+        if (classMatch) {
+            const provaId = classMatch[1]
+            const faseId = '30969'
+            apiUrl = `https://sav2.fpb.pt/api/classificacao?competicao=${provaId}&fase=${faseId}`
+            headers['Referer'] = 'https://www.fpb.pt/'
+            headers['Origin'] = 'https://www.fpb.pt'
+        } else {
+            apiUrl = `https://sav2.fpb.pt/api/${endpoint}`
+        }
+
+        const fpbRes = await fetch(apiUrl, { headers })
         const text = await fpbRes.text()
 
         if (fpbRes.status === 404) {
@@ -30,7 +42,6 @@ export default async function handler(request: Request) {
         }
 
         const contentType = fpbRes.headers.get('content-type') || 'application/json'
-
         return new Response(text, {
             status: fpbRes.status,
             headers: {
