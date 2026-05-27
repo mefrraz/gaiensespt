@@ -14,19 +14,26 @@ export default async function handler(request: Request) {
             'Accept': 'application/json',
         }
 
-        // classificacao uses AJAX with fase param, not a simple URL path
+        // classificacao uses AJAX with fase param
+        let method: string = 'GET'
+        let body: string | undefined
         const classMatch = endpoint.match(/^classificacao\/(\d+)$/)
         if (classMatch) {
             const provaId = classMatch[1]
             const faseId = '30969'
-            apiUrl = `https://sav2.fpb.pt/api/classificacao?competicao=${provaId}&fase=${faseId}`
+            // Try POST with body first (matches FPB's JS behavior)
+            method = 'POST'
+            headers['Content-Type'] = 'application/x-www-form-urlencoded'
             headers['Referer'] = 'https://www.fpb.pt/'
             headers['Origin'] = 'https://www.fpb.pt'
+            headers['X-Requested-With'] = 'XMLHttpRequest'
+            body = `competicao=${provaId}&fase=${faseId}`
+            apiUrl = `https://sav2.fpb.pt/api/classificacao`
         } else {
             apiUrl = `https://sav2.fpb.pt/api/${endpoint}`
         }
 
-        const fpbRes = await fetch(apiUrl, { headers })
+        const fpbRes = await fetch(apiUrl, { method, headers, body })
         const text = await fpbRes.text()
 
         if (fpbRes.status === 404) {
