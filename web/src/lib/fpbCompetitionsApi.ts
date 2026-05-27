@@ -115,66 +115,74 @@ function scrapeStandings(html: string): FPBStandingTeam[] {
     const doc = parser.parseFromString(html, 'text/html')
     const standings: FPBStandingTeam[] = []
 
-    // Try .day-wrapper structure first
-    const dayWrappers = doc.querySelectorAll('.day-wrapper')
-    dayWrappers.forEach(dayWrapper => {
-        const rows = dayWrapper.querySelectorAll('table tbody tr')
-        rows.forEach(row => {
-            const cols = row.querySelectorAll('td')
-            if (cols.length < 5) return
-
-            const pos = parseInt(cols[0]?.textContent?.trim() || '0') || 0
-            const equipa = cols[1]?.textContent?.trim() || ''
-            if (!equipa) return
-
-            const team: FPBStandingTeam = {
-                posicao: pos,
-                equipa,
-                j: parseInt(cols[2]?.textContent?.trim() || '0') || 0,
-                v: parseInt(cols[3]?.textContent?.trim() || '0') || 0,
-                d: parseInt(cols[4]?.textContent?.trim() || '0') || 0,
-                pts: parseInt(cols[5]?.textContent?.trim() || '0') || 0,
-            }
-            if (cols.length > 6) team.pm = parseInt(cols[6]?.textContent?.trim() || '0') || undefined
-            if (cols.length > 7) team.ps = parseInt(cols[7]?.textContent?.trim() || '0') || undefined
-            if (cols.length > 8) team.dif = parseInt(cols[8]?.textContent?.trim() || '0') || undefined
-            standings.push(team)
-        })
-    })
-
-    // Fallback: generic table
-    if (standings.length === 0) {
+    // Look for the standings table — try multiple selectors
+    let rows = doc.querySelectorAll('.standings-table tbody tr, table.standings tbody tr, .classificacao table tbody tr')
+    if (rows.length === 0) {
+        // Try any table with many columns (6+)
         const tables = doc.querySelectorAll('table')
-        tables.forEach(table => {
-            const rows = table.querySelectorAll('tbody tr')
-            rows.forEach(row => {
-                const cols = row.querySelectorAll('td')
-                if (cols.length < 5) return
-
-                const equipa = cols[0]?.textContent?.trim() || cols[1]?.textContent?.trim() || ''
-                if (!equipa) return
-
-                // Try to detect column order: [pos] [team] [j] [v] [d] [pts]
-                const values = Array.from(cols).map(c => parseInt(c.textContent?.trim() || '0'))
-                const nonNumeric = Array.from(cols).findIndex(c => isNaN(parseInt(c.textContent?.trim() || '')))
-                const nameCol = nonNumeric >= 0 ? nonNumeric : 0
-
-                const team: FPBStandingTeam = {
-                    posicao: values[0] || 0,
-                    equipa,
-                    j: values[nameCol + 1] || 0,
-                    v: values[nameCol + 2] || 0,
-                    d: values[nameCol + 3] || 0,
-                    pts: values[nameCol + 4] || 0,
-                }
-                if (values.length > nameCol + 5) team.pm = values[nameCol + 5] || undefined
-                if (values.length > nameCol + 6) team.ps = values[nameCol + 6] || undefined
-                standings.push(team)
-            })
-        })
+        for (const table of tables) {
+            const trs = table.querySelectorAll('tbody tr')
+            // Standings table typically has 10+ columns
+            if (trs.length >= 2 && trs[0].querySelectorAll('td').length >= 6) {
+                rows = trs
+                break
+            }
+        }
     }
 
+    rows.forEach(row => {
+        const cols = row.querySelectorAll('td')
+        if (cols.length < 5) return
+
+        // Find the position column (numeric, small) and team name column (text)
+        let posIdx = -1
+        let nameIdx = -1
+        for (let i = 0; i < Math.min(cols.length, 5); i++) {
+            const text = (cols[i].textContent || '').trim()
+            const num = parseInt(text)
+            if (!isNaN(num) && num > 0 && num < 30 && posIdx === -1) {
+                posIdx = i
+            }
+            if (text.length > 2 && isNaN(parseInt(text)) && nameIdx === -1) {
+                nameIdx = i
+            }
+        }
+        if (posIdx === -1) posIdx = 0
+        if (nameIdx === -1) nameIdx = 1
+
+        const equipa = (cols[nameIdx].textContent || '').trim()
+        if (!equipa || equipa.length < 3) return
+
+        const pos = parseInt((cols[posIdx].textContent || '').trim()) || 0
+        const dataCols = Array.from(cols).slice(Math.max(posIdx, nameIdx) + 1)
+
+        const team: FPBStandingTeam = {
+            posicao: pos,
+            equipa,
+            j: safeInt(dataCols[0]),
+            v: safeInt(dataCols[1]),
+            d: safeInt(dataCols[2]),
+            pts: safeInt(dataCols[4]) || safeInt(dataCols[5]) || safeInt(dataCols[3]), // Pts can be at various positions
+        }
+
+        // PM, PS, DIF
+        for (let i = 0; i < dataCols.length && i < 8; i++) {
+            const v = safeInt(dataCols[i])
+            if (v > 100) {
+                if (!team.pm) team.pm = v
+                else if (!team.ps) team.ps = v
+            }
+        }
+
+        standings.push(team)
+    })
+
     return standings
+}
+
+function safeInt(el: Element | undefined): number {
+    if (!el) return 0
+    return parseInt((el.textContent || '').trim()) || 0
 }
 
 // ---- Schedule & Results via HTML scraping ----
