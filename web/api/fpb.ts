@@ -8,32 +8,12 @@ export default async function handler(request: Request) {
 
     // Proxy mode: forward to sav2.fpb.pt API
     if (endpoint) {
-        let apiUrl: string
-        const headers: Record<string, string> = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-            'Accept': 'application/json',
-        }
-
-        // classificacao uses AJAX with fase param
-        let method: string = 'GET'
-        let body: string | undefined
-        const classMatch = endpoint.match(/^classificacao\/(\d+)$/)
-        if (classMatch) {
-            const provaId = classMatch[1]
-            const faseId = '30969'
-            // Try POST with body first (matches FPB's JS behavior)
-            method = 'POST'
-            headers['Content-Type'] = 'application/x-www-form-urlencoded'
-            headers['Referer'] = 'https://www.fpb.pt/'
-            headers['Origin'] = 'https://www.fpb.pt'
-            headers['X-Requested-With'] = 'XMLHttpRequest'
-            body = `competicao=${provaId}&fase=${faseId}`
-            apiUrl = `https://sav2.fpb.pt/api/classificacao`
-        } else {
-            apiUrl = `https://sav2.fpb.pt/api/${endpoint}`
-        }
-
-        const fpbRes = await fetch(apiUrl, { method, headers, body })
+        const fpbRes = await fetch(`https://sav2.fpb.pt/api/${endpoint}`, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                'Accept': 'application/json',
+            },
+        })
         const text = await fpbRes.text()
 
         if (fpbRes.status === 404) {
@@ -86,8 +66,6 @@ export default async function handler(request: Request) {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 'Accept': 'text/html,application/xhtml+xml',
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache',
             },
             signal: controller.signal,
         })

@@ -114,30 +114,7 @@ export async function fetchStandings(provaId: number): Promise<FPBStandingTeam[]
         if (scraped.length > 0) return scraped
     } catch { /* fall through */ }
 
-    // Fallback: hardcoded data for known competitions
-    const fallback = STATIC_STANDINGS[provaId]
-    if (fallback) return fallback.map((t, i) => ({ ...t, posicao: i + 1 }))
-
     return []
-}
-
-// Hardcoded standings for competitions where scraping hasn't been fully solved yet.
-// Data confirmed from fpb.pt as of May 2026 (Fase Regular 2025/2026).
-const STATIC_STANDINGS: Record<number, Omit<FPBStandingTeam, 'posicao'>[]> = {
-    10902: [ // Liga Betclic Masculina 2025/2026 — Fase Regular (21 jogos)
-        { equipa: 'SL Benfica', j: 21, v: 19, d: 2, pm: 2055, ps: 1598, dif: 457, pts: 40 },
-        { equipa: 'Sporting Clube Portugal', j: 21, v: 17, d: 4, pm: 1859, ps: 1628, dif: 231, pts: 38 },
-        { equipa: 'Futebol Clube do Porto', j: 21, v: 15, d: 6, pm: 1879, ps: 1726, dif: 153, pts: 36 },
-        { equipa: 'Ovarense GAVEX', j: 21, v: 14, d: 7, pm: 1730, ps: 1653, dif: 77, pts: 35 },
-        { equipa: 'UD Oliveirense', j: 21, v: 12, d: 9, pm: 1804, ps: 1743, dif: 61, pts: 33 },
-        { equipa: 'Imortal LUZiGÁS', j: 21, v: 8, d: 13, pm: 1798, ps: 1800, dif: -2, pts: 29 },
-        { equipa: 'Esgueira Aveiro OLI', j: 21, v: 8, d: 13, pm: 1787, ps: 1908, dif: -121, pts: 29 },
-        { equipa: 'Sporting Clube de Braga', j: 21, v: 8, d: 13, pm: 1681, ps: 1752, dif: -71, pts: 29 },
-        { equipa: 'Vitória Sport Clube', j: 21, v: 7, d: 14, pm: 1747, ps: 1910, dif: -163, pts: 28 },
-        { equipa: 'Queluz O NOSSO PREGO', j: 21, v: 7, d: 14, pm: 1746, ps: 1849, dif: -103, pts: 28 },
-        { equipa: 'SC Vasco da Gama', j: 21, v: 6, d: 15, pm: 1759, ps: 2049, dif: -290, pts: 27 },
-        { equipa: 'Galitos BARREIRO ACEDE', j: 21, v: 5, d: 16, pm: 1724, ps: 1953, dif: -229, pts: 26 },
-    ],
 }
 
 function scrapeStandings(html: string): FPBStandingTeam[] {
