@@ -111,48 +111,68 @@ export async function fetchStandings(provaId: number): Promise<FPBStandingTeam[]
 }
 
 function scrapeStandings(html: string): FPBStandingTeam[] {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(html, 'text/html')
+    // FPB classification uses <h5> elements with <img alt="Logo Equipa N"> as anchors.
+    // Data is malformed (h5s without row wrappers), so use regex instead of DOMParser.
     const standings: FPBStandingTeam[] = []
 
-    // FPB classification uses <h5> elements anchored by <img alt="Logo Equipa N">
-    const logos = doc.querySelectorAll('img[alt^="Logo Equipa"]')
+    // Split by "Logo Equipa" — each section is one team row
+    const sections = html.split(/<img[^>]*alt="Logo Equipa\s*\d*"[^>]*>/)
+    // First section is header (before first logo), skip it
+    for (let i = 1; i < sections.length; i++) {
+        const section = sections[i]
 
-    logos.forEach(img => {
-        const link = img.nextElementSibling as HTMLAnchorElement | null
-        if (!link || link.tagName !== 'A') return
+        // Extract equipa name
+        const nomeMatch = section.match(/<h5>([^<]+)<\/h5>/)
 
-        const h5s = link.querySelectorAll('h5')
-        const nome = h5s[0]?.textContent?.trim() || ''
-        if (!nome) return
+        if (!nomeMatch) continue
 
-        // Collect 8 stat h5s after the link
-        let el = link.nextElementSibling
-        const stats: string[] = []
-        while (el && stats.length < 8) {
-            if (el.tagName === 'H5') {
-                stats.push((el.textContent || '').trim())
-            }
-            el = el.nextElementSibling
+        const nome = nomeMatch[1].trim()
+
+        // Collect all h5 values (both plain and strong)
+        const h5s: string[] = []
+        const h5Regex = /<h5>(?:\s*<strong>)?([^<]*?)(?:<\/strong>)?\s*<\/h5>/g
+        let m: RegExpExecArray | null
+        while ((m = h5Regex.exec(section)) !== null) {
+            h5s.push(m[1].trim())
         }
-        if (stats.length < 4) return
 
-        const [J, V, D, _FC, PM, PS, DIF, PTS] = stats
+        if (h5s.length < 2) continue
 
+        // First h5 is the name; remainder is abbreviation + stats
+        const stats = h5s.slice(1) // skip the name
+
+        if (stats.length < 4) continue
+
+        // Stats: [J, V, D, FC, PM, PS, DIF, PTS]
         standings.push({
             posicao: standings.length + 1,
             equipa: nome,
-            j: parseInt(J) || 0,
-            v: parseInt(V) || 0,
-            d: parseInt(D) || 0,
-            pm: parseInt(PM) || undefined,
-            ps: parseInt(PS) || undefined,
-            dif: parseInt(DIF) || undefined,
-            pts: parseInt(PTS) || 0,
+            j: num(stats[0]),
+            v: num(stats[1]),
+            d: num(stats[2]),
+            pm: mmNum(stats, 3),
+            ps: mmNum(stats, 4),
+            dif: signedNum(stats[5]) || signedNum(stats[6]),
+            pts: num(stats[stats.length - 1]),
         })
-    })
+    }
 
     return standings
+}
+
+function num(s: string | undefined): number {
+    return parseInt(s || '0') || 0
+}
+
+function mmNum(arr: string[], idx: number): number | undefined {
+    const v = parseInt(arr[idx] || '0')
+    return v > 100 ? v : undefined
+}
+
+function signedNum(s: string | undefined): number | undefined {
+    if (!s) return undefined
+    const v = parseInt(s)
+    return isNaN(v) ? undefined : v
 }
 
 // ---- Schedule & Results via HTML scraping ----
