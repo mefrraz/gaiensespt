@@ -115,74 +115,44 @@ function scrapeStandings(html: string): FPBStandingTeam[] {
     const doc = parser.parseFromString(html, 'text/html')
     const standings: FPBStandingTeam[] = []
 
-    // Look for the standings table — try multiple selectors
-    let rows = doc.querySelectorAll('.standings-table tbody tr, table.standings tbody tr, .classificacao table tbody tr')
-    if (rows.length === 0) {
-        // Try any table with many columns (6+)
-        const tables = doc.querySelectorAll('table')
-        for (const table of tables) {
-            const trs = table.querySelectorAll('tbody tr')
-            // Standings table typically has 10+ columns
-            if (trs.length >= 2 && trs[0].querySelectorAll('td').length >= 6) {
-                rows = trs
-                break
+    // FPB classification uses <h5> elements anchored by <img alt="Logo Equipa N">
+    const logos = doc.querySelectorAll('img[alt^="Logo Equipa"]')
+
+    logos.forEach(img => {
+        const link = img.nextElementSibling as HTMLAnchorElement | null
+        if (!link || link.tagName !== 'A') return
+
+        const h5s = link.querySelectorAll('h5')
+        const nome = h5s[0]?.textContent?.trim() || ''
+        if (!nome) return
+
+        // Collect 8 stat h5s after the link
+        let el = link.nextElementSibling
+        const stats: string[] = []
+        while (el && stats.length < 8) {
+            if (el.tagName === 'H5') {
+                stats.push((el.textContent || '').trim())
             }
+            el = el.nextElementSibling
         }
-    }
+        if (stats.length < 4) return
 
-    rows.forEach(row => {
-        const cols = row.querySelectorAll('td')
-        if (cols.length < 5) return
+        const [J, V, D, _FC, PM, PS, DIF, PTS] = stats
 
-        // Find the position column (numeric, small) and team name column (text)
-        let posIdx = -1
-        let nameIdx = -1
-        for (let i = 0; i < Math.min(cols.length, 5); i++) {
-            const text = (cols[i].textContent || '').trim()
-            const num = parseInt(text)
-            if (!isNaN(num) && num > 0 && num < 30 && posIdx === -1) {
-                posIdx = i
-            }
-            if (text.length > 2 && isNaN(parseInt(text)) && nameIdx === -1) {
-                nameIdx = i
-            }
-        }
-        if (posIdx === -1) posIdx = 0
-        if (nameIdx === -1) nameIdx = 1
-
-        const equipa = (cols[nameIdx].textContent || '').trim()
-        if (!equipa || equipa.length < 3) return
-
-        const pos = parseInt((cols[posIdx].textContent || '').trim()) || 0
-        const dataCols = Array.from(cols).slice(Math.max(posIdx, nameIdx) + 1)
-
-        const team: FPBStandingTeam = {
-            posicao: pos,
-            equipa,
-            j: safeInt(dataCols[0]),
-            v: safeInt(dataCols[1]),
-            d: safeInt(dataCols[2]),
-            pts: safeInt(dataCols[4]) || safeInt(dataCols[5]) || safeInt(dataCols[3]), // Pts can be at various positions
-        }
-
-        // PM, PS, DIF
-        for (let i = 0; i < dataCols.length && i < 8; i++) {
-            const v = safeInt(dataCols[i])
-            if (v > 100) {
-                if (!team.pm) team.pm = v
-                else if (!team.ps) team.ps = v
-            }
-        }
-
-        standings.push(team)
+        standings.push({
+            posicao: standings.length + 1,
+            equipa: nome,
+            j: parseInt(J) || 0,
+            v: parseInt(V) || 0,
+            d: parseInt(D) || 0,
+            pm: parseInt(PM) || undefined,
+            ps: parseInt(PS) || undefined,
+            dif: parseInt(DIF) || undefined,
+            pts: parseInt(PTS) || 0,
+        })
     })
 
     return standings
-}
-
-function safeInt(el: Element | undefined): number {
-    if (!el) return 0
-    return parseInt((el.textContent || '').trim()) || 0
 }
 
 // ---- Schedule & Results via HTML scraping ----
