@@ -362,14 +362,234 @@ export async function fetchTeams(provaId: number): Promise<FPBTeam[]> {
     return teams
 }
 
-// ---- Player stats via API ----
+// ---- Player stats: API first, HTML fallback ----
 
 export async function fetchPlayerStats(provaId: number, tipo: string = 'val'): Promise<FPBPlayerStat[]> {
-    const data = await fetchFromProxy(`estatisticas/prova/${provaId}?tipo=${tipo}`)
-    return data || []
+    try {
+        const data = await fetchFromProxy(`estatisticas/prova/${provaId}?tipo=${tipo}`)
+        if (Array.isArray(data) && data.length > 0) return data
+    } catch { /* fall through to HTML */ }
+
+    const html = await fetchHtml('estatistica', provaId)
+    return scrapePlayerStats(html)
+}
+
+function scrapePlayerStats(html: string): FPBPlayerStat[] {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+    const allStats: Map<number, FPBPlayerStat> = new Map()
+
+    // Try .day-wrapper tables first
+    const dayWrappers = doc.querySelectorAll('.day-wrapper')
+    dayWrappers.forEach(dayWrapper => {
+        const rows = dayWrapper.querySelectorAll('table tbody tr')
+        rows.forEach(row => {
+            const cols = row.querySelectorAll('td')
+            if (cols.length < 4) return
+            const nome = cols[0]?.textContent?.trim() || cols[1]?.textContent?.trim() || ''
+            if (!nome) return
+            const atleta_id = Math.abs(hashCode(nome))
+            allStats.set(atleta_id, parseStatRow(cols, nome, atleta_id))
+        })
+    })
+
+    // Fallback: generic tables
+    if (allStats.size === 0) {
+        doc.querySelectorAll('table tbody tr').forEach(row => {
+            const cols = row.querySelectorAll('td')
+            if (cols.length < 4) return
+            const nome = cols[0]?.textContent?.trim() || cols[1]?.textContent?.trim() || ''
+            if (!nome) return
+            const atleta_id = Math.abs(hashCode(nome))
+            if (!allStats.has(atleta_id)) {
+                allStats.set(atleta_id, parseStatRow(cols, nome, atleta_id))
+            }
+        })
+    }
+
+    return Array.from(allStats.values())
+}
+
+function parseStatRow(cols: NodeListOf<Element>, nome: string, atleta_id: number): FPBPlayerStat {
+    const get = (i: number) => parseFloat(cols[i]?.textContent?.trim() || '0') || 0
+    return {
+        atleta_id,
+        nome,
+        clube_nome: '',
+        j: get(1),
+        pts: get(2),
+        reb: get(3),
+        ast: get(4),
+        blk: get(5),
+        stl: get(6),
+        val: get(cols.length - 1),
+    }
+}
+
+function hashCode(s: string): number {
+    let h = 0
+    for (let i = 0; i < s.length; i++) {
+        h = ((h << 5) - h) + s.charCodeAt(i)
+        h |= 0
+    }
+    return h
 }
 
 export async function fetchMVP(provaId: number): Promise<FPBPlayerStat[]> {
     const data = await fetchFromProxy(`mvp/prova/${provaId}`)
     return data || []
+}
+
+// ---- Game Detail via HTML scraping ----
+
+export interface FPBGameDetail {
+    internalID: string
+    data: string
+    fase: string
+    equipa_casa: string
+    equipa_fora: string
+    resultado_casa: number
+    resultado_fora: number
+    parciais: { periodo: string; casa: number; fora: number }[]
+    pavilhao: string
+    espetadores: number
+    gameLeaders: { categoria: string; casa: { nome: string; valor: string }; fora: { nome: string; valor: string } }[]
+    boxScoreCasa: FPBBoxScorePlayer[]
+    boxScoreFora: FPBBoxScorePlayer[]
+    teamStats: { label: string; casa: string; fora: string }[]
+}
+
+export interface FPBBoxScorePlayer {
+    numero: number
+    nome: string
+    min: string
+    pts: number
+    l2: string
+    l2pct: string
+    l3: string
+    l3pct: string
+    ll: string
+    llpct: string
+    ro: number
+    rd: number
+    rt: number
+    as: number
+    rb: number
+    to: number
+    dl: number
+    fc: number
+    fs: number
+    mais_menos: number
+    val: number
+}
+
+export async function fetchGameDetail(internalID: string): Promise<FPBGameDetail | null> {
+    const params = new URLSearchParams({ internalID })
+    const res = await fetch(`${FPB_PROXY}?${params.toString()}`)
+    if (!res.ok) return null
+    const html = await res.text()
+    return scrapeGameDetail(html, internalID)
+}
+
+function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | null {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+
+    // Date & phase
+    const dataEl = doc.querySelector('.date, h3.date, .game-date')
+    const data = dataEl?.textContent?.trim() || ''
+
+    const faseEl = doc.querySelector('.competition-phase, .fase, .wrapper-title h4')
+    const fase = faseEl?.textContent?.trim() || ''
+
+    // Teams & score
+    const homeEl = doc.querySelector('.home-team .team-name, .team-home .name, .equipa-casa .nome')
+    const awayEl = doc.querySelector('.away-team .team-name, .team-away .name, .equipa-fora .nome')
+    const equipa_casa = homeEl?.textContent?.trim() || ''
+    const equipa_fora = awayEl?.textContent?.trim() || ''
+
+    const scoreHomeEl = doc.querySelector('.home-score, .score-home, .resultado-casa')
+    const scoreAwayEl = doc.querySelector('.away-score, .score-away, .resultado-fora')
+    const resultado_casa = parseInt(scoreHomeEl?.textContent?.trim() || '0') || 0
+    const resultado_fora = parseInt(scoreAwayEl?.textContent?.trim() || '0') || 0
+
+    // Parciais (by quarter)
+    const parciais: FPBGameDetail['parciais'] = []
+    const quarterEls = doc.querySelectorAll('.quarter, .parcial')
+    quarterEls.forEach(el => {
+        const text = el.textContent?.trim() || ''
+        const match = text.match(/(Q\d+|1T|2T|OT)\s*:?\s*(\d+)\s*[-–]\s*(\d+)/i)
+        if (match) {
+            parciais.push({ periodo: match[1], casa: parseInt(match[2]), fora: parseInt(match[3]) })
+        }
+    })
+
+    // Pavilhao
+    const pavilhaoEl = doc.querySelector('.location, .pavilhao, .venue')
+    const pavilhao = pavilhaoEl?.textContent?.trim() || ''
+
+    // Espetadores
+    const espEl = doc.querySelector('.spectators, .espetadores')
+    const espetadores = parseInt(espEl?.textContent?.trim() || '0') || 0
+
+    // Game Leaders
+    const gameLeaders: FPBGameDetail['gameLeaders'] = []
+    const leaderEls = doc.querySelectorAll('.game-leaders .leader-row, .leaders .item')
+    leaderEls.forEach(el => {
+        const cat = el.querySelector('.category, .label')?.textContent?.trim() || ''
+        const home = el.querySelector('.home-val, .home .value')?.textContent?.trim() || ''
+        const away = el.querySelector('.away-val, .away .value')?.textContent?.trim() || ''
+        gameLeaders.push({ categoria: cat, casa: { nome: '', valor: home }, fora: { nome: '', valor: away } })
+    })
+
+    // Box Score
+    const boxScoreCasa: FPBBoxScorePlayer[] = []
+    const boxScoreFora: FPBBoxScorePlayer[] = []
+    const boxTables = doc.querySelectorAll('.box-score table, .stats-table, table.stats')
+    boxTables.forEach((table, idx) => {
+        const roster: FPBBoxScorePlayer[] = idx === 0 ? boxScoreCasa : boxScoreFora
+        table.querySelectorAll('tbody tr').forEach(row => {
+            const cols = row.querySelectorAll('td')
+            if (cols.length < 5) return
+            roster.push({
+                numero: parseInt(cols[0]?.textContent?.trim() || '0') || 0,
+                nome: cols[1]?.textContent?.trim() || '',
+                min: cols[2]?.textContent?.trim() || '',
+                pts: parseInt(cols[3]?.textContent?.trim() || '0') || 0,
+                l2: cols[4]?.textContent?.trim() || '',
+                l2pct: cols[5]?.textContent?.trim() || '',
+                l3: cols[6]?.textContent?.trim() || '',
+                l3pct: cols[7]?.textContent?.trim() || '',
+                ll: cols[8]?.textContent?.trim() || '',
+                llpct: cols[9]?.textContent?.trim() || '',
+                ro: parseInt(cols[10]?.textContent?.trim() || '0') || 0,
+                rd: parseInt(cols[11]?.textContent?.trim() || '0') || 0,
+                rt: parseInt(cols[12]?.textContent?.trim() || '0') || 0,
+                as: parseInt(cols[13]?.textContent?.trim() || '0') || 0,
+                rb: parseInt(cols[14]?.textContent?.trim() || '0') || 0,
+                to: parseInt(cols[15]?.textContent?.trim() || '0') || 0,
+                dl: parseInt(cols[16]?.textContent?.trim() || '0') || 0,
+                fc: parseInt(cols[17]?.textContent?.trim() || '0') || 0,
+                fs: parseInt(cols[18]?.textContent?.trim() || '0') || 0,
+                mais_menos: parseInt(cols[19]?.textContent?.trim() || '0') || 0,
+                val: parseFloat(cols[20]?.textContent?.trim() || '0') || 0,
+            })
+        })
+    })
+
+    // Team Stats
+    const teamStats: FPBGameDetail['teamStats'] = []
+    const statRows = doc.querySelectorAll('.team-stats .stat-row, .comparison .row')
+    statRows.forEach(row => {
+        const label = row.querySelector('.label')?.textContent?.trim() || ''
+        const casa = row.querySelector('.home')?.textContent?.trim() || ''
+        const fora = row.querySelector('.away')?.textContent?.trim() || ''
+        if (label) teamStats.push({ label, casa, fora })
+    })
+
+    return {
+        internalID, data, fase, equipa_casa, equipa_fora,
+        resultado_casa, resultado_fora, parciais, pavilhao, espetadores,
+        gameLeaders, boxScoreCasa, boxScoreFora, teamStats,
+    }
 }

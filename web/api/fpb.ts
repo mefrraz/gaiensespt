@@ -6,7 +6,7 @@ export default async function handler(request: Request) {
     const url = new URL(request.url)
     const endpoint = url.searchParams.get('endpoint')
 
-    // Proxy mode: forward to sav2.fpb.pt API
+    // Proxy mode: forward to sav2.fpb.pt API (standings/stats only)
     if (endpoint) {
         const fpbRes = await fetch(`https://sav2.fpb.pt/api/${endpoint}`, {
             headers: {
@@ -17,7 +17,6 @@ export default async function handler(request: Request) {
 
         const text = await fpbRes.text()
 
-        // If upstream returns 404, return empty array with 200 to avoid console noise
         if (fpbRes.status === 404) {
             return new Response('[]', {
                 status: 200,
@@ -43,16 +42,18 @@ export default async function handler(request: Request) {
         })
     }
 
-    // HTML scraping mode
+    // HTML scraping mode (calendar, results, standings, stats, game detail)
     const page = url.searchParams.get('page') || 'calendario'
     const clube = url.searchParams.get('clube')
     const competicao = url.searchParams.get('competicao')
+    const internalID = url.searchParams.get('internalID')
 
     let fpbUrl: string
 
-    if (competicao) {
-        // Competition page: /calendario/10902/?competicao=10902&
-        fpbUrl = `https://www.fpb.pt/${page}/${competicao}/?competicao=${competicao}&`
+    if (internalID) {
+        fpbUrl = `https://www.fpb.pt/ficha-de-jogo?internalID=${internalID}`
+    } else if (competicao) {
+        fpbUrl = `https://www.fpb.pt/${page}/${competicao}`
     } else {
         const clubId = clube || '119'
         const epoca = url.searchParams.get('epoca') || '2025/2026'
@@ -60,7 +61,7 @@ export default async function handler(request: Request) {
     }
 
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 8000)
+    const timeout = setTimeout(() => controller.abort(), 10000)
 
     try {
         const fpbRes = await fetch(fpbUrl, {
