@@ -2,10 +2,30 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { fetchFPBGames } from '../lib/fpbApi'
+import { fetchGameDetail, type FPBGameDetail } from '../lib/fpbCompetitionsApi'
 import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink, Calendar, Minus, Check } from 'lucide-react'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 import { useClub, type Club } from '../lib/ClubContext'
+
+function detailToMatch(detail: FPBGameDetail): Match {
+    return {
+        id: detail.internalID,
+        slug: detail.internalID,
+        data: detail.data,
+        hora: '',
+        equipa_casa: detail.equipa_casa,
+        equipa_fora: detail.equipa_fora,
+        resultado_casa: detail.resultado_casa,
+        resultado_fora: detail.resultado_fora,
+        escalao: detail.fase,
+        competicao: '',
+        local: detail.pavilhao,
+        logotipo_casa: null,
+        logotipo_fora: null,
+        status: 'FINALIZADO',
+    }
+}
 
 function Game() {
     const { slug } = useParams()
@@ -46,7 +66,19 @@ function Game() {
                 }
             }
 
-            // 2) If no club in URL, stop here
+            // 2) If no club in URL, try competition game detail (slug is numeric internalID)
+            if (!clubSlug && /^\d+$/.test(slug)) {
+                try {
+                    const detail = await fetchGameDetail(slug)
+                    if (detail) {
+                        setMatch(detailToMatch(detail))
+                    }
+                } catch { /* ignore */ }
+                setLoading(false)
+                return
+            }
+
+            // 3) If no club in URL, stop here
             if (!clubSlug) {
                 setLoading(false)
                 return

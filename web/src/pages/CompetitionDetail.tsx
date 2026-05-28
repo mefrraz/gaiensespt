@@ -277,9 +277,7 @@ export default function CompetitionDetail() {
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                                     {dateGames.map((g, i) => (
-                                                        <a key={i} href={`https://www.fpb.pt/ficha-de-jogo?internalID=${g.jogo_id}`} target="_blank" rel="noopener noreferrer" className="block">
-                                                            <GameCard match={fpbGameToMatch(g, logoMap)} mode="results" />
-                                                        </a>
+                                                        <GameCard key={i} match={fpbGameToMatch(g, logoMap)} mode="results" />
                                                     ))}
                                                 </div>
                                             </div>
@@ -299,10 +297,8 @@ export default function CompetitionDetail() {
                                                     <div className="flex-1 h-px bg-zinc-200 dark:bg-white/5" />
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                                    {dateGames.map((g, i) => (
-                                                        <a key={i} href={`https://www.fpb.pt/ficha-de-jogo?internalID=${g.jogo_id}`} target="_blank" rel="noopener noreferrer" className="block">
-                                                            <GameCard match={fpbGameToMatch(g, logoMap)} mode="agenda" />
-                                                        </a>
+                                                    {dateGames.map(g => (
+                                                        <GameCard key={g.jogo_id || g.data+g.equipa_casa} match={fpbGameToMatch(g, logoMap)} mode="agenda" />
                                                     ))}
                                                 </div>
                                             </div>
