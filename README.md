@@ -1,163 +1,308 @@
-# Dribly — Basquetebol português no teu bolso
+<p align="center">
+  <img src="web/public/logo.svg" alt="Dribly" width="100" height="100" />
+</p>
 
-App web (PWA) gratuita e open-source para acompanhar todos os clubes de basquetebol registados na Federação Portuguesa de Basquetebol (FPB).
+<h1 align="center">Dribly<span style="color:#7C3AED">.</span></h1>
 
-**Site:** https://dribly.vercel.app
+<p align="center">
+  <b>Basquetebol português no teu bolso</b>
+  <br />
+  App web (PWA) gratuita e open-source para acompanhar todos os clubes de basquetebol registados na Federação Portuguesa de Basquetebol (FPB)
+</p>
+
+<p align="center">
+  <a href="https://dribly.vercel.app">
+    <img src="https://img.shields.io/badge/dribly.vercel.app-7C3AED?style=for-the-badge&logo=vercel&logoColor=white" alt="Website" />
+  </a>
+  <a href="https://github.com/mefrraz/dribly">
+    <img src="https://img.shields.io/github/license/mefrraz/dribly?style=for-the-badge&color=7C3AED" alt="License" />
+  </a>
+  <a href="https://github.com/mefrraz/dribly/stargazers">
+    <img src="https://img.shields.io/github/stars/mefrraz/dribly?style=for-the-badge&color=7C3AED" alt="Stars" />
+  </a>
+  <br />
+  <a href="https://github.com/mefrraz/dribly/commits/main">
+    <img src="https://img.shields.io/github/last-commit/mefrraz/dribly?style=flat-square&color=7C3AED" alt="Last Commit" />
+  </a>
+  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react" alt="React 18" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript" alt="TypeScript 5" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=flat-square&logo=tailwindcss" alt="Tailwind CSS 3" />
+  <img src="https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite" alt="Vite 5" />
+  <img src="https://img.shields.io/badge/Supabase-FF9500?style=flat-square&logo=supabase" alt="Supabase" />
+  <img src="https://img.shields.io/badge/Vercel-000?style=flat-square&logo=vercel" alt="Vercel" />
+  <img src="https://img.shields.io/badge/PWA-5A0FC8?style=flat-square&logo=pwa" alt="PWA" />
+</p>
 
 ---
 
-## Objetivo
+## 🎯 Objetivo
 
-O Dribly nasceu da frustração de não existir uma plataforma única, rápida e mobile-first para acompanhar o basquetebol português. O site da FPB é funcional mas pesado e sem otimização mobile. O Swish é pago e focado apenas numa competição. O TugaBasket é desktop-only.
+O Dribly nasceu da frustração de não existir uma plataforma única, rápida e mobile-first para acompanhar o basquetebol português.
 
-O Dribly resolve isto:
+| Problema | Solução Dribly |
+|---|---|
+| Site da FPB pesado e sem otimização mobile | App PWA leve e responsiva |
+| Swish pago e focado numa competição | **100% gratuito**, multi-competição |
+| TugaBasket desktop-only | **Mobile-first**, instalável como app |
 
-- **Gratuito** — sem subscrições, sem anúncios
-- **Mobile-first** — feito para o telemóvel, com PWA instalável
-- **Multi-clube** — segue todos os clubes, não apenas um
-- **Multi-escalão** — seniores, sub18, sub16, sub14, tudo num só sítio
-- **Dados oficiais** — tudo vem diretamente da FPB
-- **Open Source** — qualquer pessoa pode contribuir, auditar ou fazer fork
+---
 
-## Stack
+## ✨ Funcionalidades
 
-| Camada | Tecnologia |
-|--------|-----------|
-| Frontend | React 18 + TypeScript + Vite |
-| Estilos | Tailwind CSS |
-| Base de dados | Supabase (PostgreSQL) |
-| Cache local | localStorage + Service Worker |
-| Deploy | Vercel (static + Edge Functions) |
-| API externa | FPB + TugaBasket |
-| PWA | vite-plugin-pwa |
+| Funcionalidade | Estado | Detalhes |
+|---|---|---|
+| 🔍 **Pesquisa de clubes** | ✅ Completo | 281 clubes com cores, logos, pesquisa fuzzy |
+| 📅 **Jogos e agenda** | ✅ Completo | Calendário, resultados, fichas de jogo detalhadas |
+| 🏆 **Classificações** | ✅ Completo | Tabelas Fase Regular com J, V, D, PM, PS, DIF, PTS |
+| 📊 **Estatísticas individuais** | ✅ Ligas topo | 22 campos — PTS, REB, AST, VAL, %L2, %L3, %LL |
+| 👤 **Contas e login** | ✅ Completo | Email/password via Supabase Auth |
+| ⭐ **Favoritos** | ✅ Completo | Favoritar clube + segui-lo automaticamente |
+| ❤️ **Seguir clubes/liga** | ✅ Completo | Página dedicada "Seguidos" |
+| 🗺️ **Mapas e localização** | ✅ Completo | Pavilhões no mapa |
+| 🌓 **Modo claro/escuro** | ✅ Completo | Com transição suave |
+| 📱 **PWA instalável** | ✅ Completo | Instala como app nativa |
+| 🔌 **Offline parcial** | ✅ Completo | Service Worker + cache inteligente |
+| 🎨 **Tema dinâmico** | ✅ Completo | Cada clube com accent color própria |
+| 🎯 **Tour onboarding** | ✅ v3.3 | Tour guiado ao criar conta |
+| 💡 **Sugestões pós-registo** | ✅ v3.3 | Favoritar e seguir clubes/ligas na 1ª vez |
 
-## Porquê o Dribly?
+---
 
-| Funcionalidade | Dribly | FPB | Swish | TugaBasket | FPB TV |
-|---|---|---|---|---|---|
-| Mobile-first | sim | sim | sim | não | sim |
-| PWA instalavel | sim | não | sim | não | não |
-| Open Source | sim | não | não | não | não |
-| Gratuito | sim | sim | não | sim | sim |
-| Multi-clube | sim | sim | limitado | não | não |
-| Multi-escalao | sim | sim | limitado | não | não |
-| Offline parcial | sim | não | não | não | não |
-| Mapas | sim | não | não | não | não |
-| Modo claro/escuro | sim | não | sim | não | não |
+## 📊 Comparação
 
-## Funcionalidades
+<table>
+  <thead>
+    <tr>
+      <th>Funcionalidade</th>
+      <th align="center">Dribly</th>
+      <th align="center">FPB</th>
+      <th align="center">Swish</th>
+      <th align="center">TugaBasket</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Mobile-first</td>
+      <td align="center">✅</td>
+      <td align="center">✅</td>
+      <td align="center">✅</td>
+      <td align="center">❌</td>
+    </tr>
+    <tr>
+      <td>PWA instalável</td>
+      <td align="center">✅</td>
+      <td align="center">❌</td>
+      <td align="center">✅</td>
+      <td align="center">❌</td>
+    </tr>
+    <tr>
+      <td>Open Source</td>
+      <td align="center">✅</td>
+      <td align="center">❌</td>
+      <td align="center">❌</td>
+      <td align="center">❌</td>
+    </tr>
+    <tr>
+      <td>Gratuito</td>
+      <td align="center">✅</td>
+      <td align="center">✅</td>
+      <td align="center">❌</td>
+      <td align="center">✅</td>
+    </tr>
+    <tr>
+      <td>Multi-clube</td>
+      <td align="center">✅</td>
+      <td align="center">✅</td>
+      <td align="center">⚠️</td>
+      <td align="center">❌</td>
+    </tr>
+    <tr>
+      <td>Multi-escalão</td>
+      <td align="center">✅</td>
+      <td align="center">✅</td>
+      <td align="center">⚠️</td>
+      <td align="center">❌</td>
+    </tr>
+    <tr>
+      <td>Offline parcial</td>
+      <td align="center">✅</td>
+      <td align="center">❌</td>
+      <td align="center">❌</td>
+      <td align="center">❌</td>
+    </tr>
+    <tr>
+      <td>Ficha de jogo detalhada</td>
+      <td align="center">✅</td>
+      <td align="center">✅</td>
+      <td align="center">✅</td>
+      <td align="center">❌</td>
+    </tr>
+    <tr>
+      <td>Estatísticas individuais</td>
+      <td align="center">✅</td>
+      <td align="center">✅</td>
+      <td align="center">✅</td>
+      <td align="center">❌</td>
+    </tr>
+    <tr>
+      <td>Contas / Seguir clubes</td>
+      <td align="center">✅</td>
+      <td align="center">❌</td>
+      <td align="center">✅</td>
+      <td align="center">❌</td>
+    </tr>
+  </tbody>
+</table>
 
-- **Pesquisa de clubes** — 281 clubes FPB com cores e logotipos
-- **Jogos e agenda** — proximos jogos, resultados, fichas de jogo
-- **Classificações** — todas as competições por associacao
-- **Multi-clube** — segue varios clubes ao mesmo tempo
-- **PWA** — instala como app no telemovel
-- **Modo escuro** — tema claro/escuro
-- **Offline parcial** — cache inteligente com dados recentes
-- **Tema dinamico** — cada clube tem a sua cor (accent color)
+---
 
-## Setup Local
+## 🛠️ Stack
+
+| Camada | Tecnologia | Badge |
+|---|---|---|
+| Frontend | React 18 + TypeScript | ![React](https://img.shields.io/badge/-React_18-61DAFB?style=flat&logo=react) |
+| Build | Vite 5 | ![Vite](https://img.shields.io/badge/-Vite_5-646CFF?style=flat&logo=vite) |
+| Estilos | Tailwind CSS 3 | ![Tailwind](https://img.shields.io/badge/-Tailwind_CSS_3-06B6D4?style=flat&logo=tailwindcss) |
+| Base de dados | Supabase (PostgreSQL) | ![Supabase](https://img.shields.io/badge/-Supabase-FF9500?style=flat&logo=supabase) |
+| Deploy | Vercel (Edge Functions) | ![Vercel](https://img.shields.io/badge/-Vercel-000?style=flat&logo=vercel) |
+| Cache local | localStorage + Service Worker | ![PWA](https://img.shields.io/badge/-PWA-5A0FC8?style=flat&logo=pwa) |
+| API externa | FPB + TugaBasket | ![Scraping](https://img.shields.io/badge/-HTML_Scraping-FF6B6B?style=flat) |
+| PWA | vite-plugin-pwa | ![Workbox](https://img.shields.io/badge/-Workbox-FF6C2A?style=flat&logo=workbox) |
+
+---
+
+## 🏗️ Estrutura
 
 ```
+web/
+├── src/
+│   ├── lib/
+│   │   ├── fpbApi.ts               # Parser HTML FPB (clubes)
+│   │   ├── fpbCompetitionsApi.ts    # Parser HTML + WordPress AJAX (competições)
+│   │   ├── tugabasketApi.ts         # Parser TugaBasket
+│   │   ├── ClubContext.tsx          # Estado global clubes
+│   │   ├── AuthContext.tsx          # Autenticação Supabase
+│   │   └── supabase.ts             # Cliente Supabase
+│   ├── hooks/
+│   │   ├── useGames.ts              # Jogos com cache
+│   │   ├── useStandings.ts          # Classificações com cache
+│   │   └── useFollows.ts            # Seguir clubes/liga (DB)
+│   ├── components/
+│   │   ├── AuthModal.tsx            # Login / Criar conta
+│   │   ├── OnboardingTour.tsx       # Tour guiado pós-registo
+│   │   ├── PostOnboardingSuggestions.tsx  # Sugestões iniciais
+│   │   ├── GameCard.tsx             # Cartão de jogo reutilizável
+│   │   └── SegmentControl.tsx       # Navegação por tabs
+│   └── pages/
+│       ├── Landing.tsx              # Página inicial
+│       ├── CompetitionDetail.tsx    # Detalhe competição (classif/jogos/stats)
+│       ├── club/ClubHome.tsx        # Página do clube
+│       ├── club/ClubGames.tsx       # Jogos do clube
+│       ├── Game.tsx                 # Ficha de jogo detalhada
+│       ├── Following.tsx           # Seguidos (clubes + ligas)
+│       └── ProfilePage.tsx         # Perfil do utilizador
+├── api/
+│   ├── fpb.ts                      # Edge Function (proxy FPB + WordPress AJAX)
+│   └── tugabasket.ts               # Edge Function (proxy TugaBasket)
+└── public/
+    ├── logo.svg / logo.png         # Assets PWA
+```
+
+---
+
+## 🔄 Fluxo de Dados
+
+### Jogos (Clube)
+
+```
+Browser → /api/fpb?page=[calendario|resultados]&clube=169&epoca=2025/2026
+         → Vercel Edge Function
+         → www.fpb.pt → HTML
+         → DOMParser → Match[]
+         → React (imediato) + Supabase upsert (cache)
+```
+
+### Classificação (Competição)
+
+```
+Browser → /api/fpb?wp_action=get_more_fase_regular&competicao=10902&fase=30969
+         → Vercel Edge Function
+         → www.fpb.pt/wp-admin/admin-ajax.php
+         → JSON { result: { body: "..." } }
+         → RegExp parser → FPBStandingTeam[]
+```
+
+### Ficha de Jogo
+
+```
+Browser → /game/{internalID}
+         → Game.tsx → fetchGameDetail(internalID)
+         → /api/fpb?internalID=390144
+         → www.fpb.pt/ficha-de-jogo?internalID=390144
+         → DOMParser → FPBGameDetail (box score, parciais, leaders)
+```
+
+---
+
+## ⚡ Cache Strategy
+
+| Recurso | < 15 min | > 15 min |
+|---|---|---|
+| Clubes | Supabase | Supabase |
+| Jogos | localStorage | refresh FPB + upsert |
+| Classificações | localStorage | refresh WordPress AJAX |
+| Logos | browser cache (longo prazo) | — |
+
+---
+
+## 🚀 Setup Local
+
+```bash
 git clone https://github.com/mefrraz/dribly.git
 cd dribly/web
 npm install
 npm run dev
 ```
 
-Variáveis de ambiente (ver Supabase Dashboard > Settings > API):
+Variáveis de ambiente (`web/.env`):
 
-```
+```env
 VITE_SUPABASE_URL=https://[project].supabase.co
 VITE_SUPABASE_ANON_KEY=[anon public key]
 ```
 
-## Estrutura do Projeto
+---
 
-```
-web/
-  src/
-    lib/
-      fpbApi.ts            parser HTML da FPB (DOMParser)
-      TugabasketApi.ts     parser TugaBasket (classificações)
-      ClubContext.tsx       estado global de clubes (React Context)
-      associationLogos.ts  mapeamento logos das associacoes
-      supabase.ts          cliente Supabase
-    hooks/
-      useGames.ts          jogos com cache 15 min + localStorage
-      useStandings.ts      classificações com cache
-    components/
-      BottomNav.tsx        navegacao inferior mobile
-      SearchModal.tsx      pesquisa de clubes e competições
-      GameCard.tsx         cartao de jogo reutilizavel
-    pages/
-      Landing.tsx          pagina inicial com carrosseis
-      SearchPage.tsx       pagina de pesquisa dedicada
-      club/                paginas por clube
-      Game.tsx             ficha de jogo individual
-      Standings.tsx        classificações por associacao
-      AssociationCompetitions.tsx  competicao de cada associacao
-      About.tsx            sobre o projeto
-  api/
-    fpb.ts                 Edge Function (proxy FPB)
-    Tugabasket.ts          Edge Function (proxy TugaBasket)
-scrapers/
-  discover-competitions.py scraper de competições (Python)
-```
+## 📦 Deploy
 
-## Fluxo de Dados (Tecnico)
-
-### Jogos
-
-```
-Browser >> /api/fpb?page=calendario&clube=169&epoca=2025/2026
-             >> Vercel Edge Function
-             >> https://www.fpb.pt/calendario/clube_169/
-             >> HTML da FPB
-             >> Browser: DOMParser >> Match[]
-             >> setState React (UI imediata)
-             >> upsert Supabase (cache partilhado)
-```
-
-A FPB não tem API publica. O Dribly faz scraping do HTML das paginas de calendario e resultados usando um parser no browser (DOMParser). A Vercel Edge Function serve de proxy para evitar CORS e adicionar cache (s-maxage=120). Os jogos sao mostrados imediatamente assim que o parser acaba, sem esperar pelo upsert no Supabase.
-
-### Classificações
-
-```
-Browser >> /api/Tugabasket?path=getCompetitionDetails&competitionId=10906
-             >> Vercel Edge Function
-             >> https://resultados.Tugabasket.com/...
-             >> HTML >> parseAccordionStandings() >> Standing[]
-             >> upsert Supabase (cache 15 min)
-```
-
-### Cores dos Clubes
-
-Cada clube tem uma cor primaria (primary_color) extraida dos cards oficiais da FPB. A cor e aplicada dinamicamente via CSS var(--club-color), alterando o tema da pagina do clube. Clubes sem cor definida (#000000) recebem o roxo padrao #7C3AED.
-
-### Cache Strategy
-
-| Recurso | Primeira visita | < 15 min | > 15 min |
-|---|---|---|---|
-| Clubes | Supabase | Supabase | Supabase |
-| Jogos | FPB API + parser | Supabase | localStorage + refresh FPB |
-| Classificações | TugaBasket | Supabase | TugaBasket + refresh |
-
-## Deploy
-
-```
+```bash
 git push origin main
 ```
 
 A Vercel faz auto-deploy automaticamente.
 
-## Scrapers
+---
 
-```
+## 🧪 Scrapers
+
+```bash
 cd scrapers
 python discover-competitions.py
 ```
 
-## Licenca
+---
 
-MIT
+## 📜 Licença
+
+MIT — aberto para contribuições, forks e uso livre.
+
+---
+
+<p align="center">
+  <a href="https://dribly.vercel.app">
+    <img src="https://img.shields.io/badge/Abrir_Dribly-7C3AED?style=for-the-badge&logo=vercel&logoColor=white" alt="Abrir Dribly" />
+  </a>
+  <a href="https://github.com/mefrraz/dribly">
+    <img src="https://img.shields.io/badge/Código_Fonte-000?style=for-the-badge&logo=github" alt="Código Fonte" />
+  </a>
+</p>
