@@ -101,11 +101,21 @@ async function fetchHtml(page: string, competicao: number): Promise<string> {
 // ---- Standings: API first, HTML fallback ----
 
 export async function fetchStandings(provaId: number): Promise<FPBStandingTeam[]> {
-    // WordPress AJAX: admin-ajax.php?action=get_more_fase_regular
+    // Step 1: Fetch the HTML to extract the correct fase ID for this competition
+    let faseId = '30969' // fallback for Liga Betclic Masculina
+    try {
+        const html = await fetchHtml('classificacao', provaId)
+        const faseMatch = html.match(/<li[^>]*class="[^"]*option[^"]*"[^>]*tag="Fase Regular"[^>]*value="(\d+)"/)
+        if (faseMatch) {
+            faseId = faseMatch[1]
+        }
+    } catch { /* use fallback */ }
+
+    // Step 2: WordPress AJAX with the correct fase ID
     const params = new URLSearchParams({
         wp_action: 'get_more_fase_regular',
         competicao: String(provaId),
-        fase: '30969',
+        fase: faseId,
     })
     const res = await fetch(`${FPB_PROXY}?${params.toString()}`)
     if (!res.ok) return []
