@@ -234,10 +234,19 @@ export default function CompetitionDetail() {
                                                 </select>
                                             </div>
                                         )}
-                                        {standings[selectedPhase] && standings[selectedPhase].teams.length === 0 && (
-                                            <Empty text={`${standings[selectedPhase].name} — formato de eliminatórias indisponível`} />
+                                        {standings[selectedPhase] && standings[selectedPhase].type === 'games' && (
+                                            <div className="space-y-1.5">
+                                                {standings[selectedPhase].teams.map((t, i) => (
+                                                    <div key={i} className="bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-xl px-4 py-3 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                                                        {t.equipa}
+                                                    </div>
+                                                ))}
+                                            </div>
                                         )}
-                                        {standings[selectedPhase] && standings[selectedPhase].teams.length > 0 && (
+                                        {standings[selectedPhase] && standings[selectedPhase].type === 'table' && standings[selectedPhase].teams.length === 0 && (
+                                            <Empty text={`${standings[selectedPhase].name} — sem dados disponíveis`} />
+                                        )}
+                                        {standings[selectedPhase] && standings[selectedPhase].type === 'table' && standings[selectedPhase].teams.length > 0 && (
                                         <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 overflow-hidden">
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-sm">

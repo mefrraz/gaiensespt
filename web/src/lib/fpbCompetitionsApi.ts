@@ -103,6 +103,7 @@ async function fetchHtml(page: string, competicao: number): Promise<string> {
 export interface FPBStandingPhase {
     name: string
     teams: FPBStandingTeam[]
+    type: 'table' | 'games'
 }
 
 export async function fetchStandings(provaId: number): Promise<FPBStandingPhase[]> {
@@ -134,13 +135,15 @@ export async function fetchStandings(provaId: number): Promise<FPBStandingPhase[
         })
         try {
             const res = await fetch(`${FPB_PROXY}?${params.toString()}`)
-            if (!res.ok) return { name: fase.name, teams: [] as FPBStandingTeam[] }
+            if (!res.ok) return { name: fase.name, teams: [], type: 'table' as const }
             const json = await res.json()
             const body: string = json?.result?.body || ''
-            if (!body) return { name: fase.name, teams: [] as FPBStandingTeam[] }
-            return { name: fase.name, teams: scrapeStandings(body) }
+            if (!body) return { name: fase.name, teams: [], type: 'table' as const }
+            const teams = scrapeStandings(body)
+            const type = body.includes('phase-game') ? 'games' as const : 'table' as const
+            return { name: fase.name, teams, type }
         } catch {
-            return { name: fase.name, teams: [] as FPBStandingTeam[] }
+            return { name: fase.name, teams: [], type: 'table' as const }
         }
     }))
 
