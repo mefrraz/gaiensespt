@@ -144,7 +144,7 @@ export async function fetchStandings(provaId: number): Promise<FPBStandingPhase[
         }
     }))
 
-    return results.filter(p => p.teams.length > 0)
+    return results // keep all phases, even empty ones (playoffs/finals)
 }
 
 function scrapeStandings(html: string): FPBStandingTeam[] {
