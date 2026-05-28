@@ -499,7 +499,7 @@ function scrapePlayerStats(html: string): FPBPlayerStat[] {
     const imgRe = /<img[^>]*data-src="([^"]*uploads\/utilizadores\/(\d+)_\d+\.(?:png|jpg))"[^>]*alt="([^"]*)"/g
     let im: RegExpExecArray | null
     while ((im = imgRe.exec(html)) !== null) {
-        const photoUrl = 'https://sav2.fpb.pt/' + im[1]
+        const photoUrl = im[1] // data-src already has full URL
         const altName = im[3].trim()
         const userId = parseInt(im[2])
         for (const [, player] of allStats) {
