@@ -442,7 +442,7 @@ function StatsLeaderboard({ playerStats }: { playerStats: FPBPlayerStat[] }) {
                     const val = p[STAT_TYPES[statType].key]
                     const displayVal = typeof val === 'number' ? (Number.isInteger(val) ? val : val.toFixed(1)) : '—'
                     const photoUrl = p.atleta_id > 100000
-                        ? `https://sav2.fpb.pt/uploads/atletas/foto/${p.atleta_id}.jpg`
+                        ? `https://sav2.fpb.pt/uploads/utilizadores/${p.atleta_id}_1766007011.png`
                         : null
 
                     return (

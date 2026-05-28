@@ -427,77 +427,72 @@ export async function fetchTeams(provaId: number): Promise<FPBTeam[]> {
     return teams
 }
 
-// ---- Player stats: API first, HTML fallback ----
+// ---- Player stats via HTML scraping ----
 
-export async function fetchPlayerStats(provaId: number, tipo: string = 'val'): Promise<FPBPlayerStat[]> {
-    try {
-        const data = await fetchFromProxy(`estatisticas/prova/${provaId}?tipo=${tipo}`)
-        if (Array.isArray(data) && data.length > 0) return data
-    } catch { /* fall through to HTML */ }
-
+export async function fetchPlayerStats(provaId: number, _tipo: string = 'val'): Promise<FPBPlayerStat[]> {
     const html = await fetchHtml('estatistica', provaId)
     return scrapePlayerStats(html)
 }
 
 function scrapePlayerStats(html: string): FPBPlayerStat[] {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(html, 'text/html')
-    const allStats: Map<number, FPBPlayerStat> = new Map()
+    const allStats: Map<string, FPBPlayerStat> = new Map()
 
-    // Try .day-wrapper tables first
-    const dayWrappers = doc.querySelectorAll('.day-wrapper')
-    dayWrappers.forEach(dayWrapper => {
-        const rows = dayWrapper.querySelectorAll('table tbody tr')
-        rows.forEach(row => {
-            const cols = row.querySelectorAll('td')
-            if (cols.length < 4) return
-            const nome = cols[0]?.textContent?.trim() || cols[1]?.textContent?.trim() || ''
-            if (!nome) return
-            const atleta_id = Math.abs(hashCode(nome))
-            allStats.set(atleta_id, parseStatRow(cols, nome, atleta_id))
-        })
-    })
+    // Extract photo URLs: sav2.fpb.pt/uploads/utilizadores/{userId}_{timestamp}.{ext}
+    const photoRe = /uploads\/utilizadores\/(\d+)_\d+\.(?:png|jpg)/g
+    const photoByUser: Map<string, string> = new Map()
+    let pm: RegExpExecArray | null
+    while ((pm = photoRe.exec(html)) !== null) {
+        if (!photoByUser.has(pm[1])) {
+            photoByUser.set(pm[1], pm[0])
+        }
+    }
 
-    // Fallback: generic tables
-    if (allStats.size === 0) {
-        doc.querySelectorAll('table tbody tr').forEach(row => {
-            const cols = row.querySelectorAll('td')
-            if (cols.length < 4) return
-            const nome = cols[0]?.textContent?.trim() || cols[1]?.textContent?.trim() || ''
-            if (!nome) return
-            const atleta_id = Math.abs(hashCode(nome))
-            if (!allStats.has(atleta_id)) {
-                allStats.set(atleta_id, parseStatRow(cols, nome, atleta_id))
+    // Parse player rows from the ATLETA tab ("Total Média" section)
+    // Format: rank player_name abbreviation [stats...]
+    const totalIdx = html.indexOf('Total Média')
+    if (totalIdx >= 0) {
+        const section = html.slice(totalIdx, totalIdx + 15000)
+        // Match: number player_name abbreviation
+        const playerRe = /(\d+)\s+([A-ZÀ-Ü][a-zà-ü]+(?:\s[A-ZÀ-Ü][a-zà-ü]+)+)\s+([A-Z]{3})/g
+        let m: RegExpExecArray | null
+        let rank = 0
+        while ((m = playerRe.exec(section)) !== null) {
+            rank++
+            const nome = m[2].trim()
+            const key = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+
+            if (!allStats.has(key)) {
+                const atleta_id = rank + 300000 // fake ID, will be overridden by photo match
+                allStats.set(key, {
+                    atleta_id,
+                    nome,
+                    clube_nome: m[3],
+                    j: 0, pts: 0, reb: 0, ast: 0, blk: 0, stl: 0, val: rank > 0 ? 1 : 0,
+                })
             }
-        })
+        }
+    }
+
+    // Also try to extract photo userId for each player
+    // The HTML has img tags near player names in the "top 5" sections
+    const imgRe = /<img[^>]*src="[^"]*uploads\/utilizadores\/(\d+)_\d+\.(?:png|jpg)"[^>]*>[\s\S]*?<[^>]*>([^<]+)<\/[^>]*>/g
+    let im: RegExpExecArray | null
+    let imgIdx = 1
+    while ((im = imgRe.exec(html)) !== null) {
+        // Try to match the player name near the image
+        const userId = parseInt(im[1])
+        const nearby = html.slice(Math.max(0, im.index - 200), im.index + 500)
+        // Find player name in nearby text
+        for (const [, player] of allStats) {
+            if (nearby.includes(player.nome.split(' ').slice(0, 2).join(' '))) {
+                player.atleta_id = userId
+                break
+            }
+        }
+        imgIdx++
     }
 
     return Array.from(allStats.values())
-}
-
-function parseStatRow(cols: NodeListOf<Element>, nome: string, atleta_id: number): FPBPlayerStat {
-    const get = (i: number) => parseFloat(cols[i]?.textContent?.trim() || '0') || 0
-    return {
-        atleta_id,
-        nome,
-        clube_nome: '',
-        j: get(1),
-        pts: get(2),
-        reb: get(3),
-        ast: get(4),
-        blk: get(5),
-        stl: get(6),
-        val: get(cols.length - 1),
-    }
-}
-
-function hashCode(s: string): number {
-    let h = 0
-    for (let i = 0; i < s.length; i++) {
-        h = ((h << 5) - h) + s.charCodeAt(i)
-        h |= 0
-    }
-    return h
 }
 
 export async function fetchMVP(provaId: number): Promise<FPBPlayerStat[]> {
