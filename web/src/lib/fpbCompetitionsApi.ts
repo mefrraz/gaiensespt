@@ -438,27 +438,64 @@ export async function fetchPlayerStats(provaId: number, _tipo: string = 'val'): 
 function scrapePlayerStats(html: string): FPBPlayerStat[] {
     const allStats: Map<string, FPBPlayerStat & { photoUrl?: string }> = new Map()
 
-    // Find all player-name divs — each marks a player row
-    const playerRe = /<div class="player-name">\s*([^<]+)\s*<\/div>/g
-    let pm: RegExpExecArray | null
-    let rank = 0
-    while ((pm = playerRe.exec(html)) !== null) {
-        rank++
-        const nome = pm[1].trim()
-        if (!nome || nome.length < 3) continue
-        const key = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    // Map category labels to stat keys
+    const CAT_MAP: Record<string, (keyof FPBPlayerStat)[]> = {
+        'Valorização': ['val'],
+        'Pontos': ['pts'],
+        'Lançamentos 2 pontos': [],
+        'Lançamentos 3 pontos': [],
+        'Lances Livres': [],
+        'Ressaltos': ['reb'],
+        'Ressaltos Ofensivos': [],
+        'Ressaltos Defensivos': [],
+        'Assistências': ['ast'],
+        'Roubos de Bola': ['stl'],
+        'Desarmes de Lançamentos': ['blk'],
+    }
 
-        if (!allStats.has(key)) {
-            allStats.set(key, {
-                atleta_id: rank + 300000,
-                nome,
-                clube_nome: '',
-                j: 0, pts: 0, reb: 0, ast: 0, blk: 0, stl: 0, val: rank > 0 ? 1 : 0,
-            })
+    // Find category sections
+    const catRe = /<div class="row row-title semi-bold">\s*([^<]+)\s*<\/div>/g
+    let cm: RegExpExecArray | null
+    while ((cm = catRe.exec(html)) !== null) {
+        const catName = cm[1].trim()
+        const keys = CAT_MAP[catName]
+        if (!keys || keys.length === 0) continue
+
+        const sectionStart = cm.index
+        const nextCat = /<div class="row row-title semi-bold">/g
+        nextCat.lastIndex = sectionStart + 1
+        const nextMatch = nextCat.exec(html)
+        const sectionEnd = nextMatch ? nextMatch.index : sectionStart + 20000
+        const section = html.slice(sectionStart, sectionEnd)
+
+        // Parse player-name, team, score
+        const playerRe = /<div class="player-name">\s*([^<]+)\s*<\/div>\s*<div class="team">\s*([^<]+)\s*<\/div>\s*<div class="score[^"]*">\s*([^<]+)\s*<\/div>/g
+        let pb: RegExpExecArray | null
+        while ((pb = playerRe.exec(section)) !== null) {
+            const nome = pb[1].trim()
+            const team = pb[2].trim()
+            const score = parseFloat(pb[3].trim().replace(',', '.'))
+
+            if (!nome || isNaN(score)) continue
+            const key = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+
+            if (!allStats.has(key)) {
+                allStats.set(key, {
+                    atleta_id: 300000 + allStats.size,
+                    nome,
+                    clube_nome: team,
+                    j: 0, pts: 0, reb: 0, ast: 0, blk: 0, stl: 0, val: 0,
+                })
+            }
+            const player = allStats.get(key)!
+            for (const k of keys) {
+                ;(player as any)[k] = score
+            }
+            if (!player.clube_nome) player.clube_nome = team
         }
     }
 
-    // Extract photo URLs from data-src attributes (lazy-loaded images)
+    // Extract photo URLs from data-src
     const imgRe = /<img[^>]*data-src="([^"]*uploads\/utilizadores\/(\d+)_\d+\.(?:png|jpg))"[^>]*alt="([^"]*)"/g
     let im: RegExpExecArray | null
     while ((im = imgRe.exec(html)) !== null) {
