@@ -176,7 +176,7 @@ export default function CompetitionDetail() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-[#09090b] dark:via-zinc-950 dark:to-[#09090b]">
-            <div className="max-w-4xl mx-auto px-3 sm:px-5 pt-6 pb-24">
+            <div className="max-w-6xl mx-auto px-3 sm:px-5 pt-6 pb-24">
                 <div className="flex items-center justify-between mb-6">
                     <Link to="/ligas" className="inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors group">
                         <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
@@ -250,6 +250,15 @@ export default function CompetitionDetail() {
                                                         ))}
                                                     </tbody>
                                                 </table>
+                                            </div>
+                                            <div className="px-4 py-3 border-t border-zinc-100 dark:border-zinc-800/50 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-zinc-400">
+                                                <span><b className="text-zinc-500">J</b> Jogos</span>
+                                                <span><b className="text-zinc-500">V</b> Vitórias</span>
+                                                <span><b className="text-zinc-500">D</b> Derrotas</span>
+                                                <span><b className="text-zinc-500">PM</b> Pontos Marcados</span>
+                                                <span><b className="text-zinc-500">PS</b> Pontos Sofridos</span>
+                                                <span><b className="text-zinc-500">DIF</b> Diferença</span>
+                                                <span><b className="text-zinc-500">Pts</b> Pontos</span>
                                             </div>
                                         </div>
                                     )
