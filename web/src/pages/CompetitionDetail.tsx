@@ -435,6 +435,7 @@ function StatsLeaderboard({ playerStats }: { playerStats: FPBPlayerStat[] }) {
     const sorted = useMemo(() => {
         const key = STAT_TYPES[statType].key
         return [...playerStats]
+            .filter(p => ((p[key] as number) || 0) > 0)
             .sort((a, b) => ((b[key] as number) || 0) - ((a[key] as number) || 0))
             .slice(0, topN)
     }, [playerStats, statType, topN])
