@@ -93,6 +93,7 @@ async function fetchHtml(page: string, competicao: number): Promise<string> {
     const params = new URLSearchParams()
     params.append('page', page)
     params.append('competicao', String(competicao))
+    params.append('_t', String(Date.now()))
     const res = await fetch(`${FPB_PROXY}?${params.toString()}`)
     if (!res.ok) throw new Error(`FPB error: ${res.status}`)
     return res.text()
