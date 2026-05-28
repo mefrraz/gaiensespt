@@ -147,7 +147,44 @@ export async function fetchStandings(provaId: number): Promise<FPBStandingPhase[
     return results // keep all phases, even empty ones (playoffs/finals)
 }
 
+function parsePhaseGames(html: string): FPBStandingTeam[] {
+    const standings: FPBStandingTeam[] = []
+    const re = /<div[^>]*class="[^"]*phase-game[^"]*"[^>]*>([\s\S]*?)<div[^>]*class="[^"]*clear[^"]*"[^>]*><\/div>\s*<\/div>/g
+    let m: RegExpExecArray | null
+    while ((m = re.exec(html)) !== null) {
+        const block = m[1]
+        // Date
+        const dateMatch = block.match(/<div[^>]*class="[^"]*date[^"]*"[^>]*>([^<]*)<\/div>/)
+        const date = (dateMatch?.[1] || '').trim()
+
+        // Teams and scores
+        const siglas = [...block.matchAll(/<div class="sigla">([^<]*)<\/div>/g)].map(m => m[1].trim())
+        const scores = [...block.matchAll(/<div class="score">(\d+)<\/div>/g)].map(m => parseInt(m[1]))
+
+        const homeName = siglas[0] || ''
+        const awayName = siglas[1] || ''
+
+        const entry: FPBStandingTeam = {
+            posicao: standings.length + 1,
+            equipa: `${homeName} ${scores[0] ?? '?'} - ${scores[1] ?? '?'} ${awayName}`,
+            j: 1,
+            v: 0,
+            d: 0,
+            pts: 0,
+        }
+        if (date) entry.equipa = `${date} · ` + entry.equipa
+        standings.push(entry)
+    }
+    return standings
+}
+
 function scrapeStandings(html: string): FPBStandingTeam[] {
+    // Try phase-game format first (elimination phases with games)
+    const phaseGames = html.match(/<div[^>]*class="[^"]*phase-game[^"]*"[^>]*>/g)
+    if (phaseGames && phaseGames.length > 0) {
+        return parsePhaseGames(html)
+    }
+
     // WordPress AJAX response has team-row divs with h5 elements
     const standings: FPBStandingTeam[] = []
 
