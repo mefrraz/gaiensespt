@@ -446,19 +446,19 @@ function StatsLeaderboard({ playerStats }: { playerStats: FPBPlayerStat[] }) {
                     return (
                         <div key={p.atleta_id} className="bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-4 text-center hover:border-dribly-purple/30 transition-all group">
                             <span className="absolute top-2 left-3 text-[10px] font-black text-zinc-300 dark:text-zinc-600">{i + 1}</span>
-                            <div className="relative w-16 h-16 mx-auto mb-2">
+                            <div className="relative w-20 h-20 mx-auto mb-3">
                                 {photoUrl ? (
-                                    <img src={photoUrl} alt="" className="w-16 h-16 object-cover rounded-full border-2 border-zinc-100 dark:border-white/10" loading="lazy" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden') }} />
+                                    <img src={photoUrl} alt="" className="w-20 h-20 object-cover rounded-full border-2 border-zinc-100 dark:border-white/10 shadow-sm" loading="lazy" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden') }} />
                                 ) : null}
-                                <div className={`w-16 h-16 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center mx-auto ${photoUrl ? 'hidden' : ''}`}>
-                                    <span className="text-lg font-black text-dribly-purple">{p.nome.charAt(0).toUpperCase()}</span>
+                                <div className={`w-20 h-20 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center mx-auto ${photoUrl ? 'hidden' : ''}`}>
+                                    <span className="text-2xl font-black text-dribly-purple">{p.nome.charAt(0).toUpperCase()}</span>
                                 </div>
                             </div>
-                            <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200 leading-tight truncate">{p.nome}</p>
-                            <p className="text-[10px] text-zinc-400 truncate mt-0.5">{p.clube_nome}</p>
+                            <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200 leading-tight truncate">{p.nome}</p>
+                            <p className="text-[11px] text-zinc-400 truncate mt-0.5">{p.clube_nome}</p>
                             <div className="mt-2">
-                                <span className="text-xl font-black text-dribly-purple">{displayVal}</span>
-                                {STAT_TYPES[statType].unit && <span className="text-[9px] text-zinc-400 ml-0.5">{STAT_TYPES[statType].unit}</span>}
+                                <span className="text-2xl font-black text-dribly-purple">{displayVal}</span>
+                                {STAT_TYPES[statType].unit && <span className="text-[10px] text-zinc-400 ml-0.5">{STAT_TYPES[statType].unit}</span>}
                             </div>
                         </div>
                     )
