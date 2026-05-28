@@ -101,56 +101,49 @@ async function fetchHtml(page: string, competicao: number): Promise<string> {
 // ---- Standings: API first, HTML fallback ----
 
 export async function fetchStandings(provaId: number): Promise<FPBStandingTeam[]> {
-    // Try API first
-    try {
-        const data = await fetchFromProxy(`classificacao/${provaId}`)
-        if (Array.isArray(data) && data.length > 0) return data
-    } catch { /* fall through */ }
-
-    // Try HTML scraping
-    try {
-        const html = await fetchHtml('classificacao', provaId)
-        const scraped = scrapeStandings(html)
-        if (scraped.length > 0) return scraped
-    } catch { /* fall through */ }
-
-    return []
+    // WordPress AJAX: admin-ajax.php?action=get_more_fase_regular
+    const params = new URLSearchParams({
+        wp_action: 'get_more_fase_regular',
+        competicao: String(provaId),
+        fase: '30969',
+    })
+    const res = await fetch(`${FPB_PROXY}?${params.toString()}`)
+    if (!res.ok) return []
+    const json = await res.json()
+    const body: string = json?.result?.body || ''
+    if (!body) return []
+    return scrapeStandings(body)
 }
 
 function scrapeStandings(html: string): FPBStandingTeam[] {
-    // FPB classification uses <h5> elements with <img alt="Logo Equipa N"> as anchors.
-    // Data is malformed (h5s without row wrappers), so use regex instead of DOMParser.
+    // WordPress AJAX response has team-row divs with h5 elements
     const standings: FPBStandingTeam[] = []
 
-    // Split by "Logo Equipa" — each section is one team row
-    const sections = html.split(/<img[^>]*alt="Logo Equipa\s*\d*"[^>]*>/)
-    // First section is header (before first logo), skip it
-    for (let i = 1; i < sections.length; i++) {
-        const section = sections[i]
+    // Split by team-row — each is one team
+    const rows = html.split(/<div[^>]*class="[^"]*team-row[^"]*"[^>]*>/)
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i]
 
-        // Extract equipa name
-        const nomeMatch = section.match(/<h5>([^<]+)<\/h5>/)
+        // Extract team name: first <h5> without <b> or <strong>
+        const nameMatch = row.match(/<h5>([^<]+)<\/h5>/)
+        if (!nameMatch) continue
+        const nome = nameMatch[1].trim()
+        if (!nome || nome.length < 3) continue
 
-        if (!nomeMatch) continue
-
-        const nome = nomeMatch[1].trim()
-
-        // Collect all h5 values (both plain and strong)
+        // Collect all h5 values (including <b>/<strong>)
         const h5s: string[] = []
-        const h5Regex = /<h5>(?:\s*<strong>)?([^<]*?)(?:<\/strong>)?\s*<\/h5>/g
+        const h5Regex = /<h5>(?:\s*<(?:b|strong)>)?([^<]*?)(?:<\/(?:b|strong)>)?\s*<\/h5>/g
         let m: RegExpExecArray | null
-        while ((m = h5Regex.exec(section)) !== null) {
+        while ((m = h5Regex.exec(row)) !== null) {
             h5s.push(m[1].trim())
         }
 
-        if (h5s.length < 2) continue
+        if (h5s.length < 4) continue
 
-        // First h5 is the name; remainder is abbreviation + stats
-        const stats = h5s.slice(1) // skip the name
+        // Position is first h5 (inside <b>), name is second, abbreviation is third
+        // Stats follow: J, V, D, FC, PM, PS, DIF, PTS
+        const stats = h5s.slice(3) // skip pos, name, abrev
 
-        if (stats.length < 4) continue
-
-        // Stats: [J, V, D, FC, PM, PS, DIF, PTS]
         standings.push({
             posicao: standings.length + 1,
             equipa: nome,

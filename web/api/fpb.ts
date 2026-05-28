@@ -6,14 +6,26 @@ export default async function handler(request: Request) {
     const url = new URL(request.url)
     const endpoint = url.searchParams.get('endpoint')
 
-    // Proxy mode: forward to sav2.fpb.pt API
-    if (endpoint) {
-        const fpbRes = await fetch(`https://sav2.fpb.pt/api/${endpoint}`, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                'Accept': 'application/json',
-            },
-        })
+    // Proxy mode: forward to sav2.fpb.pt API or WordPress AJAX
+    const wpAction = url.searchParams.get('wp_action')
+    if (endpoint || wpAction) {
+        let apiUrl: string
+        let headers: Record<string, string> = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+            'Accept': 'application/json',
+        }
+
+        if (wpAction) {
+            // WordPress AJAX: admin-ajax.php?action=get_more_fase_regular&competicao[]=10902&fase=30969
+            const competicao = url.searchParams.get('competicao') || ''
+            const fase = url.searchParams.get('fase') || '30969'
+            apiUrl = `https://www.fpb.pt/wp-admin/admin-ajax.php?action=${wpAction}&competicao%5B%5D=${competicao}&fase=${fase}`
+            headers['Referer'] = `https://www.fpb.pt/classificacao/${competicao}`
+        } else {
+            apiUrl = `https://sav2.fpb.pt/api/${endpoint}`
+        }
+
+        const fpbRes = await fetch(apiUrl, { headers })
         const text = await fpbRes.text()
 
         if (fpbRes.status === 404) {
