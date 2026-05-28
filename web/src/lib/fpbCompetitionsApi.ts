@@ -479,19 +479,26 @@ function scrapePlayerStats(html: string): FPBPlayerStat[] {
             if (!nome || isNaN(score)) continue
             const key = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 
-            if (!allStats.has(key)) {
-                allStats.set(key, {
+            let existingEntry = allStats.get(key)
+            if (!existingEntry) {
+                for (const [, e] of allStats) {
+                    if (nome.includes(e.nome) || e.nome.includes(nome)) {
+                        existingEntry = e; break
+                    }
+                }
+            }
+            if (!existingEntry) {
+                existingEntry = {
                     atleta_id: 300000 + allStats.size,
-                    nome,
-                    clube_nome: team,
+                    nome, clube_nome: team,
                     j: 0, pts: 0, reb: 0, ast: 0, blk: 0, stl: 0, val: 0,
-                })
+                }
+                allStats.set(key, existingEntry)
             }
-            const player = allStats.get(key)!
             for (const k of keys) {
-                ;(player as any)[k] = score
+                ;(existingEntry as any)[k] = score
             }
-            if (!player.clube_nome) player.clube_nome = team
+            if (!existingEntry.clube_nome) existingEntry.clube_nome = team
         }
     }
 
