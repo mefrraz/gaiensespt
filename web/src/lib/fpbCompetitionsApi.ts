@@ -150,10 +150,10 @@ function scrapeStandings(html: string): FPBStandingTeam[] {
             j: num(stats[0]),
             v: num(stats[1]),
             d: num(stats[2]),
-            pm: mmNum(stats, 3),
-            ps: mmNum(stats, 4),
-            dif: signedNum(stats[5]) || signedNum(stats[6]),
-            pts: num(stats[stats.length - 1]),
+            pm: num(stats[4]),
+            ps: num(stats[5]),
+            dif: signedNum(stats[6]),
+            pts: num(stats[7]),
         })
     }
 
@@ -162,11 +162,6 @@ function scrapeStandings(html: string): FPBStandingTeam[] {
 
 function num(s: string | undefined): number {
     return parseInt(s || '0') || 0
-}
-
-function mmNum(arr: string[], idx: number): number | undefined {
-    const v = parseInt(arr[idx] || '0')
-    return v > 100 ? v : undefined
 }
 
 function signedNum(s: string | undefined): number | undefined {
