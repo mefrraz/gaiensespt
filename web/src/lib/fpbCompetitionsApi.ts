@@ -110,7 +110,7 @@ export async function fetchStandings(provaId: number): Promise<FPBStandingPhase[
     const faseIds: { id: string; name: string }[] = []
     try {
         const html = await fetchHtml('classificacao', provaId)
-        const re = /<li[^>]*class="[^"]*option[^"]*"[^>]*tag="([^"]*)"[^>]*value="(\d+)"/g
+        const re = /<li[^>]*class="[^"]*option[^"]*"[^>]*tag="([^"]*)"[^>]*value="([^"]+)"/g
         let m: RegExpExecArray | null
         while ((m = re.exec(html)) !== null) {
             const name = m[1].trim()
