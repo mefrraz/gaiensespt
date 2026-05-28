@@ -441,9 +441,7 @@ function StatsLeaderboard({ playerStats }: { playerStats: FPBPlayerStat[] }) {
                 {sorted.map((p, i) => {
                     const val = p[STAT_TYPES[statType].key]
                     const displayVal = typeof val === 'number' ? (Number.isInteger(val) ? val : val.toFixed(1)) : '—'
-                    const photoUrl = p.atleta_id > 100000
-                        ? `https://sav2.fpb.pt/uploads/utilizadores/${p.atleta_id}_1766007011.png`
-                        : null
+                    const photoUrl = (p as any).photoUrl || null
 
                     return (
                         <div key={p.atleta_id} className="bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-4 text-center hover:border-dribly-purple/30 transition-all group">

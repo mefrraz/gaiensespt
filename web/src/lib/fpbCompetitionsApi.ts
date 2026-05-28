@@ -436,61 +436,42 @@ export async function fetchPlayerStats(provaId: number, _tipo: string = 'val'): 
 }
 
 function scrapePlayerStats(html: string): FPBPlayerStat[] {
-    const allStats: Map<string, FPBPlayerStat> = new Map()
+    const allStats: Map<string, FPBPlayerStat & { photoUrl?: string }> = new Map()
 
-    // Extract photo URLs: sav2.fpb.pt/uploads/utilizadores/{userId}_{timestamp}.{ext}
-    const photoRe = /uploads\/utilizadores\/(\d+)_\d+\.(?:png|jpg)/g
-    const photoByUser: Map<string, string> = new Map()
+    // Find all player-name divs — each marks a player row
+    const playerRe = /<div class="player-name">\s*([^<]+)\s*<\/div>/g
     let pm: RegExpExecArray | null
-    while ((pm = photoRe.exec(html)) !== null) {
-        if (!photoByUser.has(pm[1])) {
-            photoByUser.set(pm[1], pm[0])
+    let rank = 0
+    while ((pm = playerRe.exec(html)) !== null) {
+        rank++
+        const nome = pm[1].trim()
+        if (!nome || nome.length < 3) continue
+        const key = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+
+        if (!allStats.has(key)) {
+            allStats.set(key, {
+                atleta_id: rank + 300000,
+                nome,
+                clube_nome: '',
+                j: 0, pts: 0, reb: 0, ast: 0, blk: 0, stl: 0, val: rank > 0 ? 1 : 0,
+            })
         }
     }
 
-    // Parse player rows from the ATLETA tab ("Total Média" section)
-    // Format: rank player_name abbreviation [stats...]
-    const totalIdx = html.indexOf('Total Média')
-    if (totalIdx >= 0) {
-        const section = html.slice(totalIdx, totalIdx + 15000)
-        // Match: number player_name abbreviation
-        const playerRe = /(\d+)\s+([A-ZÀ-Ü][a-zà-ü]+(?:\s[A-ZÀ-Ü][a-zà-ü]+)+)\s+([A-Z]{3})/g
-        let m: RegExpExecArray | null
-        let rank = 0
-        while ((m = playerRe.exec(section)) !== null) {
-            rank++
-            const nome = m[2].trim()
-            const key = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-
-            if (!allStats.has(key)) {
-                const atleta_id = rank + 300000 // fake ID, will be overridden by photo match
-                allStats.set(key, {
-                    atleta_id,
-                    nome,
-                    clube_nome: m[3],
-                    j: 0, pts: 0, reb: 0, ast: 0, blk: 0, stl: 0, val: rank > 0 ? 1 : 0,
-                })
-            }
-        }
-    }
-
-    // Also try to extract photo userId for each player
-    // The HTML has img tags near player names in the "top 5" sections
-    const imgRe = /<img[^>]*src="[^"]*uploads\/utilizadores\/(\d+)_\d+\.(?:png|jpg)"[^>]*>[\s\S]*?<[^>]*>([^<]+)<\/[^>]*>/g
+    // Extract photo URLs from data-src attributes (lazy-loaded images)
+    const imgRe = /<img[^>]*data-src="([^"]*uploads\/utilizadores\/(\d+)_\d+\.(?:png|jpg))"[^>]*alt="([^"]*)"/g
     let im: RegExpExecArray | null
-    let imgIdx = 1
     while ((im = imgRe.exec(html)) !== null) {
-        // Try to match the player name near the image
-        const userId = parseInt(im[1])
-        const nearby = html.slice(Math.max(0, im.index - 200), im.index + 500)
-        // Find player name in nearby text
+        const photoUrl = 'https://sav2.fpb.pt/' + im[1]
+        const altName = im[3].trim()
+        const userId = parseInt(im[2])
         for (const [, player] of allStats) {
-            if (nearby.includes(player.nome.split(' ').slice(0, 2).join(' '))) {
+            if (altName.includes(player.nome) || player.nome.includes(altName)) {
+                ;(player as any).photoUrl = photoUrl
                 player.atleta_id = userId
                 break
             }
         }
-        imgIdx++
     }
 
     return Array.from(allStats.values())
