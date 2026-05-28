@@ -124,15 +124,15 @@ function scrapeStandings(html: string): FPBStandingTeam[] {
     for (let i = 1; i < rows.length; i++) {
         const row = rows[i]
 
-        // Extract team name: first <h5> without <b> or <strong>
-        const nameMatch = row.match(/<h5>([^<]+)<\/h5>/)
+        // Extract team name: first <h5> without <b>/<strong> (skip position h5)
+        const nameMatch = row.match(/<h5[^>]*>([^<]+)<\/h5>/)
         if (!nameMatch) continue
         const nome = nameMatch[1].trim()
         if (!nome || nome.length < 3) continue
 
-        // Collect all h5 values (including <b>/<strong>)
+        // Collect all h5 values (with optional attributes, <b>/<strong>)
         const h5s: string[] = []
-        const h5Regex = /<h5>(?:\s*<(?:b|strong)>)?([^<]*?)(?:<\/(?:b|strong)>)?\s*<\/h5>/g
+        const h5Regex = /<h5[^>]*>(?:\s*<(?:b|strong)>)?([^<]*?)(?:<\/(?:b|strong)>)?\s*<\/h5>/g
         let m: RegExpExecArray | null
         while ((m = h5Regex.exec(row)) !== null) {
             h5s.push(m[1].trim())
