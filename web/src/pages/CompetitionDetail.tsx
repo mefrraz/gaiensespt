@@ -385,21 +385,24 @@ const STAT_TYPES: { key: keyof FPBPlayerStat; label: string; unit: string }[] = 
     { key: 'stl', label: 'Roubos', unit: 'RBPJ' },
 ]
 
+const TOP_OPTIONS = [5, 10, 20]
+
 function StatsLeaderboard({ playerStats }: { playerStats: FPBPlayerStat[] }) {
     const [statType, setStatType] = useState(0)
+    const [topN, setTopN] = useState(5)
 
     const sorted = useMemo(() => {
         const key = STAT_TYPES[statType].key
         return [...playerStats]
             .filter(p => (p[key] as number) > 0)
             .sort((a, b) => (b[key] as number) - (a[key] as number))
-            .slice(0, 20)
-    }, [playerStats, statType])
+            .slice(0, topN)
+    }, [playerStats, statType, topN])
 
     return (
         <div>
-            {/* Stat type selector */}
-            <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1">
+            {/* Filters row */}
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
                 {STAT_TYPES.map((st, i) => (
                     <button
                         key={st.key}
@@ -415,24 +418,49 @@ function StatsLeaderboard({ playerStats }: { playerStats: FPBPlayerStat[] }) {
                 ))}
             </div>
 
-            {/* Player cards */}
-            <div className="space-y-2">
+            {/* Top N selector */}
+            <div className="flex items-center gap-2 mb-4">
+                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Top</span>
+                {TOP_OPTIONS.map(n => (
+                    <button
+                        key={n}
+                        onClick={() => setTopN(n)}
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all ${
+                            topN === n
+                                ? 'bg-dribly-purple/10 dark:bg-dribly-purple/20 text-dribly-purple'
+                                : 'text-zinc-400 hover:text-dribly-purple'
+                        }`}
+                    >
+                        {n}
+                    </button>
+                ))}
+            </div>
+
+            {/* Player grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                 {sorted.map((p, i) => {
                     const val = p[STAT_TYPES[statType].key]
                     const displayVal = typeof val === 'number' ? (Number.isInteger(val) ? val : val.toFixed(1)) : '—'
+                    const photoUrl = p.atleta_id > 100000
+                        ? `https://sav2.fpb.pt/uploads/atletas/foto/${p.atleta_id}.jpg`
+                        : null
+
                     return (
-                        <div key={p.atleta_id} className="flex items-center gap-3 bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-xl p-3 hover:border-dribly-purple/30 transition-all">
-                            <span className="text-xs font-bold text-zinc-400 w-5 text-right">{i + 1}</span>
-                            <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
-                                <span className="text-sm font-bold text-zinc-500">{p.nome.charAt(0).toUpperCase()}</span>
+                        <div key={p.atleta_id} className="bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-4 text-center hover:border-dribly-purple/30 transition-all group">
+                            <span className="absolute top-2 left-3 text-[10px] font-black text-zinc-300 dark:text-zinc-600">{i + 1}</span>
+                            <div className="relative w-16 h-16 mx-auto mb-2">
+                                {photoUrl ? (
+                                    <img src={photoUrl} alt="" className="w-16 h-16 object-cover rounded-full border-2 border-zinc-100 dark:border-white/10" loading="lazy" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden') }} />
+                                ) : null}
+                                <div className={`w-16 h-16 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center mx-auto ${photoUrl ? 'hidden' : ''}`}>
+                                    <span className="text-lg font-black text-dribly-purple">{p.nome.charAt(0).toUpperCase()}</span>
+                                </div>
                             </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200 truncate">{p.nome}</p>
-                                <p className="text-[10px] text-zinc-400">{p.clube_nome || '—'} · J: {p.j}</p>
-                            </div>
-                            <div className="text-right shrink-0">
-                                <span className="text-lg font-black text-dribly-purple">{displayVal}</span>
-                                {STAT_TYPES[statType].unit && <span className="text-[9px] text-zinc-400 block">{STAT_TYPES[statType].unit}</span>}
+                            <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200 leading-tight truncate">{p.nome}</p>
+                            <p className="text-[10px] text-zinc-400 truncate mt-0.5">{p.clube_nome}</p>
+                            <div className="mt-2">
+                                <span className="text-xl font-black text-dribly-purple">{displayVal}</span>
+                                {STAT_TYPES[statType].unit && <span className="text-[9px] text-zinc-400 ml-0.5">{STAT_TYPES[statType].unit}</span>}
                             </div>
                         </div>
                     )
