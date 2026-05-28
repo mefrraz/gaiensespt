@@ -236,7 +236,7 @@ export default function CompetitionDetail() {
                                     onClick={() => setTab(t.value)}
                                     className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-[0.97] ${
                                         active
-                                            ? `bg-gradient-to-br ${t.color} text-white shadow-md`
+                                            ? 'bg-dribly-purple text-white shadow-sm shadow-dribly-purple/20'
                                             : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-700 dark:hover:text-zinc-200'
                                     }`}
                                 >
