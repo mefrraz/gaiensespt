@@ -101,28 +101,46 @@ async function fetchHtml(page: string, competicao: number): Promise<string> {
 // ---- Standings: API first, HTML fallback ----
 
 export async function fetchStandings(provaId: number): Promise<FPBStandingTeam[]> {
-    // Step 1: Fetch the HTML to extract the correct fase ID for this competition
-    let faseId = '30969' // fallback for Liga Betclic Masculina
+    // Step 1: Fetch HTML and extract ALL fase IDs
+    const faseIds: { id: string; name: string }[] = []
     try {
         const html = await fetchHtml('classificacao', provaId)
-        const faseMatch = html.match(/<li[^>]*class="[^"]*option[^"]*"[^>]*tag="Fase Regular"[^>]*value="(\d+)"/)
-        if (faseMatch) {
-            faseId = faseMatch[1]
+        const re = /<li[^>]*class="[^"]*option[^"]*"[^>]*tag="([^"]*)"[^>]*value="(\d+)"/g
+        let m: RegExpExecArray | null
+        while ((m = re.exec(html)) !== null) {
+            const name = m[1].trim()
+            const id = m[2]
+            if (!faseIds.find(f => f.id === id)) {
+                faseIds.push({ id, name })
+            }
         }
     } catch { /* use fallback */ }
 
-    // Step 2: WordPress AJAX with the correct fase ID
-    const params = new URLSearchParams({
-        wp_action: 'get_more_fase_regular',
-        competicao: String(provaId),
-        fase: faseId,
-    })
-    const res = await fetch(`${FPB_PROXY}?${params.toString()}`)
-    if (!res.ok) return []
-    const json = await res.json()
-    const body: string = json?.result?.body || ''
-    if (!body) return []
-    return scrapeStandings(body)
+    if (faseIds.length === 0) {
+        faseIds.push({ id: '30969', name: 'Fase Regular' })
+    }
+
+    // Step 2: Fetch all phases in parallel
+    const results = await Promise.all(faseIds.map(async (fase) => {
+        const params = new URLSearchParams({
+            wp_action: 'get_more_fase_regular',
+            competicao: String(provaId),
+            fase: fase.id,
+        })
+        try {
+            const res = await fetch(`${FPB_PROXY}?${params.toString()}`)
+            if (!res.ok) return [] as FPBStandingTeam[]
+            const json = await res.json()
+            const body: string = json?.result?.body || ''
+            if (!body) return [] as FPBStandingTeam[]
+            return scrapeStandings(body)
+        } catch {
+            return [] as FPBStandingTeam[]
+        }
+    }))
+
+    // Flatten all phases into one array
+    return results.flat()
 }
 
 function scrapeStandings(html: string): FPBStandingTeam[] {
