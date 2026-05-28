@@ -1,20 +1,46 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Loader2, Heart, Calendar as CalendarIcon, BarChart3, Trophy, Users } from 'lucide-react'
+import { ArrowLeft, Loader2, Heart, ListOrdered, CalendarDays, Trophy, Users, BarChart4 } from 'lucide-react'
 import { useFollows } from '../hooks/useFollows'
 import { useAuth } from '../lib/AuthContext'
 import { useClub } from '../lib/ClubContext'
+// supabase available if needed for competition name lookup
 import {
     fetchStandings, fetchSchedule, fetchResults, fetchTeams, fetchPlayerStats,
     type FPBStandingPhase, type FPBGame, type FPBTeam, type FPBPlayerStat
 } from '../lib/fpbCompetitionsApi'
-import { SegmentControl } from '../components/SegmentControl'
 import { GameCard } from '../components/GameCard'
 import { type Match } from '../components/types'
 
-const TOP_LEAGUES = [10902, 10906]
+const COMP_NAMES: Record<number, string> = {
+    10902: 'Liga Betclic Masculina',
+    10903: 'Proliga',
+    10904: '1ª Divisão Masculina',
+    10905: '2ª Divisão Masculina',
+    10906: 'Liga Betclic Feminina',
+    10907: '1ª Divisão Feminina',
+    10908: '2ª Divisão Feminina',
+    10917: 'Taça Hugo dos Santos',
+    10909: 'Liga BCR',
+    10920: 'Supertaça Feminina',
+}
 
 type Tab = 'classificacao' | 'resultados' | 'calendario' | 'equipas' | 'estatisticas'
+const TOP_LEAGUES = [10902, 10906]
+
+const TAB_CONFIG = [
+    { value: 'classificacao' as Tab, label: 'Classificação', icon: ListOrdered, color: 'from-violet-500 to-purple-600' },
+    { value: 'resultados' as Tab, label: 'Resultados', icon: Trophy, color: 'from-emerald-500 to-green-600' },
+    { value: 'calendario' as Tab, label: 'Agenda', icon: CalendarDays, color: 'from-blue-500 to-cyan-600' },
+    { value: 'equipas' as Tab, label: 'Equipas', icon: Users, color: 'from-amber-500 to-orange-600' },
+    { value: 'estatisticas' as Tab, label: 'Estatísticas', icon: BarChart4, color: 'from-pink-500 to-rose-600' },
+]
+
+function getTabsFor(provaId: number) {
+    return TOP_LEAGUES.includes(provaId)
+        ? TAB_CONFIG
+        : TAB_CONFIG.filter(t => t.value !== 'estatisticas')
+}
 
 function normalize(s: string): string {
     return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
@@ -117,14 +143,6 @@ export default function CompetitionDetail() {
         loadData()
     }, [provaId, tab])
 
-    const tabs = [
-        { value: 'classificacao', label: 'Classificação', icon: BarChart3 },
-        { value: 'resultados', label: 'Resultados', icon: CalendarIcon },
-        { value: 'calendario', label: 'Agenda', icon: CalendarIcon },
-        { value: 'equipas', label: 'Equipas', icon: Users },
-        ...(TOP_LEAGUES.includes(provaId) ? [{ value: 'estatisticas' as Tab, label: 'Estatísticas', icon: Trophy }] : []),
-    ]
-
     const isFollowed = user ? isFollowing('competition', provaId) : false
 
     const handleToggleFollow = async () => {
@@ -201,11 +219,34 @@ export default function CompetitionDetail() {
                     )}
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white mb-6 tracking-tight">
-                    Competição #{provaId}
+                <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white mb-1 tracking-tight">
+                    {COMP_NAMES[provaId] || `Competição #${provaId}`}
                 </h1>
+                <p className="text-sm text-zinc-400 mb-6">2025/2026 · Fase Regular</p>
 
-                <SegmentControl options={tabs} value={tab} onChange={v => setTab(v as Tab)} />
+                {/* Tab bar */}
+                <div className="sticky top-16 z-40 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl -mx-3 sm:-mx-5 px-3 sm:px-5 pb-2 mb-5 border-b border-zinc-100 dark:border-white/5 overflow-x-auto">
+                    <div className="flex gap-1.5 min-w-max">
+                        {getTabsFor(provaId).map(t => {
+                            const active = tab === t.value
+                            const Icon = t.icon
+                            return (
+                                <button
+                                    key={t.value}
+                                    onClick={() => setTab(t.value)}
+                                    className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-[0.97] ${
+                                        active
+                                            ? `bg-gradient-to-br ${t.color} text-white shadow-md`
+                                            : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-700 dark:hover:text-zinc-200'
+                                    }`}
+                                >
+                                    <Icon size={15} strokeWidth={active ? 2.5 : 2} />
+                                    {t.label}
+                                </button>
+                            )
+                        })}
+                    </div>
+                </div>
 
                 <div className="mt-5">
                     {loading ? (
@@ -446,12 +487,12 @@ function StatsLeaderboard({ playerStats }: { playerStats: FPBPlayerStat[] }) {
                     return (
                         <div key={p.atleta_id} className="bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-4 text-center hover:border-dribly-purple/30 transition-all group">
                             <span className="absolute top-2 left-3 text-[10px] font-black text-zinc-300 dark:text-zinc-600">{i + 1}</span>
-                            <div className="relative w-20 h-20 mx-auto mb-3">
+                            <div className="relative w-24 h-24 mx-auto mb-3">
                                 {photoUrl ? (
-                                    <img src={photoUrl} alt="" className="w-20 h-20 object-cover rounded-full border-2 border-zinc-100 dark:border-white/10 shadow-sm" loading="lazy" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden') }} />
+                                    <img src={photoUrl} alt="" className="w-24 h-24 object-cover rounded-full border-[3px] border-zinc-100 dark:border-white/10 shadow-md" loading="lazy" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden') }} />
                                 ) : null}
-                                <div className={`w-20 h-20 rounded-full bg-dribly-purple/10 dark:bg-dribly-purple/20 flex items-center justify-center mx-auto ${photoUrl ? 'hidden' : ''}`}>
-                                    <span className="text-2xl font-black text-dribly-purple">{p.nome.charAt(0).toUpperCase()}</span>
+                                <div className={`w-24 h-24 rounded-full bg-gradient-to-br from-dribly-purple/20 to-dribly-purple/5 flex items-center justify-center mx-auto ${photoUrl ? 'hidden' : ''}`}>
+                                    <span className="text-3xl font-black text-dribly-purple">{p.nome.charAt(0).toUpperCase()}</span>
                                 </div>
                             </div>
                             <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200 leading-tight truncate">{p.nome}</p>
