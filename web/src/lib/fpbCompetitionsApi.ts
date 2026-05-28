@@ -100,7 +100,12 @@ async function fetchHtml(page: string, competicao: number): Promise<string> {
 
 // ---- Standings: API first, HTML fallback ----
 
-export async function fetchStandings(provaId: number): Promise<FPBStandingTeam[]> {
+export interface FPBStandingPhase {
+    name: string
+    teams: FPBStandingTeam[]
+}
+
+export async function fetchStandings(provaId: number): Promise<FPBStandingPhase[]> {
     // Step 1: Fetch HTML and extract ALL fase IDs
     const faseIds: { id: string; name: string }[] = []
     try {
@@ -129,18 +134,17 @@ export async function fetchStandings(provaId: number): Promise<FPBStandingTeam[]
         })
         try {
             const res = await fetch(`${FPB_PROXY}?${params.toString()}`)
-            if (!res.ok) return [] as FPBStandingTeam[]
+            if (!res.ok) return { name: fase.name, teams: [] as FPBStandingTeam[] }
             const json = await res.json()
             const body: string = json?.result?.body || ''
-            if (!body) return [] as FPBStandingTeam[]
-            return scrapeStandings(body)
+            if (!body) return { name: fase.name, teams: [] as FPBStandingTeam[] }
+            return { name: fase.name, teams: scrapeStandings(body) }
         } catch {
-            return [] as FPBStandingTeam[]
+            return { name: fase.name, teams: [] as FPBStandingTeam[] }
         }
     }))
 
-    // Flatten all phases into one array
-    return results.flat()
+    return results.filter(p => p.teams.length > 0)
 }
 
 function scrapeStandings(html: string): FPBStandingTeam[] {

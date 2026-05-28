@@ -6,7 +6,7 @@ import { useAuth } from '../lib/AuthContext'
 import { useClub } from '../lib/ClubContext'
 import {
     fetchStandings, fetchSchedule, fetchResults, fetchTeams, fetchPlayerStats,
-    type FPBStandingTeam, type FPBGame, type FPBTeam, type FPBPlayerStat
+    type FPBStandingPhase, type FPBGame, type FPBTeam, type FPBPlayerStat
 } from '../lib/fpbCompetitionsApi'
 import { SegmentControl } from '../components/SegmentControl'
 import { GameCard } from '../components/GameCard'
@@ -70,7 +70,8 @@ export default function CompetitionDetail() {
     const { clubs, loadClubs } = useClub()
 
     const [tab, setTab] = useState<Tab>('classificacao')
-    const [standings, setStandings] = useState<FPBStandingTeam[]>([])
+    const [standings, setStandings] = useState<FPBStandingPhase[]>([])
+    const [selectedPhase, setSelectedPhase] = useState(0)
     const [games, setGames] = useState<FPBGame[]>([])
     const [teams, setTeams] = useState<FPBTeam[]>([])
     const [playerStats, setPlayerStats] = useState<FPBPlayerStat[]>([])
@@ -85,7 +86,7 @@ export default function CompetitionDetail() {
         const loadData = async () => {
             try {
                 const results = await Promise.allSettled([
-                    tab === 'classificacao' ? fetchStandings(provaId) : Promise.resolve([]),
+                    tab === 'classificacao' ? fetchStandings(provaId) : Promise.resolve([] as FPBStandingPhase[]),
                     tab === 'resultados' || tab === 'calendario'
                         ? Promise.all([fetchSchedule(provaId), fetchResults(provaId)])
                         : Promise.resolve([[], []] as [FPBGame[], FPBGame[]]),
@@ -95,7 +96,10 @@ export default function CompetitionDetail() {
                         : Promise.resolve([]),
                 ])
 
-                if (results[0].status === 'fulfilled') setStandings(results[0].value)
+                if (results[0].status === 'fulfilled') {
+                    setStandings(results[0].value)
+                    setSelectedPhase(0)
+                }
                 if (results[1].status === 'fulfilled') {
                     const [sched, res] = results[1].value as [FPBGame[], FPBGame[]]
                     const merged = new Map<string, FPBGame>()
@@ -216,6 +220,22 @@ export default function CompetitionDetail() {
                                 standings.length === 0
                                     ? <Empty text="Classificação não disponível." />
                                     : (
+                                    <>
+                                        {standings.length > 1 && (
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Fase</label>
+                                                <select
+                                                    value={selectedPhase}
+                                                    onChange={e => setSelectedPhase(parseInt(e.target.value))}
+                                                    className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-300 text-xs font-medium rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-dribly-purple/30"
+                                                >
+                                                    {standings.map((p, i) => (
+                                                        <option key={i} value={i}>{p.name} ({p.teams.length})</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                        {standings[selectedPhase] && (
                                         <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 overflow-hidden">
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-sm">
@@ -232,7 +252,7 @@ export default function CompetitionDetail() {
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/30">
-                                                        {standings.map((team, i) => (
+                                                        {standings[selectedPhase].teams.map((team, i) => (
                                                             <tr key={i} className="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/20">
                                                                 <td className="pl-3 pr-1 py-2.5 text-center">
                                                                     <span className="text-xs font-bold text-zinc-500 tabular-nums">{team.posicao}</span>
@@ -261,6 +281,8 @@ export default function CompetitionDetail() {
                                                 <span><b className="text-zinc-500">Pts</b> Pontos</span>
                                             </div>
                                         </div>
+                                        )}
+                                        </>
                                     )
                             )}
 
