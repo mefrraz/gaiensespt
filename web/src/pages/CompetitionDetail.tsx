@@ -76,6 +76,7 @@ export default function CompetitionDetail() {
     const [teams, setTeams] = useState<FPBTeam[]>([])
     const [playerStats, setPlayerStats] = useState<FPBPlayerStat[]>([])
     const [loading, setLoading] = useState(true)
+    const [allGames, setAllGames] = useState<FPBGame[]>([])
 
     useEffect(() => { loadClubs() }, [])
 
@@ -86,7 +87,7 @@ export default function CompetitionDetail() {
         const loadData = async () => {
             try {
                 const results = await Promise.allSettled([
-                    tab === 'classificacao' ? fetchStandings(provaId) : Promise.resolve([] as FPBStandingPhase[]),
+                    tab === 'classificacao' ? Promise.all([fetchStandings(provaId), fetchSchedule(provaId), fetchResults(provaId)]) : Promise.resolve([[] as FPBStandingPhase[], [] as FPBGame[], [] as FPBGame[]]),
                     tab === 'resultados' || tab === 'calendario'
                         ? Promise.all([fetchSchedule(provaId), fetchResults(provaId)])
                         : Promise.resolve([[], []] as [FPBGame[], FPBGame[]]),
@@ -97,8 +98,15 @@ export default function CompetitionDetail() {
                 ])
 
                 if (results[0].status === 'fulfilled') {
-                    setStandings(results[0].value)
-                    setSelectedPhase(0)
+                    if (tab === 'classificacao') {
+                        const [phases, sched, res] = results[0].value as [FPBStandingPhase[], FPBGame[], FPBGame[]]
+                        setStandings(phases)
+                        setSelectedPhase(0)
+                        const merged = new Map<string, FPBGame>()
+                        for (const g of sched) merged.set(g.data + g.equipa_casa + g.equipa_fora, g)
+                        for (const g of res) merged.set(g.data + g.equipa_casa + g.equipa_fora, g)
+                        setAllGames(Array.from(merged.values()))
+                    }
                 }
                 if (results[1].status === 'fulfilled') {
                     const [sched, res] = results[1].value as [FPBGame[], FPBGame[]]
@@ -236,7 +244,29 @@ export default function CompetitionDetail() {
                                             </div>
                                         )}
                                         {standings[selectedPhase] && standings[selectedPhase].teams.length === 0 && (
-                                            <Empty text={`${standings[selectedPhase].name} — formato de eliminatórias. Consulta em fpb.pt`} />
+                                            allGames.length === 0
+                                                ? <Empty text={`${standings[selectedPhase].name} — sem dados disponíveis`} />
+                                                : <div className="space-y-2">
+                                                    {allGames.map((g, i) => {
+                                                        const homeLogo = findLogo(g.equipa_casa, logoMap)
+                                                        const awayLogo = findLogo(g.equipa_fora, logoMap)
+                                                        const hasResult = g.resultado_casa !== undefined && g.resultado_fora !== undefined
+                                                        return (
+                                                            <div key={i} className="flex items-center gap-3 bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-xl p-3">
+                                                                <span className="text-[10px] text-zinc-400 w-16 shrink-0 text-right">{g.data}</span>
+                                                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                                                    {homeLogo ? <img src={homeLogo} alt="" className="w-5 h-5 object-contain rounded-full" /> : <span className="w-5 h-5 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center text-[8px] font-bold">{g.equipa_casa.charAt(0)}</span>}
+                                                                    <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate">{g.equipa_casa}</span>
+                                                                </div>
+                                                                <span className="text-xs font-bold shrink-0">{hasResult ? `${g.resultado_casa} - ${g.resultado_fora}` : 'vs'}</span>
+                                                                <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
+                                                                    <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate">{g.equipa_fora}</span>
+                                                                    {awayLogo ? <img src={awayLogo} alt="" className="w-5 h-5 object-contain rounded-full" /> : <span className="w-5 h-5 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center text-[8px] font-bold">{g.equipa_fora.charAt(0)}</span>}
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    })}
+                                                </div>
                                         )}
                                         {standings[selectedPhase] && standings[selectedPhase].teams.length > 0 && (
                                         <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 overflow-hidden">
