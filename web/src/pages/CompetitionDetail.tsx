@@ -457,7 +457,7 @@ function StatsLeaderboard({ playerStats }: { playerStats: FPBPlayerStat[] }) {
             </div>
 
             {/* Player grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-5 gap-3">
                 {sorted.map((p, i) => {
                     const val = p[STAT_TYPES[statType].key]
                     const displayVal = typeof val === 'number' ? (Number.isInteger(val) ? val : val.toFixed(1)) : '—'
