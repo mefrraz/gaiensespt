@@ -426,24 +426,21 @@ const STAT_TYPES: { key: keyof FPBPlayerStat; label: string; unit: string }[] = 
     { key: 'stl', label: 'Roubos', unit: 'RBPJ' },
 ]
 
-const TOP_OPTIONS = [5, 10, 20]
-
 function StatsLeaderboard({ playerStats }: { playerStats: FPBPlayerStat[] }) {
     const [statType, setStatType] = useState(0)
-    const [topN, setTopN] = useState(5)
 
     const sorted = useMemo(() => {
         const key = STAT_TYPES[statType].key
         return [...playerStats]
             .filter(p => ((p[key] as number) || 0) > 0)
             .sort((a, b) => ((b[key] as number) || 0) - ((a[key] as number) || 0))
-            .slice(0, topN)
-    }, [playerStats, statType, topN])
+            .slice(0, 5)
+    }, [playerStats, statType])
 
     return (
         <div>
-            {/* Filters row */}
-            <div className="flex items-center gap-2 mb-4 flex-wrap">
+            {/* Stat type pills */}
+            <div className="flex items-center gap-2 mb-4 flex-wrap overflow-x-auto pb-1">
                 {STAT_TYPES.map((st, i) => (
                     <button
                         key={st.key}
@@ -459,26 +456,8 @@ function StatsLeaderboard({ playerStats }: { playerStats: FPBPlayerStat[] }) {
                 ))}
             </div>
 
-            {/* Top N selector */}
-            <div className="flex items-center gap-2 mb-4">
-                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Top</span>
-                {TOP_OPTIONS.map(n => (
-                    <button
-                        key={n}
-                        onClick={() => setTopN(n)}
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all ${
-                            topN === n
-                                ? 'bg-dribly-purple/10 dark:bg-dribly-purple/20 text-dribly-purple'
-                                : 'text-zinc-400 hover:text-dribly-purple'
-                        }`}
-                    >
-                        {n}
-                    </button>
-                ))}
-            </div>
-
             {/* Player grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {sorted.map((p, i) => {
                     const val = p[STAT_TYPES[statType].key]
                     const displayVal = typeof val === 'number' ? (Number.isInteger(val) ? val : val.toFixed(1)) : '—'
