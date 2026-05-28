@@ -117,7 +117,7 @@ export default function CompetitionDetail() {
     const tabs = [
         { value: 'classificacao', label: 'Classificação', icon: BarChart3 },
         { value: 'resultados', label: 'Resultados', icon: CalendarIcon },
-        { value: 'calendario', label: 'Calendário', icon: CalendarIcon },
+        { value: 'calendario', label: 'Agenda', icon: CalendarIcon },
         { value: 'equipas', label: 'Equipas', icon: Users },
         ...(TOP_LEAGUES.includes(provaId) ? [{ value: 'estatisticas' as Tab, label: 'Estatísticas', icon: Trophy }] : []),
     ]
@@ -276,7 +276,11 @@ export default function CompetitionDetail() {
                                                     <div className="flex-1 h-px bg-zinc-200 dark:bg-white/5" />
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                                    {dateGames.map((g, i) => <GameCard key={i} match={fpbGameToMatch(g, logoMap)} mode="results" />)}
+                                                    {dateGames.map((g, i) => (
+                                                        <a key={i} href={`https://www.fpb.pt/ficha-de-jogo?internalID=${g.jogo_id}`} target="_blank" rel="noopener noreferrer" className="block">
+                                                            <GameCard match={fpbGameToMatch(g, logoMap)} mode="results" />
+                                                        </a>
+                                                    ))}
                                                 </div>
                                             </div>
                                         ))}
@@ -295,7 +299,11 @@ export default function CompetitionDetail() {
                                                     <div className="flex-1 h-px bg-zinc-200 dark:bg-white/5" />
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                                    {dateGames.map((g, i) => <GameCard key={i} match={fpbGameToMatch(g, logoMap)} mode="agenda" />)}
+                                                    {dateGames.map((g, i) => (
+                                                        <a key={i} href={`https://www.fpb.pt/ficha-de-jogo?internalID=${g.jogo_id}`} target="_blank" rel="noopener noreferrer" className="block">
+                                                            <GameCard match={fpbGameToMatch(g, logoMap)} mode="agenda" />
+                                                        </a>
+                                                    ))}
                                                 </div>
                                             </div>
                                         ))}
