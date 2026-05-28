@@ -366,47 +366,77 @@ export default function CompetitionDetail() {
                             {tab === 'estatisticas' && (
                                 playerStats.length === 0
                                     ? <Empty text="Sem estatísticas disponíveis." />
-                                    : (
-                                        <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 overflow-hidden">
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full text-sm">
-                                                    <thead>
-                                                        <tr className="bg-zinc-50 dark:bg-zinc-800/40">
-                                                            <th className="pl-3 pr-1 py-2.5 text-center text-[10px] font-bold text-zinc-400 uppercase w-10">#</th>
-                                                            <th className="pl-2 pr-3 py-2.5 text-left text-[10px] font-bold text-zinc-400 uppercase">Jogador</th>
-                                                            <th className="px-2 py-2.5 text-center text-[10px] font-bold text-zinc-400 uppercase w-12">J</th>
-                                                            <th className="px-2 py-2.5 text-center text-[10px] font-bold text-zinc-400 uppercase w-12">Pts</th>
-                                                            <th className="hidden sm:table-cell px-2 py-2.5 text-center text-[10px] font-bold text-zinc-400 uppercase w-12">REB</th>
-                                                            <th className="hidden sm:table-cell px-2 py-2.5 text-center text-[10px] font-bold text-zinc-400 uppercase w-12">AST</th>
-                                                            <th className="pr-3 pl-2 py-2.5 text-center text-[10px] font-bold text-zinc-400 uppercase w-12">VAL</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/30">
-                                                        {playerStats.map((p, i) => (
-                                                            <tr key={p.atleta_id} className="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/20">
-                                                                <td className="pl-3 pr-1 py-2.5 text-center">
-                                                                    <span className="text-xs font-semibold text-zinc-400 tabular-nums">{i + 1}</span>
-                                                                </td>
-                                                                <td className="pl-2 pr-3 py-2.5">
-                                                                    <span className="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate block max-w-[180px]">{p.nome}</span>
-                                                                    <span className="text-[10px] text-zinc-400">{p.clube_nome}</span>
-                                                                </td>
-                                                                <td className="px-2 py-2.5 text-center"><span className="text-xs text-zinc-500 tabular-nums">{p.j}</span></td>
-                                                                <td className="px-2 py-2.5 text-center"><span className="text-xs font-bold text-zinc-800 dark:text-zinc-100 tabular-nums">{p.pts}</span></td>
-                                                                <td className="hidden sm:table-cell px-2 py-2.5 text-center"><span className="text-xs text-zinc-500 tabular-nums">{p.reb ?? '—'}</span></td>
-                                                                <td className="hidden sm:table-cell px-2 py-2.5 text-center"><span className="text-xs text-zinc-500 tabular-nums">{p.ast ?? '—'}</span></td>
-                                                                <td className="pr-3 pl-2 py-2.5 text-center"><span className="text-xs font-bold text-dribly-purple tabular-nums">{p.val.toFixed(1)}</span></td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    )
+                                    : <StatsLeaderboard playerStats={playerStats} />
                             )}
                         </>
                     )}
                 </div>
+            </div>
+        </div>
+    )
+}
+
+const STAT_TYPES: { key: keyof FPBPlayerStat; label: string; unit: string }[] = [
+    { key: 'val', label: 'Valorização', unit: '' },
+    { key: 'pts', label: 'Pontos', unit: 'PPJ' },
+    { key: 'reb', label: 'Ressaltos', unit: 'RPJ' },
+    { key: 'ast', label: 'Assistências', unit: 'APJ' },
+    { key: 'blk', label: 'Desarmes', unit: 'DPJ' },
+    { key: 'stl', label: 'Roubos', unit: 'RBPJ' },
+]
+
+function StatsLeaderboard({ playerStats }: { playerStats: FPBPlayerStat[] }) {
+    const [statType, setStatType] = useState(0)
+
+    const sorted = useMemo(() => {
+        const key = STAT_TYPES[statType].key
+        return [...playerStats]
+            .filter(p => (p[key] as number) > 0)
+            .sort((a, b) => (b[key] as number) - (a[key] as number))
+            .slice(0, 20)
+    }, [playerStats, statType])
+
+    return (
+        <div>
+            {/* Stat type selector */}
+            <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1">
+                {STAT_TYPES.map((st, i) => (
+                    <button
+                        key={st.key}
+                        onClick={() => setStatType(i)}
+                        className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                            i === statType
+                                ? 'bg-dribly-purple text-white'
+                                : 'bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-white/10 hover:border-dribly-purple/30'
+                        }`}
+                    >
+                        {st.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* Player cards */}
+            <div className="space-y-2">
+                {sorted.map((p, i) => {
+                    const val = p[STAT_TYPES[statType].key]
+                    const displayVal = typeof val === 'number' ? (Number.isInteger(val) ? val : val.toFixed(1)) : '—'
+                    return (
+                        <div key={p.atleta_id} className="flex items-center gap-3 bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-xl p-3 hover:border-dribly-purple/30 transition-all">
+                            <span className="text-xs font-bold text-zinc-400 w-5 text-right">{i + 1}</span>
+                            <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
+                                <span className="text-sm font-bold text-zinc-500">{p.nome.charAt(0).toUpperCase()}</span>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200 truncate">{p.nome}</p>
+                                <p className="text-[10px] text-zinc-400">{p.clube_nome || '—'} · J: {p.j}</p>
+                            </div>
+                            <div className="text-right shrink-0">
+                                <span className="text-lg font-black text-dribly-purple">{displayVal}</span>
+                                {STAT_TYPES[statType].unit && <span className="text-[9px] text-zinc-400 block">{STAT_TYPES[statType].unit}</span>}
+                            </div>
+                        </div>
+                    )
+                })}
             </div>
         </div>
     )
