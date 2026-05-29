@@ -397,47 +397,6 @@ export async function fetchTeams(provaId: number): Promise<FPBTeam[]> {
     return Array.isArray(data) ? data : []
 }
 
-/* OLD — remove after verifying new works
-export async function fetchTeams_old(provaId: number): Promise<FPBTeam[]> {
-    try {
-        const data = await fetchFromProxy(`equipas/prova/${provaId}`)
-        if (Array.isArray(data) && data.length > 0) return data
-    } catch { /* fall through to HTML */ }
-
-    // Scrape from classificacao page which lists all teams
-    const html = await fetchHtml('classificacao', provaId)
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(html, 'text/html')
-    const seen = new Set<string>()
-    const teams: FPBTeam[] = []
-
-    // Collect unique team names from standings tables
-    const allRows = doc.querySelectorAll('table tbody tr')
-    allRows.forEach(row => {
-        const cols = row.querySelectorAll('td')
-        if (cols.length < 5) return
-        const name = cols[1]?.textContent?.trim() || ''
-        if (name && !seen.has(name)) {
-            seen.add(name)
-            teams.push({ nome: name })
-        }
-    })
-
-    // Also try .day-wrapper tables
-    doc.querySelectorAll('.day-wrapper table tbody tr').forEach(row => {
-        const cols = row.querySelectorAll('td')
-        if (cols.length < 5) return
-        const name = cols[1]?.textContent?.trim() || ''
-        if (name && !seen.has(name)) {
-            seen.add(name)
-            teams.push({ nome: name })
-        }
-    })
-
-    return teams
-}
-*/
-
 // ---- Player stats via HTML scraping ----
 
 export async function fetchPlayerStats(provaId: number, _tipo: string = 'val'): Promise<FPBPlayerStat[]> {
