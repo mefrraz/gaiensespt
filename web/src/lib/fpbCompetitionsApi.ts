@@ -673,30 +673,35 @@ function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | nul
     let equipa_fora = titleParts[1]?.split('|')[0]?.trim() || ''
 
     // Strip style, script, and HTML tags to get plain visible text
-    let text = html
+    const fullText = html
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
         .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
         .replace(/<[^>]+>/g, ' ')
         .replace(/\s+/g, ' ')
         .trim()
 
-    // Date: look for pattern like "2 MAI 2026"
-    const dateMatch = text.match(/(\d{1,2})\s+(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s+(\d{4})/i)
+    // Isolate game section: find Q1 pattern which is unique to game detail
+    const qAnchor = fullText.search(/(?:Q1|1T)\s+\d+\s*[-–]\s*\d+/i)
+    const gameText = qAnchor > -1
+        ? fullText.slice(Math.max(0, qAnchor - 300), Math.min(fullText.length, qAnchor + 200))
+        : fullText
+
+    // Date: look for pattern like "2 MAI 2026" in game section
+    const dateMatch = gameText.match(/(\d{1,2})\s+(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s+(\d{4})/i)
     let data = ''
     if (dateMatch) {
         const months: Record<string, string> = { JAN: '01', FEV: '02', MAR: '03', ABR: '04', MAI: '05', JUN: '06', JUL: '07', AGO: '08', SET: '09', OUT: '10', NOV: '11', DEZ: '12' }
         data = `${dateMatch[3]}-${months[dateMatch[2].toUpperCase()] || '01'}-${dateMatch[1].padStart(2, '0')}`
     }
 
-    // Phase: text before the date, e.g. "Fase Final - Meias-finais 1"
-    const faseMatch = text.match(/([^.]+?)\s+\d{1,2}\s+(?:JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)/i)
-    const fase = faseMatch?.[1]?.trim() || ''
+    // Phase: text right before the date, e.g. "Fase Final - Meias-finais 1"
+    const faseMatch = dateMatch
+        ? gameText.slice(0, dateMatch.index!).match(/([^.\d]+)\s*$/)?.[1]?.trim()
+        : ''
+    const fase = faseMatch || ''
 
-    // Scores: find two large numbers near team abbreviations (like "SLB ... 104 ... 76 ... UDO")
-    // Look for the score section after the date/phase
-    const scoreSection = dateMatch ? text.slice(dateMatch.index! + dateMatch[0].length) : text
-    // Find two 2-3 digit numbers that appear near each other after team names
-    const scoreMatch = scoreSection.match(/(\d{2,3})\s+(\d{2,3})/)
+    // Scores: find two 2-3 digit numbers in the score area (after team abbreviations)
+    const scoreMatch = gameText.match(/(\d{2,3})\s+(\d{2,3})/)
     let resultado_casa = 0
     let resultado_fora = 0
     if (scoreMatch) {
@@ -708,16 +713,16 @@ function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | nul
     const parciais: FPBGameDetail['parciais'] = []
     const qRe = /(Q\d+|1T|2T|OT)\s+(\d+)\s*[-–]\s*(\d+)/gi
     let qm: RegExpExecArray | null
-    while ((qm = qRe.exec(text)) !== null) {
+    while ((qm = qRe.exec(gameText)) !== null) {
         parciais.push({ periodo: qm[1], casa: parseInt(qm[2]), fora: parseInt(qm[3]) })
     }
 
-    // Pavilhao: text before " Espectadores" or "Espectadores"
-    const pavMatch = text.match(/([^.]+?)\s+\d+\s*Espectadores/i)
-    const pavilhao = pavMatch?.[1]?.trim().replace(/\s+/, ' ') || ''
+    // Pavilhao: text before " Espectadores"
+    const pavMatch = gameText.match(/([^.]+?)\s+\d+\s*Espectadores/i)
+    const pavilhao = pavMatch?.[1]?.trim().replace(/\s{2,}/g, ' ') || ''
 
     // Espetadores
-    const espMatch = text.match(/(\d+)\s*Espectadores/i)
+    const espMatch = gameText.match(/(\d+)\s*Espectadores/i)
     const espetadores = espMatch ? parseInt(espMatch[1]) : 0
 
     return {
