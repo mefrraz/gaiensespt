@@ -665,104 +665,59 @@ export async function fetchGameDetail(internalID: string): Promise<FPBGameDetail
 }
 
 function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | null {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(html, 'text/html')
+    // Extract teams from page title: "SL Benfica vs. UD Oliveirense | Taça Hugo dos Santos"
+    const titleMatch = html.match(/<title>([^<]+)<\/title>/i)
+    const title = titleMatch?.[1]?.trim() || ''
+    const titleParts = title.split(/\s+vs\.?\s+/i)
+    let equipa_casa = titleParts[0]?.trim() || ''
+    let equipa_fora = titleParts[1]?.split('|')[0]?.trim() || ''
 
-    // Date & phase
-    const dataEl = doc.querySelector('.date, h3.date, .game-date')
-    const data = dataEl?.textContent?.trim() || ''
+    // Strip HTML tags to get plain text
+    const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
 
-    const faseEl = doc.querySelector('.competition-phase, .fase, .wrapper-title h4')
-    const fase = faseEl?.textContent?.trim() || ''
+    // Date: look for pattern like "2 MAI 2026"
+    const dateMatch = text.match(/(\d{1,2})\s+(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s+(\d{4})/i)
+    let data = ''
+    if (dateMatch) {
+        const months: Record<string, string> = { JAN: '01', FEV: '02', MAR: '03', ABR: '04', MAI: '05', JUN: '06', JUL: '07', AGO: '08', SET: '09', OUT: '10', NOV: '11', DEZ: '12' }
+        data = `${dateMatch[3]}-${months[dateMatch[2].toUpperCase()] || '01'}-${dateMatch[1].padStart(2, '0')}`
+    }
 
-    // Teams & score
-    const homeEl = doc.querySelector('.home-team .team-name, .team-home .name, .equipa-casa .nome')
-    const awayEl = doc.querySelector('.away-team .team-name, .team-away .name, .equipa-fora .nome')
-    const equipa_casa = homeEl?.textContent?.trim() || ''
-    const equipa_fora = awayEl?.textContent?.trim() || ''
+    // Phase: text before the date, e.g. "Fase Final - Meias-finais 1"
+    const faseMatch = text.match(/([^.]+?)\s+\d{1,2}\s+(?:JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)/i)
+    const fase = faseMatch?.[1]?.trim() || ''
 
-    const scoreHomeEl = doc.querySelector('.home-score, .score-home, .resultado-casa')
-    const scoreAwayEl = doc.querySelector('.away-score, .score-away, .resultado-fora')
-    const resultado_casa = parseInt(scoreHomeEl?.textContent?.trim() || '0') || 0
-    const resultado_fora = parseInt(scoreAwayEl?.textContent?.trim() || '0') || 0
+    // Scores: find two large numbers near team abbreviations (like "SLB ... 104 ... 76 ... UDO")
+    // Look for the score section after the date/phase
+    const scoreSection = dateMatch ? text.slice(dateMatch.index! + dateMatch[0].length) : text
+    // Find two 2-3 digit numbers that appear near each other after team names
+    const scoreMatch = scoreSection.match(/(\d{2,3})\s+(\d{2,3})/)
+    let resultado_casa = 0
+    let resultado_fora = 0
+    if (scoreMatch) {
+        resultado_casa = parseInt(scoreMatch[1]) || 0
+        resultado_fora = parseInt(scoreMatch[2]) || 0
+    }
 
-    // Parciais (by quarter)
+    // Quarters: Q1 25-12, Q2 30-19, etc.
     const parciais: FPBGameDetail['parciais'] = []
-    const quarterEls = doc.querySelectorAll('.quarter, .parcial')
-    quarterEls.forEach(el => {
-        const text = el.textContent?.trim() || ''
-        const match = text.match(/(Q\d+|1T|2T|OT)\s*:?\s*(\d+)\s*[-–]\s*(\d+)/i)
-        if (match) {
-            parciais.push({ periodo: match[1], casa: parseInt(match[2]), fora: parseInt(match[3]) })
-        }
-    })
+    const qRe = /(Q\d+|1T|2T|OT)\s+(\d+)\s*[-–]\s*(\d+)/gi
+    let qm: RegExpExecArray | null
+    while ((qm = qRe.exec(text)) !== null) {
+        parciais.push({ periodo: qm[1], casa: parseInt(qm[2]), fora: parseInt(qm[3]) })
+    }
 
-    // Pavilhao
-    const pavilhaoEl = doc.querySelector('.location, .pavilhao, .venue')
-    const pavilhao = pavilhaoEl?.textContent?.trim() || ''
+    // Pavilhao: text before " Espectadores" or "Espectadores"
+    const pavMatch = text.match(/([^.]+?)\s+\d+\s*Espectadores/i)
+    const pavilhao = pavMatch?.[1]?.trim().replace(/\s+/, ' ') || ''
 
     // Espetadores
-    const espEl = doc.querySelector('.spectators, .espetadores')
-    const espetadores = parseInt(espEl?.textContent?.trim() || '0') || 0
-
-    // Game Leaders
-    const gameLeaders: FPBGameDetail['gameLeaders'] = []
-    const leaderEls = doc.querySelectorAll('.game-leaders .leader-row, .leaders .item')
-    leaderEls.forEach(el => {
-        const cat = el.querySelector('.category, .label')?.textContent?.trim() || ''
-        const home = el.querySelector('.home-val, .home .value')?.textContent?.trim() || ''
-        const away = el.querySelector('.away-val, .away .value')?.textContent?.trim() || ''
-        gameLeaders.push({ categoria: cat, casa: { nome: '', valor: home }, fora: { nome: '', valor: away } })
-    })
-
-    // Box Score
-    const boxScoreCasa: FPBBoxScorePlayer[] = []
-    const boxScoreFora: FPBBoxScorePlayer[] = []
-    const boxTables = doc.querySelectorAll('.box-score table, .stats-table, table.stats')
-    boxTables.forEach((table, idx) => {
-        const roster: FPBBoxScorePlayer[] = idx === 0 ? boxScoreCasa : boxScoreFora
-        table.querySelectorAll('tbody tr').forEach(row => {
-            const cols = row.querySelectorAll('td')
-            if (cols.length < 5) return
-            roster.push({
-                numero: parseInt(cols[0]?.textContent?.trim() || '0') || 0,
-                nome: cols[1]?.textContent?.trim() || '',
-                min: cols[2]?.textContent?.trim() || '',
-                pts: parseInt(cols[3]?.textContent?.trim() || '0') || 0,
-                l2: cols[4]?.textContent?.trim() || '',
-                l2pct: cols[5]?.textContent?.trim() || '',
-                l3: cols[6]?.textContent?.trim() || '',
-                l3pct: cols[7]?.textContent?.trim() || '',
-                ll: cols[8]?.textContent?.trim() || '',
-                llpct: cols[9]?.textContent?.trim() || '',
-                ro: parseInt(cols[10]?.textContent?.trim() || '0') || 0,
-                rd: parseInt(cols[11]?.textContent?.trim() || '0') || 0,
-                rt: parseInt(cols[12]?.textContent?.trim() || '0') || 0,
-                as: parseInt(cols[13]?.textContent?.trim() || '0') || 0,
-                rb: parseInt(cols[14]?.textContent?.trim() || '0') || 0,
-                to: parseInt(cols[15]?.textContent?.trim() || '0') || 0,
-                dl: parseInt(cols[16]?.textContent?.trim() || '0') || 0,
-                fc: parseInt(cols[17]?.textContent?.trim() || '0') || 0,
-                fs: parseInt(cols[18]?.textContent?.trim() || '0') || 0,
-                mais_menos: parseInt(cols[19]?.textContent?.trim() || '0') || 0,
-                val: parseFloat(cols[20]?.textContent?.trim() || '0') || 0,
-            })
-        })
-    })
-
-    // Team Stats
-    const teamStats: FPBGameDetail['teamStats'] = []
-    const statRows = doc.querySelectorAll('.team-stats .stat-row, .comparison .row')
-    statRows.forEach(row => {
-        const label = row.querySelector('.label')?.textContent?.trim() || ''
-        const casa = row.querySelector('.home')?.textContent?.trim() || ''
-        const fora = row.querySelector('.away')?.textContent?.trim() || ''
-        if (label) teamStats.push({ label, casa, fora })
-    })
+    const espMatch = text.match(/(\d+)\s*Espectadores/i)
+    const espetadores = espMatch ? parseInt(espMatch[1]) : 0
 
     return {
         internalID, data, fase, equipa_casa, equipa_fora,
         resultado_casa, resultado_fora, parciais, pavilhao, espetadores,
-        gameLeaders, boxScoreCasa, boxScoreFora, teamStats,
+        gameLeaders: [], boxScoreCasa: [], boxScoreFora: [], teamStats: [],
     }
 }
