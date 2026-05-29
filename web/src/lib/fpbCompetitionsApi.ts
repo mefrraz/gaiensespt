@@ -672,8 +672,13 @@ function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | nul
     let equipa_casa = titleParts[0]?.trim() || ''
     let equipa_fora = titleParts[1]?.split('|')[0]?.trim() || ''
 
-    // Strip HTML tags to get plain text
-    const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+    // Strip style, script, and HTML tags to get plain visible text
+    let text = html
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
 
     // Date: look for pattern like "2 MAI 2026"
     const dateMatch = text.match(/(\d{1,2})\s+(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s+(\d{4})/i)

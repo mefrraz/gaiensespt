@@ -8,7 +8,7 @@ import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 import { useClub, type Club } from '../lib/ClubContext'
 
-function detailToMatch(detail: FPBGameDetail): Match {
+function detailToMatch(detail: FPBGameDetail, logos?: { casa: string | null; fora: string | null }): Match {
     return {
         id: detail.internalID,
         slug: detail.internalID,
@@ -21,10 +21,32 @@ function detailToMatch(detail: FPBGameDetail): Match {
         escalao: detail.fase,
         competicao: '',
         local: detail.pavilhao,
-        logotipo_casa: null,
-        logotipo_fora: null,
+        logotipo_casa: logos?.casa || null,
+        logotipo_fora: logos?.fora || null,
         status: 'FINALIZADO',
     }
+}
+
+/** Normalize a name for comparison */
+function norm(s: string): string {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+}
+
+/** Match a team name to a club logo */
+function findClubLogo(teamName: string, clubs: Club[]): string | null {
+    const n = norm(teamName)
+    for (const c of clubs) {
+        if (!c.logo_url) continue
+        const cn = norm(c.name)
+        const sn = norm(c.search_name || '')
+        if (cn === n || sn === n) return c.logo_url
+        if (n.includes(cn) || cn.includes(n)) return c.logo_url
+        // Word-level match
+        const tw = n.split(/\s+/).filter(w => w.length > 2)
+        const cw = cn.split(/\s+/).filter(w => w.length > 2)
+        if (tw.some(t => cw.some(c => c === t))) return c.logo_url
+    }
+    return null
 }
 
 function Game() {
@@ -71,7 +93,13 @@ function Game() {
                 try {
                     const detail = await fetchGameDetail(slug)
                     if (detail) {
-                        setMatch(detailToMatch(detail))
+                        // Load clubs from Supabase for logo matching
+                        const { data: clubData } = await supabase.from('clubs').select('name, search_name, logo_url')
+                        const allClubs = (clubData || []) as Club[]
+                        setMatch(detailToMatch(detail, {
+                            casa: findClubLogo(detail.equipa_casa, allClubs),
+                            fora: findClubLogo(detail.equipa_fora, allClubs),
+                        }))
                     }
                 } catch { /* ignore */ }
                 setLoading(false)
