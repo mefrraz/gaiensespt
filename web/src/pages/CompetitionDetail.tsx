@@ -46,28 +46,55 @@ function normalize(s: string): string {
     return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
 }
 
-/** Build a map from normalized team name → logo URL from the clubs list */
-function buildLogoMap(clubs: { name: string; logo_url: string | null }[]): Map<string, string> {
-    const map = new Map<string, string>()
-    for (const c of clubs) {
-        if (c.logo_url) map.set(normalize(c.name), c.logo_url)
-    }
-    return map
+interface LogoMaps {
+    logos: Map<string, string>
+    searchNames: Map<string, string>
 }
 
-/** Match a team name to a logo using the logo map */
-function findLogo(teamName: string, logoMap: Map<string, string>): string | null {
-    const n = normalize(teamName)
-    // Exact match
-    if (logoMap.has(n)) return logoMap.get(n)!
-    // Partial: team name contains club name, or vice versa
-    for (const [clubName, logo] of logoMap) {
-        if (n.includes(clubName) || clubName.includes(n)) return logo
+/** Build normalized name→logo maps from the clubs list (name + search_name) */
+function buildLogoMap(clubs: { name: string; search_name: string; logo_url: string | null }[]): LogoMaps {
+    const logos = new Map<string, string>()
+    const searchNames = new Map<string, string>()
+    for (const c of clubs) {
+        if (c.logo_url) {
+            logos.set(normalize(c.name), c.logo_url)
+            if (c.search_name) searchNames.set(normalize(c.search_name), c.logo_url)
+        }
     }
+    return { logos, searchNames }
+}
+
+/** Match a team name to a logo using the logo maps */
+function findLogo(teamName: string, maps: LogoMaps): string | null {
+    const n = normalize(teamName)
+
+    // 1. Exact match on club name or search_name
+    if (maps.logos.has(n)) return maps.logos.get(n)!
+    if (maps.searchNames.has(n)) return maps.searchNames.get(n)!
+
+    // 2. Substring: team contains club/search name, or vice versa
+    for (const [name, logo] of maps.logos) {
+        if (n.includes(name) || name.includes(n)) return logo
+    }
+    for (const [name, logo] of maps.searchNames) {
+        if (n.includes(name) || name.includes(n)) return logo
+    }
+
+    // 3. Word-level: any meaningful word (len>2) from team matches a word from club
+    const teamWords = n.split(/\s+/).filter(w => w.length > 2)
+    if (teamWords.length > 0) {
+        for (const [clubName, logo] of maps.logos) {
+            const clubWords = clubName.split(/\s+/).filter(w => w.length > 2)
+            if (teamWords.some(tw => clubWords.some(cw => cw === tw || cw.includes(tw) || tw.includes(cw)))) {
+                return logo
+            }
+        }
+    }
+
     return null
 }
 
-function fpbGameToMatch(g: FPBGame, logoMap: Map<string, string>): Match {
+function fpbGameToMatch(g: FPBGame, logoMaps: LogoMaps): Match {
     const slug = g.jogo_id || `${g.data}-${g.equipa_casa.toLowerCase().replace(/\s+/g, '-')}-${g.equipa_fora.toLowerCase().replace(/\s+/g, '-')}`
     const status: Match['status'] = g.estado === 'FINALIZADO' ? 'FINALIZADO' : 'AGENDADO'
     return {
@@ -82,8 +109,8 @@ function fpbGameToMatch(g: FPBGame, logoMap: Map<string, string>): Match {
         escalao: '',
         competicao: '',
         local: g.pavilhao || null,
-        logotipo_casa: findLogo(g.equipa_casa, logoMap),
-        logotipo_fora: findLogo(g.equipa_fora, logoMap),
+        logotipo_casa: findLogo(g.equipa_casa, logoMaps),
+        logotipo_fora: findLogo(g.equipa_fora, logoMaps),
         status,
     }
 }
@@ -150,7 +177,7 @@ export default function CompetitionDetail() {
         await toggleFollow('competition', provaId)
     }
 
-    const logoMap = useMemo(() => buildLogoMap(clubs), [clubs])
+    const logoMaps = useMemo(() => buildLogoMap(clubs), [clubs])
 
     const formatDate = (dateStr: string) => {
         const date = new Date(dateStr)
@@ -352,7 +379,7 @@ export default function CompetitionDetail() {
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                                     {dateGames.map((g, i) => (
-                                                        <GameCard key={i} match={fpbGameToMatch(g, logoMap)} mode="results" />
+                                                        <GameCard key={i} match={fpbGameToMatch(g, logoMaps)} mode="results" />
                                                     ))}
                                                 </div>
                                             </div>
@@ -373,7 +400,7 @@ export default function CompetitionDetail() {
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                                     {dateGames.map(g => (
-                                                        <GameCard key={g.jogo_id || g.data+g.equipa_casa} match={fpbGameToMatch(g, logoMap)} mode="agenda" />
+                                                        <GameCard key={g.jogo_id || g.data+g.equipa_casa} match={fpbGameToMatch(g, logoMaps)} mode="agenda" />
                                                     ))}
                                                 </div>
                                             </div>
@@ -388,7 +415,7 @@ export default function CompetitionDetail() {
                                     : (
                                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
                                             {teams.map((team, i) => {
-                                                const logo = team.logo || findLogo(team.nome, logoMap)
+                                                const logo = team.logo || findLogo(team.nome, logoMaps)
                                                 return (
                                                 <div key={i} className="bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-4 text-center hover:border-dribly-purple/30 transition-all">
                                                     {logo ? (
