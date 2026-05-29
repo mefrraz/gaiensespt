@@ -393,20 +393,47 @@ export async function fetchTeams(provaId: number): Promise<FPBTeam[]> {
     // WordPress AJAX: admin-ajax.php?action=get_equipas&idCompeticao=10902
     // WordPress AJAX returns HTML: <div class="equipa">...
     const res = await fetch(`${FPB_PROXY}?wp_action=get_equipas&idCompeticao=${provaId}&_t=${Date.now()}`)
-    if (!res.ok) return []
-    const html = await res.text()
-    if (!html) return []
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(html, 'text/html')
-    const teams: FPBTeam[] = []
-    doc.querySelectorAll('.equipa').forEach(el => {
-        const nome = el.querySelector('.equipa-body h5')?.textContent?.trim() || ''
-        if (!nome) return
-        const equipaId = el.querySelector('a')?.href?.match(/equipa_(\d+)/)?.[1]
-        const logo = el.querySelector('img.logo')?.getAttribute('src') || undefined
-        teams.push({ nome, equipa_id: equipaId ? `equipa_${equipaId}` : undefined, logo })
-    })
-    return teams
+    if (res.ok) {
+        const html = await res.text()
+        if (html) {
+            const parser = new DOMParser()
+            const doc = parser.parseFromString(html, 'text/html')
+            const teams: FPBTeam[] = []
+            doc.querySelectorAll('.equipa').forEach(el => {
+                const nome = el.querySelector('.equipa-body h5')?.textContent?.trim() || ''
+                if (!nome) return
+                const equipaId = el.querySelector('a')?.href?.match(/equipa_(\d+)/)?.[1]
+                const logo = el.querySelector('img.logo')?.getAttribute('src') || undefined
+                teams.push({ nome, equipa_id: equipaId ? `equipa_${equipaId}` : undefined, logo })
+            })
+            if (teams.length > 0) return teams
+        }
+    }
+
+    // Fallback: extract unique team names from the classification standings
+    // (needed for competitions where get_equipas AJAX returns empty, e.g. association-level comps)
+    try {
+        const phases = await fetchStandings(provaId)
+        const seen = new Set<string>()
+        const fallbackTeams: FPBTeam[] = []
+        for (const phase of phases) {
+            for (const t of phase.teams) {
+                const name = t.equipa.trim()
+                if (name && !seen.has(name)) {
+                    seen.add(name)
+                    fallbackTeams.push({
+                        nome: name,
+                        equipa_id: t.equipa_id,
+                        clube_id: t.clube_id,
+                        logo: t.logo,
+                    })
+                }
+            }
+        }
+        return fallbackTeams
+    } catch {
+        return []
+    }
 }
 
 // ---- Player stats via HTML scraping ----
