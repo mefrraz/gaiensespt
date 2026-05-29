@@ -468,7 +468,7 @@ function StatsLeaderboard({ playerStats }: { playerStats: FPBPlayerStat[] }) {
                             <span className="absolute top-2 left-3 text-[10px] font-black text-zinc-300 dark:text-zinc-600">{i + 1}</span>
                             <div className="relative w-24 h-24 mx-auto mb-3">
                                 {photoUrl ? (
-                                    <img src={photoUrl} alt="" className="w-24 h-24 object-cover rounded-full border-[3px] border-zinc-100 dark:border-white/10 shadow-md" loading="lazy" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden') }} />
+                                    <img src={photoUrl} alt="" className="w-24 h-24 object-cover rounded-full border-[3px] border-zinc-100 dark:border-white/10 shadow-md" fetchpriority="high" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden') }} />
                                 ) : null}
                                 <div className={`w-24 h-24 rounded-full bg-gradient-to-br from-dribly-purple/20 to-dribly-purple/5 flex items-center justify-center mx-auto ${photoUrl ? 'hidden' : ''}`}>
                                     <span className="text-3xl font-black text-dribly-purple">{p.nome.charAt(0).toUpperCase()}</span>
