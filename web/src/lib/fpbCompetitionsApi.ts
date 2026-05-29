@@ -680,10 +680,12 @@ function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | nul
         .replace(/\s+/g, ' ')
         .trim()
 
-    // Isolate game section: find Q1 pattern which is unique to game detail
+    // Isolate game section: anchor on Q1/quarters or fallback to date
     const qAnchor = fullText.search(/(?:Q1|1T)\s+\d+\s*[-–]\s*\d+/i)
-    const gameText = qAnchor > -1
-        ? fullText.slice(Math.max(0, qAnchor - 300), Math.min(fullText.length, qAnchor + 200))
+    const datePos = fullText.search(/\d{1,2}\s+(?:JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s+\d{4}/i)
+    const anchorPos = qAnchor > -1 ? qAnchor : (datePos > -1 ? datePos : -1)
+    const gameText = anchorPos > -1
+        ? fullText.slice(Math.max(0, anchorPos - 300), Math.min(fullText.length, anchorPos + 300))
         : fullText
 
     // Date: look for pattern like "2 MAI 2026" in game section
@@ -717,9 +719,22 @@ function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | nul
         parciais.push({ periodo: qm[1], casa: parseInt(qm[2]), fora: parseInt(qm[3]) })
     }
 
-    // Pavilhao: text before " Espectadores"
-    const pavMatch = gameText.match(/([^.]+?)\s+\d+\s*Espectadores/i)
-    const pavilhao = pavMatch?.[1]?.trim().replace(/\s{2,}/g, ' ') || ''
+    // Pavilhao: the last meaningful words before "XXX Espectadores"
+    const espIdx = gameText.search(/\d+\s*Espectadores/i)
+    let pavilhao = ''
+    if (espIdx > -1) {
+        const before = gameText.slice(0, espIdx).trim()
+        const words = before.split(/\s+/)
+        // Take the last 2-6 words that look like a location (no numbers, no all-caps abbreviations preceded by it)
+        const pavWords: string[] = []
+        for (let j = words.length - 1; j >= 0 && pavWords.length < 6; j--) {
+            const w = words[j]
+            if (/^\d+$/.test(w)) { pavWords.unshift(w); break } // stop at numbers
+            if (/^[A-ZÀ-Ú]{2,5}$/.test(w) && pavWords.length === 0) continue // skip standalone abbreviations
+            pavWords.unshift(w)
+        }
+        pavilhao = pavWords.join(' ')
+    }
 
     // Espetadores
     const espMatch = gameText.match(/(\d+)\s*Espectadores/i)
