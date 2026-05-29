@@ -80,14 +80,18 @@ function findLogo(teamName: string, maps: LogoMaps): string | null {
         if (n.includes(name) || name.includes(n)) return logo
     }
 
-    // 3. Word-level: any meaningful word (len>2) from team matches a word from club
+    // 3. Word-level: exact token match between team and club names
     const teamWords = n.split(/\s+/).filter(w => w.length > 2)
     if (teamWords.length > 0) {
+        // Check club names
         for (const [clubName, logo] of maps.logos) {
             const clubWords = clubName.split(/\s+/).filter(w => w.length > 2)
-            if (teamWords.some(tw => clubWords.some(cw => cw === tw || cw.includes(tw) || tw.includes(cw)))) {
-                return logo
-            }
+            if (teamWords.some(tw => clubWords.some(cw => cw === tw))) return logo
+        }
+        // Check search names
+        for (const [searchName, logo] of maps.searchNames) {
+            const searchWords = searchName.split(/\s+/).filter(w => w.length > 2)
+            if (teamWords.some(tw => searchWords.some(sw => sw === tw))) return logo
         }
     }
 
