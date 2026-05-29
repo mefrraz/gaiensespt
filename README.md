@@ -15,7 +15,7 @@
     <img src="https://img.shields.io/badge/dribly.vercel.app-7C3AED?style=for-the-badge&logo=vercel&logoColor=white" alt="Website" />
   </a>
   <a href="https://github.com/mefrraz/dribly">
-    <img src="https://img.shields.io/github/license/mefrraz/dribly?style=for-the-badge&color=7C3AED" alt="License" />
+    <img src="https://img.shields.io/badge/AGPLv3-7C3AED?style=for-the-badge&label=license" alt="AGPLv3" />
   </a>
   <a href="https://github.com/mefrraz/dribly/stargazers">
     <img src="https://img.shields.io/github/stars/mefrraz/dribly?style=for-the-badge&color=7C3AED" alt="Stars" />
@@ -294,7 +294,7 @@ python discover-competitions.py
 
 ## 📜 Licença
 
-MIT — aberto para contribuições, forks e uso livre.
+GNU AGPLv3 — código aberto, copyleft para serviços web. Garante que quem modificar e hospedar o Dribly publique as alterações. Vê o ficheiro [LICENSE](LICENSE).
 
 ---
 
