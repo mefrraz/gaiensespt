@@ -20,17 +20,6 @@
   <a href="https://github.com/mefrraz/dribly/stargazers">
     <img src="https://img.shields.io/github/stars/mefrraz/dribly?style=for-the-badge&color=7C3AED" alt="Stars" />
   </a>
-  <br />
-  <a href="https://github.com/mefrraz/dribly/commits/main">
-    <img src="https://img.shields.io/github/last-commit/mefrraz/dribly?style=flat-square&color=7C3AED" alt="Last Commit" />
-  </a>
-  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react" alt="React 18" />
-  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript" alt="TypeScript 5" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=flat-square&logo=tailwindcss" alt="Tailwind CSS 3" />
-  <img src="https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite" alt="Vite 5" />
-  <img src="https://img.shields.io/badge/Supabase-FF9500?style=flat-square&logo=supabase" alt="Supabase" />
-  <img src="https://img.shields.io/badge/Vercel-000?style=flat-square&logo=vercel" alt="Vercel" />
-  <img src="https://img.shields.io/badge/PWA-5A0FC8?style=flat-square&logo=pwa" alt="PWA" />
 </p>
 
 ---
@@ -158,16 +147,16 @@ O Dribly nasceu da frustração de não existir uma plataforma única, rápida e
 
 ## 🛠️ Stack
 
-| Camada | Tecnologia | Badge |
-|---|---|---|
-| Frontend | React 18 + TypeScript | ![React](https://img.shields.io/badge/-React_18-61DAFB?style=flat&logo=react) |
-| Build | Vite 5 | ![Vite](https://img.shields.io/badge/-Vite_5-646CFF?style=flat&logo=vite) |
-| Estilos | Tailwind CSS 3 | ![Tailwind](https://img.shields.io/badge/-Tailwind_CSS_3-06B6D4?style=flat&logo=tailwindcss) |
-| Base de dados | Supabase (PostgreSQL) | ![Supabase](https://img.shields.io/badge/-Supabase-FF9500?style=flat&logo=supabase) |
-| Deploy | Vercel (Edge Functions) | ![Vercel](https://img.shields.io/badge/-Vercel-000?style=flat&logo=vercel) |
-| Cache local | localStorage + Service Worker | ![PWA](https://img.shields.io/badge/-PWA-5A0FC8?style=flat&logo=pwa) |
-| API externa | FPB + TugaBasket | ![Scraping](https://img.shields.io/badge/-HTML_Scraping-FF6B6B?style=flat) |
-| PWA | vite-plugin-pwa | ![Workbox](https://img.shields.io/badge/-Workbox-FF6C2A?style=flat&logo=workbox) |
+| Camada | Tecnologia |
+|---|---|
+| Frontend | React 18 + TypeScript |
+| Build | Vite 5 |
+| Estilos | Tailwind CSS 3 |
+| Base de dados | Supabase (PostgreSQL) |
+| Deploy | Vercel (Edge Functions) |
+| Cache local | localStorage + Service Worker |
+| API externa | FPB + TugaBasket (HTML scraping + WordPress AJAX) |
+| PWA | vite-plugin-pwa (Workbox) |
 
 ---
 
@@ -210,48 +199,86 @@ web/
 
 ---
 
-## 🔄 Fluxo de Dados
+## ⚙️ Como funciona (Arquitetura Técnica)
 
-### Jogos (Clube)
+O Dribly é uma **SPA (Single Page Application)** sem backend próprio. Toda a lógica vive no browser ou em Edge Functions serverless na Vercel.
 
-```
-Browser → /api/fpb?page=[calendario|resultados]&clube=169&epoca=2025/2026
-         → Vercel Edge Function
-         → www.fpb.pt → HTML
-         → DOMParser → Match[]
-         → React (imediato) + Supabase upsert (cache)
-```
-
-### Classificação (Competição)
+### Visão geral
 
 ```
-Browser → /api/fpb?wp_action=get_more_fase_regular&competicao=10902&fase=30969
-         → Vercel Edge Function
-         → www.fpb.pt/wp-admin/admin-ajax.php
-         → JSON { result: { body: "..." } }
-         → RegExp parser → FPBStandingTeam[]
+Browser (React SPA)
+    │
+    ├── Supabase SDK ──────────► Supabase (Auth + DB + cache)
+    │
+    ├── /api/* (Edge Functions) ──► FPB / TugaBasket (scraping)
+    │
+    └── Service Worker ──────────► Cache local (PWA offline)
 ```
 
-### Ficha de Jogo
+### Fontes de dados
+
+O Dribly **não tem API própria** — os dados são obtidos em tempo real dos sites oficiais:
+
+- **FPB (Federação Portuguesa de Basquetebol)** — scraping HTML das páginas públicas (`www.fpb.pt`) para calendários, resultados, fichas de jogo e lista de clubes. As competições usam o endpoint WordPress AJAX interno (`/wp-admin/admin-ajax.php`) com um `action` específico para obter classificações da fase regular.
+- **TugaBasket** — scraping HTML para dados complementares (estatísticas individuais, histórico).
+- **Logos e cores** — mapeamento manual de 281 clubes, servidos como assets estáticos.
+
+Todo o scraping é feito do lado do servidor (Vercel Edge Functions), nunca no browser — o cliente pede dados já tratados, não HTML bruto.
+
+### Proxy serverless (Edge Functions)
+
+As rotas `/api/fpb` e `/api/tugabasket` são Edge Functions na Vercel (Node.js runtime nas regiões europeias). Funcionam como **proxy + parser**: recebem um pedido do browser, fazem fetch ao site externo, extraem os dados com `DOMParser` (HTML) ou `RegExp` (WordPress AJAX), e devolvem JSON limpo ao React.
 
 ```
-Browser → /game/{internalID}
-         → Game.tsx → fetchGameDetail(internalID)
-         → /api/fpb?internalID=390144
-         → www.fpb.pt/ficha-de-jogo?internalID=390144
-         → DOMParser → FPBGameDetail (box score, parciais, leaders)
+Browser ──GET /api/fpb?clube=169&page=calendario──► Edge Function
+                                                       │
+                                                    fetch()
+                                                       │
+                                                       ▼
+                                                  www.fpb.pt (HTML)
+                                                       │
+                                                   DOMParser
+                                                       │
+                                                       ▼
+                                                  JSON { games: [...] }
+                                                       │
+                                                       ▼
+                                                  Browser ←── JSON
 ```
 
----
+### Cache em três camadas
 
-## ⚡ Cache Strategy
+| Camada | Onde | TTL | O que guarda |
+|---|---|---|---|
+| **localStorage** | Browser | ~15 min | Jogos e classificações (evita pedidos repetidos) |
+| **Supabase (PostgreSQL)** | Cloud | Médio prazo | Clubes (dados base), resultados upsert após refresh |
+| **Browser cache HTTP** | Browser | Longo prazo | Logos, assets estáticos, SW bundle |
 
-| Recurso | < 15 min | > 15 min |
-|---|---|---|
-| Clubes | Supabase | Supabase |
-| Jogos | localStorage | refresh FPB + upsert |
-| Classificações | localStorage | refresh WordPress AJAX |
-| Logos | browser cache (longo prazo) | — |
+Estratégia: servir sempre do localStorage se < 15 min. Se expirou, faz refresh à fonte (Edge Function) e actualiza Supabase em background.
+
+### Autenticação e dados de utilizador
+
+Geridos exclusivamente pelo **Supabase Auth** (email/password) + **Supabase DB** (tabelas de favoritos e seguidos). Não há sessão própria, tokens JWT, ou backend de auth — o Supabase SDK no browser trata de tudo:
+
+```
+Browser → supabase.auth.signInWithPassword(email, password)
+         → Supabase Auth (JWT gerido pelo SDK)
+         → supabase.from("follows").select("*") (dados do utilizador)
+```
+
+### PWA e offline parcial
+
+O `vite-plugin-pwa` (Workbox) gera um **Service Worker** que faz cache de navegação e assets. Em modo offline:
+- Páginas já visitadas funcionam (cache-first)
+- Dados frescos (jogos, classificações) mostram a última versão em cache
+- Logos e assets estáticos servem sempre do cache
+
+### Porquê esta arquitectura?
+
+- **Zero backend para manter** — sem servidor, sem Docker, sem filas
+- **Dados sempre frescos** — cada pedido vai à fonte oficial (com cache curto para não abusar)
+- **Custo deploy ≈ 0** — Vercel free tier + Supabase free tier
+- **Escala automaticamente** — Edge Functions sobem sob demanda
 
 ---
 
@@ -299,10 +326,7 @@ GNU AGPLv3 — código aberto, copyleft para serviços web. Garante que quem mod
 ---
 
 <p align="center">
-  <a href="https://dribly.vercel.app">
-    <img src="https://img.shields.io/badge/Abrir_Dribly-7C3AED?style=for-the-badge&logo=vercel&logoColor=white" alt="Abrir Dribly" />
-  </a>
-  <a href="https://github.com/mefrraz/dribly">
-    <img src="https://img.shields.io/badge/Código_Fonte-000?style=for-the-badge&logo=github" alt="Código Fonte" />
-  </a>
+  <a href="https://dribly.vercel.app">Abrir Dribly →</a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/mefrraz/dribly">Código Fonte →</a>
 </p>
