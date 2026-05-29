@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Loader2, Heart, ListOrdered, CalendarDays, Trophy, Users, BarChart4 } from 'lucide-react'
+import { ArrowLeft, Loader2, Heart, ListOrdered, CalendarDays, Trophy, Users, BarChart4, LayoutDashboard } from 'lucide-react'
 import { useFollows } from '../hooks/useFollows'
 import { useAuth } from '../lib/AuthContext'
 import { useClub } from '../lib/ClubContext'
@@ -25,10 +25,11 @@ const COMP_NAMES: Record<number, string> = {
     10920: 'Supertaça Feminina',
 }
 
-type Tab = 'classificacao' | 'resultados' | 'calendario' | 'equipas' | 'estatisticas'
+type Tab = 'geral' | 'classificacao' | 'resultados' | 'calendario' | 'equipas' | 'estatisticas'
 const TOP_LEAGUES = [10902, 10906]
 
 const TAB_CONFIG = [
+    { value: 'geral' as Tab, label: 'Vista Geral', icon: LayoutDashboard, color: 'from-dribly-purple to-purple-600' },
     { value: 'classificacao' as Tab, label: 'Classificação', icon: ListOrdered, color: 'from-violet-500 to-purple-600' },
     { value: 'resultados' as Tab, label: 'Resultados', icon: Trophy, color: 'from-emerald-500 to-green-600' },
     { value: 'calendario' as Tab, label: 'Agenda', icon: CalendarDays, color: 'from-blue-500 to-cyan-600' },
@@ -126,7 +127,7 @@ export default function CompetitionDetail() {
     const { isFollowing, toggleFollow } = useFollows()
     const { clubs, loadClubs } = useClub()
 
-    const [tab, setTab] = useState<Tab>('classificacao')
+    const [tab, setTab] = useState<Tab>('geral')
     const [standings, setStandings] = useState<FPBStandingPhase[]>([])
     const [selectedPhase, setSelectedPhase] = useState(0)
     const [games, setGames] = useState<FPBGame[]>([])
@@ -141,13 +142,14 @@ export default function CompetitionDetail() {
 
         const loadData = async () => {
             try {
+                const isGeral = tab === 'geral'
                 const results = await Promise.allSettled([
-                    tab === 'classificacao' ? fetchStandings(provaId) : Promise.resolve([] as FPBStandingPhase[]),
-                    tab === 'resultados' || tab === 'calendario'
+                    (isGeral || tab === 'classificacao') ? fetchStandings(provaId) : Promise.resolve([] as FPBStandingPhase[]),
+                    (isGeral || tab === 'resultados' || tab === 'calendario')
                         ? Promise.all([fetchSchedule(provaId), fetchResults(provaId)])
                         : Promise.resolve([[], []] as [FPBGame[], FPBGame[]]),
-                    tab === 'equipas' ? fetchTeams(provaId) : Promise.resolve([]),
-                    tab === 'estatisticas' && TOP_LEAGUES.includes(provaId)
+                    (isGeral || tab === 'equipas') ? fetchTeams(provaId) : Promise.resolve([]),
+                    (tab === 'estatisticas' && TOP_LEAGUES.includes(provaId))
                         ? fetchPlayerStats(provaId, 'val')
                         : Promise.resolve([]),
                 ])
@@ -287,6 +289,78 @@ export default function CompetitionDetail() {
                         </div>
                     ) : (
                         <>
+                            {/* Overview */}
+                            {tab === 'geral' && (
+                                <div className="space-y-5">
+                                    {/* Stats bar */}
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                                        <StatCard label="Equipas" value={teams.length || standings[0]?.teams.length || '—'} icon={Users} />
+                                        <StatCard label="Líder" value={standings[0]?.teams[0]?.equipa?.split(' ').slice(0, 2).join(' ') || '—'} icon={Trophy} />
+                                        <StatCard label="Jogos" value={(() => { const all = [...scheduleList, ...resultsList]; return all.length || '—' })()} icon={CalendarDays} />
+                                        <StatCard label="Fase" value={standings[0]?.name || '—'} icon={ListOrdered} />
+                                    </div>
+
+                                    {/* Top 3 + Próximos jogos */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                                        {/* Top 3 Classificação */}
+                                        <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 p-4">
+                                            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                <ListOrdered size={14} className="text-dribly-purple" />
+                                                Top 3 Classificação
+                                            </h3>
+                                            {standings[0] && standings[0].type === 'table' && standings[0].teams.length > 0 ? (
+                                                <div className="space-y-1.5">
+                                                    {standings[0].teams.slice(0, 3).map((t, i) => (
+                                                        <div key={i} className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl px-3 py-2.5">
+                                                            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${i === 0 ? 'bg-amber-400 text-white' : i === 1 ? 'bg-zinc-300 text-zinc-700' : 'bg-amber-700/60 text-white'}`}>{t.posicao}</span>
+                                                            <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex-1 truncate">{t.equipa}</span>
+                                                            <span className="text-[10px] font-medium text-zinc-400 tabular-nums">{t.j}J</span>
+                                                            <span className="text-[10px] font-medium text-emerald-600 tabular-nums">{t.v}V</span>
+                                                            <span className="text-[10px] font-medium text-red-500 tabular-nums">{t.d}D</span>
+                                                            <span className="text-xs font-black text-zinc-900 dark:text-white tabular-nums w-6 text-right">{t.pts}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs text-zinc-400 py-4 text-center">Sem dados de classificação.</p>
+                                            )}
+                                        </div>
+
+                                        {/* Próximos jogos */}
+                                        <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 p-4">
+                                            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                <CalendarDays size={14} className="text-dribly-purple" />
+                                                Próximos Jogos
+                                            </h3>
+                                            {scheduleList.length > 0 ? (
+                                                <div className="space-y-2">
+                                                    {scheduleList.slice(0, 3).map((g, i) => (
+                                                        <GameCard key={i} match={fpbGameToMatch(g, logoMaps)} mode="agenda" />
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs text-zinc-400 py-4 text-center">Sem jogos agendados.</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Últimos resultados */}
+                                    {resultsList.length > 0 && (
+                                        <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 p-4">
+                                            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                <Trophy size={14} className="text-dribly-purple" />
+                                                Últimos Resultados
+                                            </h3>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                                {resultsList.slice(0, 3).map((g, i) => (
+                                                    <GameCard key={i} match={fpbGameToMatch(g, logoMaps)} mode="results" />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Standings */}
                             {tab === 'classificacao' && (
                                 standings.length === 0
@@ -548,6 +622,16 @@ function StatsLeaderboard({ playerStats }: { playerStats: FPBPlayerStat[] }) {
                     )
                 })}
             </div>
+        </div>
+    )
+}
+
+function StatCard({ label, value, icon: Icon }: { label: string; value: string | number; icon: React.ElementType }) {
+    return (
+        <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 p-4 text-center">
+            <Icon size={18} className="text-dribly-purple mx-auto mb-1.5" />
+            <p className="text-2xl font-black text-zinc-900 dark:text-white tabular-nums">{value}</p>
+            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mt-0.5">{label}</p>
         </div>
     )
 }
