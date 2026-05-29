@@ -149,7 +149,7 @@ export default function CompetitionDetail() {
                         ? Promise.all([fetchSchedule(provaId), fetchResults(provaId)])
                         : Promise.resolve([[], []] as [FPBGame[], FPBGame[]]),
                     (isGeral || tab === 'equipas') ? fetchTeams(provaId) : Promise.resolve([]),
-                    (tab === 'estatisticas' && TOP_LEAGUES.includes(provaId))
+                    ((isGeral || tab === 'estatisticas') && TOP_LEAGUES.includes(provaId))
                         ? fetchPlayerStats(provaId, 'val')
                         : Promise.resolve([]),
                 ])
@@ -292,40 +292,81 @@ export default function CompetitionDetail() {
                             {/* Overview */}
                             {tab === 'geral' && (
                                 <div className="space-y-5">
-                                    {/* Stats bar */}
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                                        <StatCard label="Equipas" value={teams.length || standings[0]?.teams.length || '—'} icon={Users} />
-                                        <StatCard label="Líder" value={standings[0]?.teams[0]?.equipa?.split(' ').slice(0, 2).join(' ') || '—'} icon={Trophy} />
-                                        <StatCard label="Jogos" value={(() => { const all = [...scheduleList, ...resultsList]; return all.length || '—' })()} icon={CalendarDays} />
-                                        <StatCard label="Fase" value={standings[0]?.name || '—'} icon={ListOrdered} />
+                                    {/* Row 1 — Leader + Stat Leaders (3:4 ratio) */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                                        {/* Leader card */}
+                                        {standings[0] && standings[0].type === 'table' && standings[0].teams[0] ? (() => {
+                                            const leader = standings[0].teams[0]
+                                            const leaderLogo = findLogo(leader.equipa, logoMaps)
+                                            return (
+                                                <div className="lg:col-span-5 bg-gradient-to-br from-amber-50 to-amber-100/60 dark:from-amber-900/20 dark:to-amber-800/10 rounded-2xl border border-amber-200/50 dark:border-amber-700/30 p-5 flex items-center gap-4">
+                                                    {leaderLogo ? (
+                                                        <img src={leaderLogo} alt="" className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-2xl bg-white/80 dark:bg-zinc-800/80 drop-shadow-sm" />
+                                                    ) : (
+                                                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/80 dark:bg-zinc-800/80 flex items-center justify-center">
+                                                            <span className="text-2xl font-bold text-zinc-500">{leader.equipa.charAt(0)}</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="min-w-0">
+                                                        <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest mb-0.5">Líder</p>
+                                                        <p className="text-sm sm:text-base font-black text-zinc-900 dark:text-white truncate">{leader.equipa}</p>
+                                                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                                            <span className="tabular-nums">{leader.j}J</span>
+                                                            {' · '}<span className="text-emerald-600 tabular-nums">{leader.v}V</span>
+                                                            {' · '}<span className="text-red-500 tabular-nums">{leader.d}D</span>
+                                                            {' · '}<span className="font-black text-zinc-900 dark:text-white tabular-nums">{leader.pts}Pts</span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })() : (
+                                            <div className="lg:col-span-5 bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 p-5 flex items-center justify-center">
+                                                <p className="text-xs text-zinc-400">Sem classificação disponível.</p>
+                                            </div>
+                                        )}
+
+                                        {/* Stat leaders */}
+                                        <div className="lg:col-span-7 grid grid-cols-2 gap-2.5">
+                                            {(() => {
+                                                const categories: { key: keyof FPBPlayerStat; label: string; icon: string; unit: string }[] = [
+                                                    { key: 'pts', label: 'Melhor Marcador', icon: '🎯', unit: 'PPJ' },
+                                                    { key: 'reb', label: 'Melhor Ressalteiro', icon: '💪', unit: 'RPJ' },
+                                                    { key: 'ast', label: 'Melhor Passador', icon: '👀', unit: 'APJ' },
+                                                    { key: 'val', label: 'Melhor Valorização', icon: '⭐', unit: '' },
+                                                ]
+                                                const hasStats = playerStats.length > 0
+                                                return categories.map(cat => {
+                                                    const sorted = hasStats
+                                                        ? [...playerStats].filter(p => Number(p[cat.key] || 0) > 0).sort((a, b) => Number(b[cat.key] || 0) - Number(a[cat.key] || 0))
+                                                        : []
+                                                    const best = sorted[0]
+                                                    return (
+                                                        <div key={cat.key} className={`rounded-2xl border p-3 ${hasStats ? 'bg-white dark:bg-zinc-900/60 border-zinc-200/50 dark:border-zinc-800/50' : 'bg-zinc-50 dark:bg-zinc-900/30 border-zinc-100 dark:border-zinc-800/30'}`}>
+                                                            {hasStats && best ? (
+                                                                <>
+                                                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{cat.icon} {cat.label}</p>
+                                                                    <p className="text-sm font-black text-zinc-900 dark:text-white truncate mt-1">{best.nome}</p>
+                                                                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">{best.clube_nome}</p>
+                                                                    <p className="text-lg font-black text-dribly-purple tabular-nums mt-0.5">
+                                                                        {typeof best[cat.key] === 'number' ? (Number.isInteger(best[cat.key]) ? best[cat.key] : (best[cat.key] as number).toFixed(1)) : '—'}
+                                                                        {cat.unit && <span className="text-[10px] text-zinc-400 ml-0.5">{cat.unit}</span>}
+                                                                    </p>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{cat.icon} {cat.label}</p>
+                                                                    <p className="text-xs text-zinc-400 mt-2">Sem dados</p>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    )
+                                                })
+                                            })()}
+                                        </div>
                                     </div>
 
-                                    {/* Top 3 + Próximos jogos */}
+                                    {/* Row 2 — Próximos Jogos + Últimos Resultados lado a lado */}
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                                        {/* Top 3 Classificação */}
-                                        <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 p-4">
-                                            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                                <ListOrdered size={14} className="text-dribly-purple" />
-                                                Top 3 Classificação
-                                            </h3>
-                                            {standings[0] && standings[0].type === 'table' && standings[0].teams.length > 0 ? (
-                                                <div className="space-y-1.5">
-                                                    {standings[0].teams.slice(0, 3).map((t, i) => (
-                                                        <div key={i} className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl px-3 py-2.5">
-                                                            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${i === 0 ? 'bg-amber-400 text-white' : i === 1 ? 'bg-zinc-300 text-zinc-700' : 'bg-amber-700/60 text-white'}`}>{t.posicao}</span>
-                                                            <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex-1 truncate">{t.equipa}</span>
-                                                            <span className="text-[10px] font-medium text-zinc-400 tabular-nums">{t.j}J</span>
-                                                            <span className="text-[10px] font-medium text-emerald-600 tabular-nums">{t.v}V</span>
-                                                            <span className="text-[10px] font-medium text-red-500 tabular-nums">{t.d}D</span>
-                                                            <span className="text-xs font-black text-zinc-900 dark:text-white tabular-nums w-6 text-right">{t.pts}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <p className="text-xs text-zinc-400 py-4 text-center">Sem dados de classificação.</p>
-                                            )}
-                                        </div>
-
                                         {/* Próximos jogos */}
                                         <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 p-4">
                                             <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -342,22 +383,24 @@ export default function CompetitionDetail() {
                                                 <p className="text-xs text-zinc-400 py-4 text-center">Sem jogos agendados.</p>
                                             )}
                                         </div>
-                                    </div>
 
-                                    {/* Últimos resultados */}
-                                    {resultsList.length > 0 && (
+                                        {/* Últimos resultados */}
                                         <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 p-4">
                                             <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                                                 <Trophy size={14} className="text-dribly-purple" />
                                                 Últimos Resultados
                                             </h3>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                                                {resultsList.slice(0, 3).map((g, i) => (
-                                                    <GameCard key={i} match={fpbGameToMatch(g, logoMaps)} mode="results" />
-                                                ))}
-                                            </div>
+                                            {resultsList.length > 0 ? (
+                                                <div className="space-y-2">
+                                                    {resultsList.slice(0, 3).map((g, i) => (
+                                                        <GameCard key={i} match={fpbGameToMatch(g, logoMaps)} mode="results" />
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs text-zinc-400 py-4 text-center">Sem resultados disponíveis.</p>
+                                            )}
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             )}
 
@@ -622,16 +665,6 @@ function StatsLeaderboard({ playerStats }: { playerStats: FPBPlayerStat[] }) {
                     )
                 })}
             </div>
-        </div>
-    )
-}
-
-function StatCard({ label, value, icon: Icon }: { label: string; value: string | number; icon: React.ElementType }) {
-    return (
-        <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 p-4 text-center">
-            <Icon size={18} className="text-dribly-purple mx-auto mb-1.5" />
-            <p className="text-2xl font-black text-zinc-900 dark:text-white tabular-nums">{value}</p>
-            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mt-0.5">{label}</p>
         </div>
     )
 }
