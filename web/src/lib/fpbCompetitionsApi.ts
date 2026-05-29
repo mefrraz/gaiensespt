@@ -390,6 +390,15 @@ function scrapeGames(html: string, defaultStatus: Match['status']): FPBGame[] {
 // ---- Teams: API first, HTML fallback ----
 
 export async function fetchTeams(provaId: number): Promise<FPBTeam[]> {
+    // WordPress AJAX: admin-ajax.php?action=get_equipas&idCompeticao=10902
+    const res = await fetch(`${FPB_PROXY}?wp_action=get_equipas&idCompeticao=${provaId}`)
+    if (!res.ok) return []
+    const data = await res.json()
+    return Array.isArray(data) ? data : []
+}
+
+/* OLD — remove after verifying new works
+export async function fetchTeams_old(provaId: number): Promise<FPBTeam[]> {
     try {
         const data = await fetchFromProxy(`equipas/prova/${provaId}`)
         if (Array.isArray(data) && data.length > 0) return data
@@ -427,6 +436,7 @@ export async function fetchTeams(provaId: number): Promise<FPBTeam[]> {
 
     return teams
 }
+*/
 
 // ---- Player stats via HTML scraping ----
 

@@ -16,11 +16,17 @@ export default async function handler(request: Request) {
         }
 
         if (wpAction) {
-            // WordPress AJAX: admin-ajax.php?action=get_more_fase_regular&competicao[]=10902&fase=30969
-            const competicao = url.searchParams.get('competicao') || ''
-            const fase = url.searchParams.get('fase') || '30969'
-            apiUrl = `https://www.fpb.pt/wp-admin/admin-ajax.php?action=${wpAction}&competicao%5B%5D=${competicao}&fase=${fase}`
-            headers['Referer'] = `https://www.fpb.pt/classificacao/${competicao}`
+            if (wpAction === 'get_equipas') {
+                const idCompeticao = url.searchParams.get('idCompeticao') || ''
+                apiUrl = `https://www.fpb.pt/wp-admin/admin-ajax.php?action=get_equipas&idCompeticao=${idCompeticao}`
+                headers['Referer'] = 'https://www.fpb.pt/'
+            } else {
+                // WordPress AJAX: get_more_fase_regular
+                const competicao = url.searchParams.get('competicao') || ''
+                const fase = url.searchParams.get('fase') || '30969'
+                apiUrl = `https://www.fpb.pt/wp-admin/admin-ajax.php?action=${wpAction}&competicao%5B%5D=${competicao}&fase=${fase}`
+                headers['Referer'] = `https://www.fpb.pt/classificacao/${competicao}`
+            }
         } else {
             apiUrl = `https://sav2.fpb.pt/api/${endpoint}`
         }
