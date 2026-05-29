@@ -250,8 +250,9 @@ export default function CompetitionDetail() {
 
                 <div className="mt-5">
                     {loading ? (
-                        <div className="flex items-center justify-center py-16">
+                        <div className="flex flex-col items-center justify-center py-16 gap-3">
                             <Loader2 size={24} className="animate-spin text-dribly-purple" />
+                            <span className="text-xs font-medium text-zinc-400">A carregar...</span>
                         </div>
                     ) : (
                         <>
