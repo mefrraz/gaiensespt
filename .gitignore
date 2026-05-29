@@ -25,9 +25,17 @@ dist/
 Thumbs.db
 Desktop.ini
 
+# CodeWhale internal
+.codewhale/
+.deepseek/
+codewhale.exe
+codewhale-tui.exe
+
 # Project — temp/backup files, source data, scraped pages
 web_antiga/
 scripts/
+scrapers/scraped_*.json
+scrapers/*.js
 fpb_clubes*.json
 https___*.htm
 dribly_logos_finais.html
@@ -36,3 +44,10 @@ fpb_api_reference.md
 dribly.svg
 *.html
 *.sql
+0
+fpb-classificacao*.md
+fpb-api-reference*.md
+tugabasket_api_reference.md
+fpb_api_reference.md
+dribly_logos_finais.html
+dribly.svg
