@@ -392,10 +392,10 @@ export default function CompetitionDetail() {
                                                 return (
                                                 <div key={i} className="bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-4 text-center hover:border-dribly-purple/30 transition-all">
                                                     {logo ? (
-                                                        <img src={logo} alt="" className="w-12 h-12 mx-auto object-contain rounded-full bg-zinc-50 mb-2" />
+                                                        <img src={logo} alt="" className="w-20 h-20 mx-auto object-contain rounded-2xl bg-zinc-50 dark:bg-zinc-800 mb-3 drop-shadow-sm" />
                                                     ) : (
-                                                        <div className="w-12 h-12 mx-auto rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-2">
-                                                            <span className="text-sm font-bold text-zinc-500">{team.nome.charAt(0)}</span>
+                                                        <div className="w-20 h-20 mx-auto rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3">
+                                                            <span className="text-2xl font-bold text-zinc-500">{team.nome.charAt(0)}</span>
                                                         </div>
                                                     )}
                                                     <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300 leading-tight truncate">{team.nome}</p>
