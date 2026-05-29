@@ -387,10 +387,12 @@ export default function CompetitionDetail() {
                                     ? <Empty text="Sem dados de equipas." />
                                     : (
                                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-                                            {teams.map((team, i) => (
+                                            {teams.map((team, i) => {
+                                                const logo = team.logo || findLogo(team.nome, logoMap)
+                                                return (
                                                 <div key={i} className="bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-4 text-center hover:border-dribly-purple/30 transition-all">
-                                                    {team.logo ? (
-                                                        <img src={team.logo} alt="" className="w-12 h-12 mx-auto object-contain rounded-full bg-zinc-50 mb-2" />
+                                                    {logo ? (
+                                                        <img src={logo} alt="" className="w-12 h-12 mx-auto object-contain rounded-full bg-zinc-50 mb-2" />
                                                     ) : (
                                                         <div className="w-12 h-12 mx-auto rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-2">
                                                             <span className="text-sm font-bold text-zinc-500">{team.nome.charAt(0)}</span>
@@ -399,7 +401,8 @@ export default function CompetitionDetail() {
                                                     <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300 leading-tight truncate">{team.nome}</p>
                                                     {team.associacao && <p className="text-[10px] text-zinc-400 mt-0.5 truncate">{team.associacao}</p>}
                                                 </div>
-                                            ))}
+                                                )
+                                            })}
                                         </div>
                                     )
                             )}
