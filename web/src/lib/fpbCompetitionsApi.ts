@@ -38,6 +38,7 @@ export interface FPBTeam {
     nome: string
     abreviatura?: string
     logo?: string
+    photo?: string
     associacao?: string
 }
 
@@ -391,22 +392,72 @@ function scrapeGames(html: string, defaultStatus: Match['status']): FPBGame[] {
 
 export async function fetchTeams(provaId: number): Promise<FPBTeam[]> {
     // WordPress AJAX: admin-ajax.php?action=get_equipas&idCompeticao=10902
-    // WordPress AJAX returns HTML: <div class="equipa">...
     const res = await fetch(`${FPB_PROXY}?wp_action=get_equipas&idCompeticao=${provaId}&_t=${Date.now()}`)
     if (res.ok) {
         const html = await res.text()
         if (html) {
             const parser = new DOMParser()
             const doc = parser.parseFromString(html, 'text/html')
+
+            // Strategy 1: .equipa divs (original approach)
             const teams: FPBTeam[] = []
             doc.querySelectorAll('.equipa').forEach(el => {
-                const nome = el.querySelector('.equipa-body h5')?.textContent?.trim() || ''
+                const nome = el.querySelector('.equipa-body h5, h5')?.textContent?.trim() || ''
                 if (!nome) return
                 const equipaId = el.querySelector('a')?.href?.match(/equipa_(\d+)/)?.[1]
-                const logo = el.querySelector('img.logo')?.getAttribute('src') || undefined
-                teams.push({ nome, equipa_id: equipaId ? `equipa_${equipaId}` : undefined, logo })
+                const logo = el.querySelector('img.logo, img[src*="LOGO"], img[src*="logotipo"]')?.getAttribute('src') || undefined
+                const photo = el.querySelector('img[src*="equipas"], img[src*="EQU_"]')?.getAttribute('src')
+                    || (el.querySelector('[style*="background"]')?.getAttribute('style') || '').match(/url\(['"]?([^'")]*equipas[^'")]*)['"]?\)/)?.[1]
+                    || undefined
+                teams.push({ nome, equipa_id: equipaId ? `equipa_${equipaId}` : undefined, logo, photo })
             })
             if (teams.length > 0) return teams
+
+            // Strategy 2: extract team names + images from raw HTML via regex
+            // Team names are in <h5> elements
+            const nameRe = /<h5[^>]*>([^<]+)<\/h5>/g
+            const names: string[] = []
+            let nm: RegExpExecArray | null
+            while ((nm = nameRe.exec(html)) !== null) {
+                const n = nm[1].trim()
+                if (n.length > 2) names.push(n)
+            }
+
+            // Extract logo URLs (containing LOGO or logotipo in path)
+            const logoRe = /<img[^>]*src="([^"]*(?:LOGO|logotipo)[^"]*)"[^>]*>/gi
+            const logos: string[] = []
+            let lm: RegExpExecArray | null
+            while ((lm = logoRe.exec(html)) !== null) {
+                logos.push(lm[1])
+            }
+
+            // Extract team photo URLs (containing equipas or EQU_ in path)
+            const photoRe = /<img[^>]*src="([^"]*(?:equipas|EQU_)[^"]*)"[^>]*>/gi
+            const photos: string[] = []
+            let pm: RegExpExecArray | null
+            while ((pm = photoRe.exec(html)) !== null) {
+                photos.push(pm[1])
+            }
+
+            // Also look for background-image with equipas
+            const bgRe = /url\(['"]?([^'")]*equipas[^'")]*)['"]?\)/gi
+            let bm: RegExpExecArray | null
+            while ((bm = bgRe.exec(html)) !== null) {
+                photos.push(bm[1])
+            }
+
+            // Pair them: assume names, logos, photos appear in matching order
+            if (names.length > 0) {
+                const regexTeams: FPBTeam[] = []
+                for (let i = 0; i < names.length; i++) {
+                    regexTeams.push({
+                        nome: names[i],
+                        logo: logos[i] || undefined,
+                        photo: photos[i] || undefined,
+                    })
+                }
+                if (regexTeams.length > 0) return regexTeams
+            }
         }
     }
 

@@ -420,17 +420,29 @@ export default function CompetitionDetail() {
                                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
                                             {teams.map((team, i) => {
                                                 const logo = team.logo || findLogo(team.nome, logoMaps)
+                                                const hasPhoto = !!team.photo
                                                 return (
-                                                <div key={i} className="bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-4 text-center hover:border-dribly-purple/30 transition-all">
-                                                    {logo ? (
-                                                        <img src={logo} alt="" className="w-20 h-20 mx-auto object-contain rounded-2xl bg-zinc-50 dark:bg-zinc-800 mb-3 drop-shadow-sm" />
-                                                    ) : (
-                                                        <div className="w-20 h-20 mx-auto rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3">
-                                                            <span className="text-2xl font-bold text-zinc-500">{team.nome.charAt(0)}</span>
-                                                        </div>
-                                                    )}
-                                                    <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300 leading-tight truncate">{team.nome}</p>
-                                                    {team.associacao && <p className="text-[10px] text-zinc-400 mt-0.5 truncate">{team.associacao}</p>}
+                                                <div
+                                                    key={i}
+                                                    className="relative overflow-hidden rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 p-4 text-center hover:border-dribly-purple/30 transition-all bg-cover bg-center"
+                                                    style={hasPhoto ? { backgroundImage: `url(${team.photo})` } : undefined}
+                                                >
+                                                    {/* Photo overlay */}
+                                                    {hasPhoto && <div className="absolute inset-0 bg-black/50 dark:bg-black/60" />}
+                                                    {/* No-photo background */}
+                                                    {!hasPhoto && <div className="absolute inset-0 bg-white dark:bg-zinc-900/90" />}
+                                                    {/* Content */}
+                                                    <div className="relative z-10">
+                                                        {logo ? (
+                                                            <img src={logo} alt="" className="w-20 h-20 mx-auto object-contain rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/90 mb-3 drop-shadow-sm" />
+                                                        ) : (
+                                                            <div className="w-20 h-20 mx-auto rounded-2xl bg-zinc-100/80 dark:bg-zinc-800/80 flex items-center justify-center mb-3">
+                                                                <span className="text-2xl font-bold text-zinc-500">{team.nome.charAt(0)}</span>
+                                                            </div>
+                                                        )}
+                                                        <p className={`text-xs font-bold leading-tight truncate ${hasPhoto ? 'text-white' : 'text-zinc-700 dark:text-zinc-300'}`}>{team.nome}</p>
+                                                        {team.associacao && <p className={`text-[10px] mt-0.5 truncate ${hasPhoto ? 'text-white/60' : 'text-zinc-400'}`}>{team.associacao}</p>}
+                                                    </div>
                                                 </div>
                                                 )
                                             })}
