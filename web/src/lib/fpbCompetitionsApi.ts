@@ -391,10 +391,22 @@ function scrapeGames(html: string, defaultStatus: Match['status']): FPBGame[] {
 
 export async function fetchTeams(provaId: number): Promise<FPBTeam[]> {
     // WordPress AJAX: admin-ajax.php?action=get_equipas&idCompeticao=10902
-    const res = await fetch(`${FPB_PROXY}?wp_action=get_equipas&idCompeticao=${provaId}`)
+    // WordPress AJAX returns HTML: <div class="equipa">...
+    const res = await fetch(`${FPB_PROXY}?wp_action=get_equipas&idCompeticao=${provaId}&_t=${Date.now()}`)
     if (!res.ok) return []
-    const data = await res.json()
-    return Array.isArray(data) ? data : []
+    const html = await res.text()
+    if (!html) return []
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+    const teams: FPBTeam[] = []
+    doc.querySelectorAll('.equipa').forEach(el => {
+        const nome = el.querySelector('.equipa-body h5')?.textContent?.trim() || ''
+        if (!nome) return
+        const equipaId = el.querySelector('a')?.href?.match(/equipa_(\d+)/)?.[1]
+        const logo = el.querySelector('img.logo')?.getAttribute('src') || undefined
+        teams.push({ nome, equipa_id: equipaId ? `equipa_${equipaId}` : undefined, logo })
+    })
+    return teams
 }
 
 // ---- Player stats via HTML scraping ----
