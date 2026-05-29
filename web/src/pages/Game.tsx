@@ -263,15 +263,15 @@ function Game() {
                     <div className="flex justify-center mb-5 min-h-[1.5rem]">
                         {isFinished && hasScores && (
                             <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${
-                                isDraw
-                                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
-                                    : isClubWin
-                                        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                                        : clubUpper
-                                            ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
-                                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
+                                !clubUpper
+                                    ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
+                                    : isDraw
+                                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                                        : isClubWin
+                                            ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                                            : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
                             }`}>
-                                {isDraw ? 'EMPATE' : clubUpper ? (isClubWin ? 'VITÓRIA' : 'DERROTA') : 'FINALIZADO'}
+                                {!clubUpper ? 'FINALIZADO' : isDraw ? 'EMPATE' : isClubWin ? 'VITÓRIA' : 'DERROTA'}
                             </span>
                         )}
                         {isLive && (
