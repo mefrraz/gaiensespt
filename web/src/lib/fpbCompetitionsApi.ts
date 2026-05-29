@@ -398,23 +398,56 @@ export async function fetchTeams(provaId: number): Promise<FPBTeam[]> {
         if (html) {
             const parser = new DOMParser()
             const doc = parser.parseFromString(html, 'text/html')
-
-            // Strategy 1: .equipa divs (original approach)
             const teams: FPBTeam[] = []
-            doc.querySelectorAll('.equipa').forEach(el => {
-                const nome = el.querySelector('.equipa-body h5, h5')?.textContent?.trim() || ''
-                if (!nome) return
-                const equipaId = el.querySelector('a')?.href?.match(/equipa_(\d+)/)?.[1]
-                const logo = el.querySelector('img.logo, img[src*="LOGO"], img[src*="logotipo"]')?.getAttribute('src') || undefined
-                const photo = el.querySelector('img[src*="equipas"], img[src*="EQU_"]')?.getAttribute('src')
-                    || (el.querySelector('[style*="background"]')?.getAttribute('style') || '').match(/url\(['"]?([^'")]*equipas[^'")]*)['"]?\)/)?.[1]
-                    || undefined
+
+            // Strategy 1: find team cards by anchoring on <h5> team names
+            // Walk up DOM to find the card container, then extract logo + photo from it
+            const h5s = doc.querySelectorAll('h5')
+            const seen = new Set<string>()
+            h5s.forEach(h5 => {
+                const nome = h5.textContent?.trim() || ''
+                if (!nome || nome.length < 3 || seen.has(nome)) return
+                seen.add(nome)
+
+                // Walk up to find the card container (up to 5 levels)
+                let card: Element | null = h5
+                for (let i = 0; i < 5; i++) {
+                    card = card?.parentElement || null
+                    if (!card) break
+                    // Check if this container has images
+                    const imgs = card.querySelectorAll('img')
+                    if (imgs.length >= 1) break
+                }
+                const container = card || h5
+
+                // Extract equipa ID from any link
+                const equipaId = container.querySelector('a')?.href?.match(/equipa_(\d+)/)?.[1]
+
+                // Extract logo: img with LOGO/logotipo in src, or first img if only one
+                const allImgs = container.querySelectorAll('img')
+                let logo: string | undefined
+                let photo: string | undefined
+                for (const img of allImgs) {
+                    const src = img.getAttribute('src') || ''
+                    if (/LOGO|logotipo/i.test(src)) {
+                        logo = src
+                    } else if (/equipas|EQU_/i.test(src)) {
+                        photo = src
+                    }
+                }
+                // Also check background-image for photo
+                if (!photo) {
+                    const bgEl = container.querySelector('[style*="background"]')
+                    const style = bgEl?.getAttribute('style') || ''
+                    const bgm = style.match(/url\(['"]?([^'")]*equipas[^'")]*)['"]?\)/i)
+                    if (bgm) photo = bgm[1]
+                }
+
                 teams.push({ nome, equipa_id: equipaId ? `equipa_${equipaId}` : undefined, logo, photo })
             })
             if (teams.length > 0) return teams
 
-            // Strategy 2: extract team names + images from raw HTML via regex
-            // Team names are in <h5> elements
+            // Strategy 2: regex fallback — extract names, logos, photos and pair by position
             const nameRe = /<h5[^>]*>([^<]+)<\/h5>/g
             const names: string[] = []
             let nm: RegExpExecArray | null
@@ -423,7 +456,6 @@ export async function fetchTeams(provaId: number): Promise<FPBTeam[]> {
                 if (n.length > 2) names.push(n)
             }
 
-            // Extract logo URLs (containing LOGO or logotipo in path)
             const logoRe = /<img[^>]*src="([^"]*(?:LOGO|logotipo)[^"]*)"[^>]*>/gi
             const logos: string[] = []
             let lm: RegExpExecArray | null
@@ -431,7 +463,6 @@ export async function fetchTeams(provaId: number): Promise<FPBTeam[]> {
                 logos.push(lm[1])
             }
 
-            // Extract team photo URLs (containing equipas or EQU_ in path)
             const photoRe = /<img[^>]*src="([^"]*(?:equipas|EQU_)[^"]*)"[^>]*>/gi
             const photos: string[] = []
             let pm: RegExpExecArray | null
@@ -439,24 +470,21 @@ export async function fetchTeams(provaId: number): Promise<FPBTeam[]> {
                 photos.push(pm[1])
             }
 
-            // Also look for background-image with equipas
             const bgRe = /url\(['"]?([^'")]*equipas[^'")]*)['"]?\)/gi
             let bm: RegExpExecArray | null
             while ((bm = bgRe.exec(html)) !== null) {
-                photos.push(bm[1])
+                if (!photos.includes(bm[1])) photos.push(bm[1])
             }
 
-            // Pair them: assume names, logos, photos appear in matching order
             if (names.length > 0) {
-                const regexTeams: FPBTeam[] = []
                 for (let i = 0; i < names.length; i++) {
-                    regexTeams.push({
+                    teams.push({
                         nome: names[i],
                         logo: logos[i] || undefined,
                         photo: photos[i] || undefined,
                     })
                 }
-                if (regexTeams.length > 0) return regexTeams
+                if (teams.length > 0) return teams
             }
         }
     }

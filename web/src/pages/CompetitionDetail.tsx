@@ -419,7 +419,9 @@ export default function CompetitionDetail() {
                                     : (
                                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
                                             {teams.map((team, i) => {
-                                                const logo = team.logo || findLogo(team.nome, logoMaps)
+                                                const fpbLogo = team.logo
+                                                const supabaseLogo = findLogo(team.nome, logoMaps)
+                                                const logo = fpbLogo || supabaseLogo
                                                 const hasPhoto = !!team.photo
                                                 return (
                                                 <div
@@ -434,12 +436,27 @@ export default function CompetitionDetail() {
                                                     {/* Content */}
                                                     <div className="relative z-10">
                                                         {logo ? (
-                                                            <img src={logo} alt="" className="w-20 h-20 mx-auto object-contain rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/90 mb-3 drop-shadow-sm" />
-                                                        ) : (
-                                                            <div className="w-20 h-20 mx-auto rounded-2xl bg-zinc-100/80 dark:bg-zinc-800/80 flex items-center justify-center mb-3">
-                                                                <span className="text-2xl font-bold text-zinc-500">{team.nome.charAt(0)}</span>
-                                                            </div>
-                                                        )}
+                                                            <img
+                                                                src={logo}
+                                                                alt=""
+                                                                className="w-20 h-20 mx-auto object-contain rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/90 mb-3 drop-shadow-sm"
+                                                                onError={(e) => {
+                                                                    const el = e.currentTarget
+                                                                    // If FPB logo failed and we have a Supabase fallback, try it
+                                                                    if (fpbLogo && supabaseLogo && el.src !== supabaseLogo) {
+                                                                        el.src = supabaseLogo
+                                                                    } else {
+                                                                        // Both failed — hide img, show fallback div
+                                                                        el.style.display = 'none'
+                                                                        const fb = el.nextElementSibling as HTMLElement | null
+                                                                        if (fb) fb.style.display = ''
+                                                                    }
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                        <div className={`w-20 h-20 mx-auto rounded-2xl bg-zinc-100/80 dark:bg-zinc-800/80 flex items-center justify-center mb-3 ${logo ? 'hidden' : ''}`}>
+                                                            <span className="text-2xl font-bold text-zinc-500">{team.nome.charAt(0)}</span>
+                                                        </div>
                                                         <p className={`text-xs font-bold leading-tight truncate ${hasPhoto ? 'text-white' : 'text-zinc-700 dark:text-zinc-300'}`}>{team.nome}</p>
                                                         {team.associacao && <p className={`text-[10px] mt-0.5 truncate ${hasPhoto ? 'text-white/60' : 'text-zinc-400'}`}>{team.associacao}</p>}
                                                     </div>
