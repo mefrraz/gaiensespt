@@ -299,22 +299,29 @@ export default function CompetitionDetail() {
                                             const leader = standings[0].teams[0]
                                             const leaderLogo = findLogo(leader.equipa, logoMaps)
                                             return (
-                                                <div className="lg:col-span-5 bg-gradient-to-br from-amber-50 to-amber-100/60 dark:from-amber-900/20 dark:to-amber-800/10 rounded-2xl border border-amber-200/50 dark:border-amber-700/30 p-5 flex items-center gap-4">
-                                                    {leaderLogo ? (
-                                                        <img src={leaderLogo} alt="" className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-2xl bg-white/80 dark:bg-zinc-800/80 drop-shadow-sm" />
-                                                    ) : (
-                                                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/80 dark:bg-zinc-800/80 flex items-center justify-center">
+                                                <div className="lg:col-span-5 bg-gradient-to-br from-amber-400/20 via-amber-50 to-amber-100/40 dark:from-amber-500/15 dark:via-amber-900/15 dark:to-amber-800/10 rounded-2xl border border-amber-300/40 dark:border-amber-600/25 shadow-sm p-5 flex items-center gap-4 relative overflow-hidden">
+                                                    {/* Decorative top-right badge */}
+                                                    <div className="absolute -top-3 -right-3 w-16 h-16 bg-amber-400/20 dark:bg-amber-500/20 rounded-full blur-xl" />
+                                                    <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-2xl bg-white dark:bg-zinc-800 flex items-center justify-center drop-shadow-md border-2 border-amber-300/50 dark:border-amber-600/40">
+                                                        {leaderLogo ? (
+                                                            <img src={leaderLogo} alt="" className="w-14 h-14 sm:w-[72px] sm:h-[72px] object-contain" />
+                                                        ) : (
                                                             <span className="text-2xl font-bold text-zinc-500">{leader.equipa.charAt(0)}</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="min-w-0 relative">
+                                                        <div className="flex items-center gap-1.5 mb-1">
+                                                            <span className="text-[9px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-[0.15em]">Líder</span>
+                                                            <span className="px-1.5 py-0.5 rounded-md bg-amber-400/15 dark:bg-amber-500/20 text-[9px] font-black text-amber-700 dark:text-amber-300 tabular-nums">#1</span>
                                                         </div>
-                                                    )}
-                                                    <div className="min-w-0">
-                                                        <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest mb-0.5">Líder</p>
-                                                        <p className="text-sm sm:text-base font-black text-zinc-900 dark:text-white truncate">{leader.equipa}</p>
-                                                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                                            <span className="tabular-nums">{leader.j}J</span>
-                                                            {' · '}<span className="text-emerald-600 tabular-nums">{leader.v}V</span>
-                                                            {' · '}<span className="text-red-500 tabular-nums">{leader.d}D</span>
-                                                            {' · '}<span className="font-black text-zinc-900 dark:text-white tabular-nums">{leader.pts}Pts</span>
+                                                        <p className="text-sm sm:text-base font-black text-zinc-900 dark:text-white truncate leading-tight">{leader.equipa}</p>
+                                                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-1.5 flex items-center gap-1.5 flex-wrap">
+                                                            <span className="tabular-nums">{leader.j} jogos</span>
+                                                            <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+                                                            <span className="text-emerald-600 dark:text-emerald-400 tabular-nums font-bold">{leader.v}V</span>
+                                                            <span className="text-red-500 dark:text-red-400 tabular-nums font-bold">{leader.d}D</span>
+                                                            <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+                                                            <span className="font-black text-zinc-900 dark:text-white tabular-nums">{leader.pts} pts</span>
                                                         </p>
                                                     </div>
                                                 </div>
@@ -328,11 +335,11 @@ export default function CompetitionDetail() {
                                         {/* Stat leaders */}
                                         <div className="lg:col-span-7 grid grid-cols-2 gap-2.5">
                                             {(() => {
-                                                const categories: { key: keyof FPBPlayerStat; label: string; icon: string; unit: string }[] = [
-                                                    { key: 'pts', label: 'Melhor Marcador', icon: '🎯', unit: 'PPJ' },
-                                                    { key: 'reb', label: 'Melhor Ressalteiro', icon: '💪', unit: 'RPJ' },
-                                                    { key: 'ast', label: 'Melhor Passador', icon: '👀', unit: 'APJ' },
-                                                    { key: 'val', label: 'Melhor Valorização', icon: '⭐', unit: '' },
+                                                const categories: { key: keyof FPBPlayerStat; label: string; unit: string }[] = [
+                                                    { key: 'pts', label: 'Melhor Marcador', unit: 'PPJ' },
+                                                    { key: 'reb', label: 'Melhor Ressalteiro', unit: 'RPJ' },
+                                                    { key: 'ast', label: 'Melhor Passador', unit: 'APJ' },
+                                                    { key: 'val', label: 'Melhor Valorização', unit: '' },
                                                 ]
                                                 const hasStats = playerStats.length > 0
                                                 return categories.map(cat => {
@@ -340,22 +347,32 @@ export default function CompetitionDetail() {
                                                         ? [...playerStats].filter(p => Number(p[cat.key] || 0) > 0).sort((a, b) => Number(b[cat.key] || 0) - Number(a[cat.key] || 0))
                                                         : []
                                                     const best = sorted[0]
+                                                    const photoUrl = best ? (best as any).photoUrl || null : null
                                                     return (
-                                                        <div key={cat.key} className={`rounded-2xl border p-3 ${hasStats ? 'bg-white dark:bg-zinc-900/60 border-zinc-200/50 dark:border-zinc-800/50' : 'bg-zinc-50 dark:bg-zinc-900/30 border-zinc-100 dark:border-zinc-800/30'}`}>
+                                                        <div key={cat.key} className={`rounded-2xl border p-3 flex items-center gap-3 ${hasStats ? 'bg-white dark:bg-zinc-900/60 border-zinc-200/50 dark:border-zinc-800/50' : 'bg-zinc-50 dark:bg-zinc-900/30 border-zinc-100 dark:border-zinc-800/30'}`}>
                                                             {hasStats && best ? (
                                                                 <>
-                                                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{cat.icon} {cat.label}</p>
-                                                                    <p className="text-sm font-black text-zinc-900 dark:text-white truncate mt-1">{best.nome}</p>
-                                                                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">{best.clube_nome}</p>
-                                                                    <p className="text-lg font-black text-dribly-purple tabular-nums mt-0.5">
-                                                                        {typeof best[cat.key] === 'number' ? (Number.isInteger(best[cat.key]) ? best[cat.key] : (best[cat.key] as number).toFixed(1)) : '—'}
-                                                                        {cat.unit && <span className="text-[10px] text-zinc-400 ml-0.5">{cat.unit}</span>}
-                                                                    </p>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{cat.label}</p>
+                                                                        <p className="text-sm font-black text-zinc-900 dark:text-white truncate mt-0.5">{best.nome}</p>
+                                                                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">{best.clube_nome}</p>
+                                                                        <p className="text-lg font-black text-dribly-purple tabular-nums mt-0.5">
+                                                                            {typeof best[cat.key] === 'number' ? (Number.isInteger(best[cat.key]) ? best[cat.key] : (best[cat.key] as number).toFixed(1)) : '—'}
+                                                                            {cat.unit && <span className="text-[10px] text-zinc-400 ml-0.5">{cat.unit}</span>}
+                                                                        </p>
+                                                                    </div>
+                                                                    {photoUrl ? (
+                                                                        <img src={photoUrl} alt="" className="w-14 h-14 shrink-0 rounded-xl object-cover border-2 border-zinc-100 dark:border-zinc-700/50" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
+                                                                    ) : (
+                                                                        <div className="w-14 h-14 shrink-0 rounded-xl bg-gradient-to-br from-dribly-purple/20 to-dribly-purple/5 flex items-center justify-center border border-dribly-purple/10">
+                                                                            <span className="text-lg font-black text-dribly-purple">{best ? best.nome.charAt(0).toUpperCase() : '?'}</span>
+                                                                        </div>
+                                                                    )}
                                                                 </>
                                                             ) : (
                                                                 <>
-                                                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{cat.icon} {cat.label}</p>
-                                                                    <p className="text-xs text-zinc-400 mt-2">Sem dados</p>
+                                                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{cat.label}</p>
+                                                                    <p className="text-xs text-zinc-400">Sem dados</p>
                                                                 </>
                                                             )}
                                                         </div>
