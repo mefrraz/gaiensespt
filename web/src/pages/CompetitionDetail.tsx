@@ -299,23 +299,21 @@ export default function CompetitionDetail() {
                                             const leader = standings[0].teams[0]
                                             const leaderLogo = findLogo(leader.equipa, logoMaps)
                                             return (
-                                                <div className="lg:col-span-5 bg-gradient-to-br from-amber-400/20 via-amber-50 to-amber-100/40 dark:from-amber-500/15 dark:via-amber-900/15 dark:to-amber-800/10 rounded-2xl border border-amber-300/40 dark:border-amber-600/25 shadow-sm p-5 flex items-center gap-4 relative overflow-hidden">
-                                                    {/* Decorative top-right badge */}
-                                                    <div className="absolute -top-3 -right-3 w-16 h-16 bg-amber-400/20 dark:bg-amber-500/20 rounded-full blur-xl" />
-                                                    <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-2xl bg-white dark:bg-zinc-800 flex items-center justify-center drop-shadow-md border-2 border-amber-300/50 dark:border-amber-600/40">
+                                                <div className="lg:col-span-5 bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 p-5 flex items-center gap-4">
+                                                    <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-2xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center border border-zinc-200 dark:border-zinc-700/50">
                                                         {leaderLogo ? (
                                                             <img src={leaderLogo} alt="" className="w-14 h-14 sm:w-[72px] sm:h-[72px] object-contain" />
                                                         ) : (
                                                             <span className="text-2xl font-bold text-zinc-500">{leader.equipa.charAt(0)}</span>
                                                         )}
                                                     </div>
-                                                    <div className="min-w-0 relative">
-                                                        <div className="flex items-center gap-1.5 mb-1">
-                                                            <span className="text-[9px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-[0.15em]">Líder</span>
-                                                            <span className="px-1.5 py-0.5 rounded-md bg-amber-400/15 dark:bg-amber-500/20 text-[9px] font-black text-amber-700 dark:text-amber-300 tabular-nums">#1</span>
+                                                    <div className="min-w-0">
+                                                        <div className="flex items-center gap-2 mb-0.5">
+                                                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Líder</span>
+                                                            <span className="px-1.5 py-0.5 rounded-md bg-dribly-purple/10 text-[9px] font-black text-dribly-purple tabular-nums">#1</span>
                                                         </div>
                                                         <p className="text-sm sm:text-base font-black text-zinc-900 dark:text-white truncate leading-tight">{leader.equipa}</p>
-                                                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-1.5 flex items-center gap-1.5 flex-wrap">
+                                                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-1 flex items-center gap-1.5 flex-wrap">
                                                             <span className="tabular-nums">{leader.j} jogos</span>
                                                             <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-600" />
                                                             <span className="text-emerald-600 dark:text-emerald-400 tabular-nums font-bold">{leader.v}V</span>
