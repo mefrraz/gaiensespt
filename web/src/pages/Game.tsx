@@ -369,21 +369,21 @@ function Game() {
 
 
             {/* Top Performers — from game leaders data with player photos */}
+            {/* Duelo — head-to-head entre os melhores de cada equipa */}
             {detailLeaders.length > 0 && (() => {
                 const leader = detailLeaders[activeLeaderTab]
                 return (
                 <div className="glass-card overflow-hidden animate-slide-up">
                     <div className="p-4 border-b border-zinc-100 dark:border-white/5">
-                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                        <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-dribly-purple" />
-                            Top Performers
+                            Duelo
                         </h3>
                     </div>
-                    {/* Tabs */}
                     <div className="p-3 flex gap-1.5 overflow-x-auto">
                         {detailLeaders.map((l, i) => (
                             <button key={i} onClick={() => setActiveLeaderTab(i)}
-                                className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold transition-all ${
+                                className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-medium transition-all ${
                                     i === activeLeaderTab
                                         ? 'bg-dribly-purple text-white'
                                         : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700'
@@ -392,22 +392,19 @@ function Game() {
                             </button>
                         ))}
                     </div>
-                    {/* Head-to-head with photos */}
                     {leader && (
                         <div className="px-4 pb-4">
                             <div className="flex items-center gap-3">
-                                {/* Casa player */}
-                                <div className="flex flex-col items-center gap-1 shrink-0" style={{ width: 72 }}>
-                                    <div className="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border-2 border-dribly-purple/20">
+                                <div className="flex flex-col items-center gap-1 shrink-0" style={{ width: 68 }}>
+                                    <div className="w-12 h-12 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-dribly-purple/20">
                                         {leader.casa.foto ? (
-                                            <img src={leader.casa.foto} alt="" className="w-14 h-14 rounded-full object-cover" />
+                                            <img src={leader.casa.foto} alt="" className="w-12 h-12 rounded-full object-cover" />
                                         ) : (
-                                            <span className="text-lg font-bold text-zinc-500">{leader.casa.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                                            <span className="text-sm font-semibold text-zinc-400">{leader.casa.nome?.charAt(0)?.toUpperCase() || '?'}</span>
                                         )}
                                     </div>
-                                    <span className="text-[9px] font-bold text-zinc-700 dark:text-zinc-300 text-center leading-tight line-clamp-2">{leader.casa.nome}</span>
+                                    <span className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 text-center leading-tight">{leader.casa.nome}</span>
                                 </div>
-                                {/* Bar + values */}
                                 <div className="flex-1">
                                     {(() => {
                                         const cv = parseInt(leader.casa.valor) || 0
@@ -416,28 +413,27 @@ function Game() {
                                         const cpct = Math.round((cv / total) * 100)
                                         return (
                                             <>
-                                                <div className="flex justify-between text-[10px] font-bold mb-1">
+                                                <div className="flex justify-between text-[10px] font-semibold mb-1.5">
                                                     <span className="text-dribly-purple tabular-nums">{leader.casa.valor}</span>
-                                                    <span className="text-zinc-700 dark:text-zinc-300 tabular-nums">{leader.fora.valor}</span>
+                                                    <span className="text-zinc-500 tabular-nums">{leader.fora.valor}</span>
                                                 </div>
-                                                <div className="flex h-2.5 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-                                                    <div className="h-full bg-dribly-purple rounded-full" style={{ width: cpct + '%' }} />
-                                                    <div className="h-full bg-zinc-300 dark:bg-zinc-600" style={{ width: (100 - cpct) + '%' }} />
+                                                <div className="flex h-2 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                                                    <div className="h-full bg-dribly-purple/70 rounded-full" style={{ width: cpct + '%' }} />
+                                                    <div className="h-full bg-zinc-200 dark:bg-zinc-700" style={{ width: (100 - cpct) + '%' }} />
                                                 </div>
                                             </>
                                         )
                                     })()}
                                 </div>
-                                {/* Fora player */}
-                                <div className="flex flex-col items-center gap-1 shrink-0" style={{ width: 72 }}>
-                                    <div className="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border-2 border-zinc-300 dark:border-zinc-600">
+                                <div className="flex flex-col items-center gap-1 shrink-0" style={{ width: 68 }}>
+                                    <div className="w-12 h-12 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-zinc-200 dark:border-zinc-700">
                                         {leader.fora.foto ? (
-                                            <img src={leader.fora.foto} alt="" className="w-14 h-14 rounded-full object-cover" />
+                                            <img src={leader.fora.foto} alt="" className="w-12 h-12 rounded-full object-cover" />
                                         ) : (
-                                            <span className="text-lg font-bold text-zinc-500">{leader.fora.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                                            <span className="text-sm font-semibold text-zinc-400">{leader.fora.nome?.charAt(0)?.toUpperCase() || '?'}</span>
                                         )}
                                     </div>
-                                    <span className="text-[9px] font-bold text-zinc-700 dark:text-zinc-300 text-center leading-tight line-clamp-2">{leader.fora.nome}</span>
+                                    <span className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 text-center leading-tight">{leader.fora.nome}</span>
                                 </div>
                             </div>
                         </div>
@@ -445,6 +441,40 @@ function Game() {
                 </div>
                 )
             })()}
+
+            {/* Top Performers — melhor jogador de cada categoria no jogo todo */}
+            {detailLeaders.length > 0 && (
+                <div className="glass-card overflow-hidden animate-slide-up">
+                    <div className="p-4 border-b border-zinc-100 dark:border-white/5">
+                        <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+                            <span className="w-1 h-1 rounded-full bg-dribly-purple" />
+                            Top Performers
+                        </h3>
+                    </div>
+                    <div className="p-4 space-y-2">
+                        {detailLeaders.map((l, i) => {
+                            const cv = parseInt(l.casa.valor) || 0
+                            const fv = parseInt(l.fora.valor) || 0
+                            const isCasa = cv >= fv
+                            const best = isCasa ? l.casa : l.fora
+                            return (
+                                <div key={i} className="flex items-center gap-3">
+                                    <span className="text-[10px] font-medium text-zinc-400 uppercase w-20 shrink-0">{l.categoria}</span>
+                                    <div className="w-7 h-7 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 border border-zinc-100 dark:border-zinc-700">
+                                        {best.foto ? (
+                                            <img src={best.foto} alt="" className="w-7 h-7 rounded-full object-cover" />
+                                        ) : (
+                                            <span className="text-[10px] font-semibold text-zinc-400">{best.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                                        )}
+                                    </div>
+                                    <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 flex-1 truncate">{best.nome}</span>
+                                    <span className="text-sm font-semibold text-dribly-purple tabular-nums">{best.valor}</span>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* H2H History */}
             {recentGames.length > 0 && (
