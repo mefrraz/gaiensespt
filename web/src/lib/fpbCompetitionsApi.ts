@@ -719,21 +719,29 @@ function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | nul
         parciais.push({ periodo: qm[1], casa: parseInt(qm[2]), fora: parseInt(qm[3]) })
     }
 
-    // Pavilhao: the last meaningful words before "XXX Espectadores"
+    // Pavilhao: text between the last team abbreviation and spectators count
+    // e.g. "...SCP Pavilhão Dragão Arena 500 Espectadores" → "Pavilhão Dragão Arena"
     const espIdx = gameText.search(/\d+\s*Espectadores/i)
     let pavilhao = ''
     if (espIdx > -1) {
         const before = gameText.slice(0, espIdx).trim()
         const words = before.split(/\s+/)
-        // Take the last 2-6 words that look like a location (no numbers, no all-caps abbreviations preceded by it)
-        const pavWords: string[] = []
-        for (let j = words.length - 1; j >= 0 && pavWords.length < 6; j--) {
-            const w = words[j]
-            if (/^\d+$/.test(w)) { pavWords.unshift(w); break } // stop at numbers
-            if (/^[A-ZÀ-Ú]{2,5}$/.test(w) && pavWords.length === 0) continue // skip standalone abbreviations
-            pavWords.unshift(w)
+        // Find the last all-caps abbreviation (2-5 chars, team sigla like SCP, SLB, FCP, UDO)
+        let abbrIdx = -1
+        for (let j = words.length - 1; j >= 0; j--) {
+            if (/^[A-ZÀ-Ú]{2,5}$/.test(words[j])) {
+                abbrIdx = j
+                break
+            }
         }
-        pavilhao = pavWords.join(' ')
+        // Take words after the abbreviation, excluding trailing spectator number
+        if (abbrIdx > -1 && abbrIdx < words.length - 1) {
+            let locWords = words.slice(abbrIdx + 1)
+            if (locWords.length > 0 && /^\d+$/.test(locWords[locWords.length - 1])) {
+                locWords = locWords.slice(0, -1)
+            }
+            pavilhao = locWords.join(' ')
+        }
     }
 
     // Espetadores
