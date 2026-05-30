@@ -102,7 +102,7 @@ function findLogo(teamName: string, maps: LogoMaps): string | null {
 
 function fpbGameToMatch(g: FPBGame, logoMaps: LogoMaps): Match {
     const slug = g.jogo_id || `${g.data}-${g.equipa_casa.toLowerCase().replace(/\s+/g, '-')}-${g.equipa_fora.toLowerCase().replace(/\s+/g, '-')}`
-    const status: Match['status'] = g.estado === 'FINALIZADO' ? 'FINALIZADO' : 'AGENDADO'
+    const status: Match['status'] = g.estado === 'FINALIZADO' ? 'FINALIZADO' : g.estado === 'A DECORRER' ? 'A DECORRER' : 'AGENDADO'
     return {
         id: g.jogo_id || slug,
         slug,
@@ -192,11 +192,15 @@ export default function CompetitionDetail() {
         return formatted.charAt(0).toUpperCase() + formatted.slice(1)
     }
 
-    // Separate games into schedule (without results) and results (with results)
+    // Separate games into schedule (upcoming/not started) and results (finished/in-progress)
+    const today = new Date().toISOString().split('T')[0]
     const scheduleList = useMemo(() =>
-        games.filter(g => g.resultado_casa === undefined && g.resultado_fora === undefined)
-            .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()),
-        [games]
+        games.filter(g =>
+            g.estado !== 'FINALIZADO' && g.estado !== 'A DECORRER' &&
+            (g.resultado_casa === undefined || g.resultado_fora === undefined) &&
+            g.data >= today
+        ).sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()),
+        [games, today]
     )
     const scheduleByDate = useMemo(() => {
         const groups: Record<string, FPBGame[]> = {}
@@ -208,8 +212,10 @@ export default function CompetitionDetail() {
     }, [scheduleList])
 
     const resultsList = useMemo(() =>
-        games.filter(g => g.resultado_casa !== undefined && g.resultado_fora !== undefined)
-            .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()),
+        games.filter(g =>
+            g.estado === 'FINALIZADO' || g.estado === 'A DECORRER' ||
+            (g.resultado_casa !== undefined && g.resultado_fora !== undefined)
+        ).sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()),
         [games]
     )
     const resultsByDate = useMemo(() => {
