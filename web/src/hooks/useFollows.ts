@@ -24,6 +24,7 @@ export function useFollows() {
             const { data, error } = await supabase
                 .from('user_follows')
                 .select('*')
+                .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
             if (error) throw error
             setFollows((data as Follow[]) || [])
@@ -54,6 +55,7 @@ export function useFollows() {
                 .from('user_follows')
                 .delete()
                 .eq('id', following.id)
+                .eq('user_id', user.id)
             if (!error) {
                 setFollows(prev => prev.filter(f => f.id !== following.id))
                 return true

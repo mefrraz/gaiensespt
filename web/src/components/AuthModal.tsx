@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import { X, Mail, Lock, User, Loader2, CheckCircle, LogIn } from 'lucide-react'
-import { useAuth } from '../lib/AuthContext'
+import { useState, useEffect } from 'react'
+import { X, CheckCircle, LogOut } from 'lucide-react'
+import { SignIn, SignUp, useUser, useClerk } from '@clerk/clerk-react'
+import { dark } from '@clerk/themes'
 
 interface AuthModalProps {
     isOpen: boolean
@@ -9,22 +10,25 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
-    const { user, signUp, signIn, signOut } = useAuth()
+    const { isSignedIn, isLoaded, user: clerkUser } = useUser()
+    const clerk = useClerk()
     const [mode, setMode] = useState<'signin' | 'signup'>('signin')
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [username, setUsername] = useState('')
-    const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
-    const [errorMsg, setErrorMsg] = useState('')
 
-    if (!isOpen) return null
+    const isDark = document.documentElement.classList.contains('dark')
+
+    // Close modal when Clerk auth completes
+    useEffect(() => {
+        if (isSignedIn && clerkUser && isLoaded && isOpen) {
+            const timer = setTimeout(() => {
+                onAuthSuccess?.(mode)
+                onClose()
+            }, 400)
+            return () => clearTimeout(timer)
+        }
+    }, [isSignedIn, clerkUser, isLoaded, isOpen, onAuthSuccess, onClose, mode])
 
     const reset = () => {
-        setEmail('')
-        setPassword('')
-        setUsername('')
-        setStatus('idle')
-        setErrorMsg('')
+        setMode('signin')
     }
 
     const handleClose = () => {
@@ -32,40 +36,94 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
         onClose()
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!email.trim() || !password) return
-        setStatus('loading')
-        setErrorMsg('')
-
-        let result: { error: string | null }
-        if (mode === 'signup') {
-            if (!username.trim()) { setErrorMsg('Nome de utilizador obrigatório'); setStatus('error'); return }
-            result = await signUp(email.trim(), password, username.trim())
-        } else {
-            result = await signIn(email.trim(), password)
-        }
-
-        if (result.error) {
-            setStatus('error')
-            setErrorMsg(result.error)
-        } else {
-            reset()
-            onClose()
-            onAuthSuccess?.(mode)
-        }
-    }
-
-    const handleSignOut = async () => {
-        await signOut()
-        reset()
-    }
-
     const switchMode = () => {
         setMode(mode === 'signin' ? 'signup' : 'signin')
-        setErrorMsg('')
-        setStatus('idle')
     }
+
+    // Clerk appearance — matches Dribly's theme
+    const clerkAppearance = {
+        baseTheme: isDark ? dark : undefined,
+        variables: {
+            colorPrimary: '#a855f7',
+            colorText: isDark ? '#ffffff' : '#18181b',
+            colorTextSecondary: isDark ? '#a1a1aa' : '#71717a',
+            colorBackground: isDark ? '#18181b' : '#ffffff',
+            colorInputBackground: isDark ? '#27272a' : '#f4f4f5',
+            colorInputText: isDark ? '#ffffff' : '#18181b',
+            colorDanger: '#ef4444',
+            borderRadius: '0.75rem',
+            fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+            fontSize: '14px',
+        } as Record<string, string>,
+        elements: {
+            card: {
+                boxShadow: 'none',
+                width: '100%',
+                padding: '0',
+                backgroundColor: 'transparent',
+            },
+            headerTitle: { display: 'none' },
+            headerSubtitle: { display: 'none' },
+            dividerLine: {
+                backgroundColor: isDark ? '#27272a' : '#e4e4e7',
+            },
+            dividerText: {
+                color: isDark ? '#a1a1aa' : '#a1a1aa',
+                fontSize: '12px',
+            },
+            socialButtonsBlockButton: {
+                borderRadius: '9999px',
+                border: `1px solid ${isDark ? '#27272a' : '#e4e4e7'}`,
+                backgroundColor: isDark ? '#27272a' : '#ffffff',
+                color: isDark ? '#ffffff' : '#18181b',
+                fontWeight: 600,
+                fontSize: '14px',
+                padding: '10px 16px',
+            },
+            socialButtonsBlockButtonText: {
+                fontSize: '14px',
+            },
+            formFieldInput: {
+                borderRadius: '0.75rem',
+                backgroundColor: isDark ? '#27272a' : '#f4f4f5',
+                border: `1px solid ${isDark ? '#3f3f46' : '#e4e4e7'}`,
+                color: isDark ? '#ffffff' : '#18181b',
+                fontSize: '14px',
+                padding: '10px 12px',
+            },
+            formFieldLabel: {
+                fontSize: '11px',
+                fontWeight: 700,
+                textTransform: 'uppercase' as const,
+                letterSpacing: '0.05em',
+                color: isDark ? '#a1a1aa' : '#71717a',
+            },
+            formButtonPrimary: {
+                borderRadius: '9999px',
+                backgroundColor: '#a855f7',
+                fontWeight: 700,
+                fontSize: '14px',
+                padding: '10px 16px',
+                border: 'none',
+            },
+            footerAction: { display: 'none' },
+            identityPreviewText: {
+                fontSize: '14px',
+            },
+            identityPreviewEditButton: {
+                color: '#a855f7',
+            },
+            formFieldError: {
+                color: '#ef4444',
+                fontSize: '12px',
+            },
+            alertText: {
+                fontSize: '13px',
+            },
+        },
+    }
+
+    if (!isOpen) return null
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -76,15 +134,18 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                     <X size={18} />
                 </button>
 
-                {user ? (
+                {isSignedIn && clerkUser ? (
                     <div className="text-center py-2">
                         <div className="w-14 h-14 mx-auto rounded-full bg-dribly-purple/10 flex items-center justify-center mb-3">
                             <CheckCircle size={28} className="text-dribly-purple" />
                         </div>
                         <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">Sessão iniciada</h3>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-5 break-all">{user.email}</p>
-                        <button onClick={handleSignOut}
-                            className="w-full py-2.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-bold hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all active:scale-[0.97]">
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-5 break-all">
+                            {clerkUser.primaryEmailAddress?.emailAddress}
+                        </p>
+                        <button onClick={() => { clerk.signOut(); handleClose() }}
+                            className="w-full py-2.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-bold hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all active:scale-[0.97] flex items-center justify-center gap-2">
+                            <LogOut size={16} />
                             Terminar sessão
                         </button>
                     </div>
@@ -92,72 +153,37 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                     <>
                         <div className="text-center mb-5">
                             <div className="w-14 h-14 mx-auto rounded-full bg-dribly-purple/10 flex items-center justify-center mb-3">
-                                {mode === 'signin' ? (
-                                    <LogIn size={24} className="text-dribly-purple" />
-                                ) : (
-                                    <User size={24} className="text-dribly-purple" />
-                                )}
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    {mode === 'signin' ? (
+                                        <><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></>
+                                    ) : (
+                                        <><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>
+                                    )}
+                                </svg>
                             </div>
                             <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">
                                 {mode === 'signin' ? 'Iniciar sessão' : 'Criar conta'}
                             </h3>
                             <p className="text-sm text-zinc-500 dark:text-zinc-400">
                                 {mode === 'signin'
-                                    ? 'Entra com o teu email e palavra-passe.'
+                                    ? 'Entra com o teu email e palavra-passe ou Google.'
                                     : 'Regista-te para seguir clubes e competições.'}
                             </p>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-3">
-                            {mode === 'signup' && (
-                                <div className="relative">
-                                    <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-                                    <input
-                                        type="text"
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
-                                        placeholder="Nome de utilizador"
-                                        autoFocus
-                                        required
-                                        className="w-full pl-9 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple"
-                                    />
-                                </div>
-                            )}
-                            <div className="relative">
-                                <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="Email"
-                                    autoFocus={mode === 'signin'}
-                                    required
-                                    className="w-full pl-9 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple"
-                                />
-                            </div>
-                            <div className="relative">
-                                <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Palavra-passe"
-                                    minLength={6}
-                                    required
-                                    className="w-full pl-9 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple"
-                                />
-                            </div>
-
-                            {status === 'error' && (
-                                <p className="text-xs text-red-500 font-medium">{errorMsg}</p>
-                            )}
-
-                            <button type="submit" disabled={status === 'loading'}
-                                className="w-full py-2.5 rounded-full bg-dribly-purple text-white text-sm font-bold hover:bg-dribly-purple/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.97] shadow-sm shadow-dribly-purple/20 flex items-center justify-center gap-2">
-                                {status === 'loading' ? <Loader2 size={16} className="animate-spin" /> : null}
-                                {mode === 'signin' ? 'Entrar' : 'Criar conta'}
-                            </button>
-                        </form>
+                        {mode === 'signin' ? (
+                            <SignIn
+                                routing="virtual"
+                                signUpUrl="#"
+                                appearance={clerkAppearance}
+                            />
+                        ) : (
+                            <SignUp
+                                routing="virtual"
+                                signInUrl="#"
+                                appearance={clerkAppearance}
+                            />
+                        )}
 
                         <p className="text-[11px] text-zinc-400 dark:text-zinc-500 text-center mt-4">
                             {mode === 'signin' ? (

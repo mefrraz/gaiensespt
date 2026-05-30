@@ -2,24 +2,17 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, User, AtSign, FileText, Check, Loader2, LogOut } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
-import { supabase } from '../lib/supabase'
+import { useUser } from '@clerk/clerk-react'
 
 export default function ProfilePage() {
     const { user, signOut } = useAuth()
+    const { user: clerkUser } = useUser()
     const navigate = useNavigate()
 
-    const [firstName, setFirstName] = useState(
-        (user?.user_metadata?.first_name as string) || ''
-    )
-    const [lastName, setLastName] = useState(
-        (user?.user_metadata?.last_name as string) || ''
-    )
-    const [username, setUsername] = useState(
-        (user?.user_metadata?.username as string) || ''
-    )
-    const [bio, setBio] = useState(
-        (user?.user_metadata?.bio as string) || ''
-    )
+    const [firstName, setFirstName] = useState(user?.firstName || '')
+    const [lastName, setLastName] = useState(user?.lastName || '')
+    const [username, setUsername] = useState(user?.username || '')
+    const [bio, setBio] = useState(user?.bio || '')
     const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
 
@@ -33,22 +26,23 @@ export default function ProfilePage() {
     }
 
     const handleSave = async () => {
+        if (!clerkUser) return
         setSaving(true)
         setSaved(false)
-        const { error } = await supabase.auth.updateUser({
-            data: {
+        try {
+            await clerkUser.update({
                 username: username || undefined,
-                first_name: firstName || undefined,
-                last_name: lastName || undefined,
-                bio: bio || undefined,
-                display_name: [firstName, lastName].filter(Boolean).join(' ') || username || undefined,
-            }
-        })
-        setSaving(false)
-        if (!error) {
+                firstName: firstName || undefined,
+                lastName: lastName || undefined,
+                unsafeMetadata: { bio: bio || undefined },
+            })
             setSaved(true)
             setTimeout(() => setSaved(false), 2000)
+        } catch (err) {
+            // Clerk shows errors inline — fail silently here
+            console.error(err)
         }
+        setSaving(false)
     }
 
     const displayName = [firstName, lastName].filter(Boolean).join(' ') || username || 'Utilizador'
