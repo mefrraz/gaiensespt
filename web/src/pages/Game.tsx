@@ -396,14 +396,14 @@ function Game() {
                         <div className="px-4 pb-4">
                             <div className="flex items-center gap-3">
                                 <div className="flex flex-col items-center gap-1 shrink-0" style={{ width: 68 }}>
-                                    <div className="w-12 h-12 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-dribly-purple/20">
+                                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-dribly-purple/20">
                                         {leader.casa.foto ? (
-                                            <img src={leader.casa.foto} alt="" className="w-12 h-12 rounded-full object-cover" />
+                                            <img src={leader.casa.foto} alt="" className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover" />
                                         ) : (
-                                            <span className="text-sm font-semibold text-zinc-400">{leader.casa.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                                            <span className="text-sm sm:text-base font-semibold text-zinc-400">{leader.casa.nome?.charAt(0)?.toUpperCase() || '?'}</span>
                                         )}
                                     </div>
-                                    <span className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 text-center leading-tight">{leader.casa.nome}</span>
+                                    <span className="text-[9px] sm:text-xs font-medium text-zinc-500 dark:text-zinc-400 text-center leading-tight">{leader.casa.nome}</span>
                                 </div>
                                 <div className="flex-1">
                                     {(() => {
@@ -413,7 +413,7 @@ function Game() {
                                         const cpct = Math.round((cv / total) * 100)
                                         return (
                                             <>
-                                                <div className="flex justify-between text-[10px] font-semibold mb-1.5">
+                                                <div className="flex justify-between text-[10px] sm:text-sm font-semibold mb-1.5">
                                                     <span className="text-dribly-purple tabular-nums">{leader.casa.valor}</span>
                                                     <span className="text-zinc-500 tabular-nums">{leader.fora.valor}</span>
                                                 </div>
@@ -426,14 +426,14 @@ function Game() {
                                     })()}
                                 </div>
                                 <div className="flex flex-col items-center gap-1 shrink-0" style={{ width: 68 }}>
-                                    <div className="w-12 h-12 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-zinc-200 dark:border-zinc-700">
+                                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-zinc-200 dark:border-zinc-700">
                                         {leader.fora.foto ? (
-                                            <img src={leader.fora.foto} alt="" className="w-12 h-12 rounded-full object-cover" />
+                                            <img src={leader.fora.foto} alt="" className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover" />
                                         ) : (
-                                            <span className="text-sm font-semibold text-zinc-400">{leader.fora.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                                            <span className="text-sm sm:text-base font-semibold text-zinc-400">{leader.fora.nome?.charAt(0)?.toUpperCase() || '?'}</span>
                                         )}
                                     </div>
-                                    <span className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 text-center leading-tight">{leader.fora.nome}</span>
+                                    <span className="text-[9px] sm:text-xs font-medium text-zinc-500 dark:text-zinc-400 text-center leading-tight">{leader.fora.nome}</span>
                                 </div>
                             </div>
                         </div>
@@ -459,16 +459,16 @@ function Game() {
                             const best = isCasa ? l.casa : l.fora
                             return (
                                 <div key={i} className="flex items-center gap-3">
-                                    <span className="text-[10px] font-medium text-zinc-400 uppercase w-20 shrink-0">{l.categoria}</span>
-                                    <div className="w-7 h-7 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 border border-zinc-100 dark:border-zinc-700">
+                                    <span className="text-[10px] sm:text-xs font-medium text-zinc-400 uppercase w-20 shrink-0">{l.categoria}</span>
+                                    <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 border border-zinc-100 dark:border-zinc-700">
                                         {best.foto ? (
-                                            <img src={best.foto} alt="" className="w-7 h-7 rounded-full object-cover" />
+                                            <img src={best.foto} alt="" className="w-7 h-7 sm:w-10 sm:h-10 rounded-full object-cover" />
                                         ) : (
-                                            <span className="text-[10px] font-semibold text-zinc-400">{best.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                                            <span className="text-[10px] sm:text-xs font-semibold text-zinc-400">{best.nome?.charAt(0)?.toUpperCase() || '?'}</span>
                                         )}
                                     </div>
-                                    <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 flex-1 truncate">{best.nome}</span>
-                                    <span className="text-sm font-semibold text-dribly-purple tabular-nums">{best.valor}</span>
+                                    <span className="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300 flex-1 truncate">{best.nome}</span>
+                                    <span className="text-sm sm:text-base font-semibold text-dribly-purple tabular-nums">{best.valor}</span>
                                 </div>
                             )
                         })}
