@@ -9,8 +9,6 @@ import { Match } from '../components/types'
 import { useClub, type Club } from '../lib/ClubContext'
 
 function detailToMatch(detail: FPBGameDetail): Match {
-    const hasScores = detail.resultado_casa > 0 || detail.resultado_fora > 0
-    const isFuture = detail.data && new Date(detail.data) > new Date()
     return {
         id: detail.internalID,
         slug: detail.internalID,
@@ -25,7 +23,7 @@ function detailToMatch(detail: FPBGameDetail): Match {
         local: detail.pavilhao,
         logotipo_casa: detail.logo_casa,
         logotipo_fora: detail.logo_fora,
-        status: !hasScores && isFuture ? 'AGENDADO' : 'FINALIZADO',
+        status: (detail.status || 'FINALIZADO') as Match['status'],
     }
 }
 

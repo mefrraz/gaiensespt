@@ -624,6 +624,7 @@ export interface FPBGameDetail {
     equipa_fora: string
     resultado_casa: number
     resultado_fora: number
+    status: string
     hora: string
     logo_casa: string | null
     logo_fora: string | null
@@ -669,116 +670,77 @@ export async function fetchGameDetail(internalID: string): Promise<FPBGameDetail
 }
 
 function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | null {
-    // Extract teams from page title: "SL Benfica vs. UD Oliveirense | Taça Hugo dos Santos"
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+
+    // Title for competition name
     const titleMatch = html.match(/<title>([^<]+)<\/title>/i)
     const title = titleMatch?.[1]?.trim() || ''
     const titleParts = title.split(/\s+vs\.?\s+/i)
-    let equipa_casa = titleParts[0]?.trim() || ''
-    const awayParts = (titleParts[1] || '').split('|')
-    let equipa_fora = awayParts[0]?.trim() || ''
-    let competicao = (awayParts[1] || '').trim()
+    const competicao = (titleParts[1] || '').split('|')[1]?.trim() || ''
 
-    // Strip style, script, and HTML tags to get plain visible text
-    const fullText = html
-        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
-        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
+    // Phase: <p class="phase">
+    const fase = doc.querySelector('.phase')?.textContent?.trim() || ''
 
-    // Isolate game section: anchor on Q1/quarters or fallback to date
-    const qAnchor = fullText.search(/(?:Q1|1T)\s+\d+\s*[-–]\s*\d+/i)
-    const datePos = fullText.search(/\d{1,2}\s+(?:JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s+\d{4}/i)
-    const anchorPos = qAnchor > -1 ? qAnchor : (datePos > -1 ? datePos : -1)
-    const gameText = anchorPos > -1
-        ? fullText.slice(Math.max(0, anchorPos - 300), Math.min(fullText.length, anchorPos + 300))
-        : fullText
-
-    // Date: look for pattern like "2 MAI 2026" in game section
-    const dateMatch = gameText.match(/(\d{1,2})\s+(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s+(\d{4})/i)
+    // Date: <p class="date"> — format "30 MAI 2026"
+    const dateText = doc.querySelector('.date')?.textContent?.trim() || ''
+    const MONTHS: Record<string, string> = { JAN: '01', FEV: '02', MAR: '03', ABR: '04', MAI: '05', JUN: '06', JUL: '07', AGO: '08', SET: '09', OUT: '10', NOV: '11', DEZ: '12' }
     let data = ''
+    const dateMatch = dateText.match(/(\d{1,2})\s+(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s+(\d{4})/i)
     if (dateMatch) {
-        const months: Record<string, string> = { JAN: '01', FEV: '02', MAR: '03', ABR: '04', MAI: '05', JUN: '06', JUL: '07', AGO: '08', SET: '09', OUT: '10', NOV: '11', DEZ: '12' }
-        data = `${dateMatch[3]}-${months[dateMatch[2].toUpperCase()] || '01'}-${dateMatch[1].padStart(2, '0')}`
+        data = `${dateMatch[3]}-${MONTHS[dateMatch[2].toUpperCase()] || '01'}-${dateMatch[1].padStart(2, '0')}`
     }
 
-    // Phase: text right before the date, e.g. "Fase Final - Meias-finais 1"
-    const faseMatch = dateMatch
-        ? gameText.slice(0, dateMatch.index!).match(/([^.\d]+)\s*$/)?.[1]?.trim()
-        : ''
-    const fase = faseMatch || ''
+    // Teams: .team.home .bigName and .team.away .bigName
+    const equipa_casa = doc.querySelector('.team.home .bigName')?.textContent?.trim() || ''
+    const equipa_fora = doc.querySelector('.team.away .bigName')?.textContent?.trim() || ''
 
-    // Scores: find two 2-3 digit numbers in the score area (after team abbreviations)
-    const scoreMatch = gameText.match(/(\d{2,3})\s+(\d{2,3})/)
+    // Logos: .team.home img and .team.away img
+    const logo_casa = doc.querySelector('.team.home img')?.getAttribute('src') || null
+    const logo_fora = doc.querySelector('.team.away img')?.getAttribute('src') || null
+
+    // Check if game has scores or is scheduled (has .match-time)
+    const matchTimeEl = doc.querySelector('.match-time')
+    const hora = matchTimeEl?.textContent?.trim()?.replace(/\s*H\s*/, ':').replace(/\s+/g, '') || ''
+
+    // Scores: look for results_text elements (only in finished games)
+    const scoreEls = doc.querySelectorAll('.results_text')
     let resultado_casa = 0
     let resultado_fora = 0
-    if (scoreMatch) {
-        resultado_casa = parseInt(scoreMatch[1]) || 0
-        resultado_fora = parseInt(scoreMatch[2]) || 0
+    let status = 'AGENDADO'
+    if (scoreEls.length >= 2) {
+        resultado_casa = parseInt(scoreEls[0].textContent?.trim() || '0') || 0
+        resultado_fora = parseInt(scoreEls[1].textContent?.trim() || '0') || 0
+        status = 'FINALIZADO'
+    } else if (hora) {
+        status = 'AGENDADO'
+    } else {
+        // Check if this is a live game (unlikely to reach here from competition page)
+        status = 'FINALIZADO' // fallback
     }
 
-    // Quarters: Q1 25-12, Q2 30-19, etc.
+    // Quarters: in text content for finished games
     const parciais: FPBGameDetail['parciais'] = []
-    const qRe = /(Q\d+|1T|2T|OT)\s+(\d+)\s*[-–]\s*(\d+)/gi
-    let qm: RegExpExecArray | null
-    while ((qm = qRe.exec(gameText)) !== null) {
-        parciais.push({ periodo: qm[1], casa: parseInt(qm[2]), fora: parseInt(qm[3]) })
-    }
-
-    // Pavilhao: text between the last team abbreviation and spectators count
-    // e.g. "...SCP Pavilhão Dragão Arena 500 Espectadores" → "Pavilhão Dragão Arena"
-    const espIdx = gameText.search(/\d+\s*Espectadores/i)
-    let pavilhao = ''
-    if (espIdx > -1) {
-        const before = gameText.slice(0, espIdx).trim()
-        const words = before.split(/\s+/)
-        // Find the last all-caps abbreviation (2-5 chars, team sigla like SCP, SLB, FCP, UDO)
-        let abbrIdx = -1
-        for (let j = words.length - 1; j >= 0; j--) {
-            if (/^[A-ZÀ-Ú]{2,5}$/.test(words[j])) {
-                abbrIdx = j
-                break
-            }
-        }
-        // Take words after the abbreviation, excluding trailing spectator number
-        if (abbrIdx > -1 && abbrIdx < words.length - 1) {
-            let locWords = words.slice(abbrIdx + 1)
-            if (locWords.length > 0 && /^\d+$/.test(locWords[locWords.length - 1])) {
-                locWords = locWords.slice(0, -1)
-            }
-            pavilhao = locWords.join(' ')
+    if (status === 'FINALIZADO') {
+        const bodyText = doc.body?.textContent || ''
+        const qRe = /(Q\d+|1T|2T|OT)\s+(\d+)\s*[-–]\s*(\d+)/gi
+        let qm: RegExpExecArray | null
+        while ((qm = qRe.exec(bodyText)) !== null) {
+            parciais.push({ periodo: qm[1], casa: parseInt(qm[2]), fora: parseInt(qm[3]) })
         }
     }
 
-    // Hora: look for HH:MM or HHhMM pattern near the date in game section
-    const horaMatch = dateMatch
-        ? gameText.slice(dateMatch.index! + dateMatch[0].length, dateMatch.index! + dateMatch[0].length + 50).match(/(\d{1,2})[h:](\d{2})/)
-        : gameText.match(/(\d{1,2})[h:](\d{2})/)
-    const hora = horaMatch ? `${horaMatch[1].padStart(2, '0')}:${horaMatch[2]}` : ''
+    // Pavilhao: .location a or .location text
+    const locEl = doc.querySelector('.location a') || doc.querySelector('.location')
+    const pavilhao = locEl?.textContent?.trim() || ''
 
-    // Logos: extract from raw HTML img tags (CLU/logotipo in src)
-    const imgRe = /<img[^>]*src="([^"]*(?:CLU_|logotipo)[^"]*)"[^>]*>/gi
-    const logos: string[] = []
-    let im: RegExpExecArray | null
-    while ((im = imgRe.exec(html)) !== null) {
-        const url = im[1]
-        if (!logos.includes(url)) logos.push(url)
-    }
-    let logo_casa: string | null = null
-    let logo_fora: string | null = null
-    if (logos.length >= 2) {
-        logo_casa = logos[0]
-        logo_fora = logos[1]
-    } else if (logos.length === 1) {
-        logo_casa = logos[0] // single logo, assign to home
-    }
-
-    const espMatch = gameText.match(/(\d+)\s*Espectadores/i)
+    // Espetadores: in body text for finished games
+    const espMatch = (doc.body?.textContent || '').match(/(\d+)\s*Espectadores/i)
     const espetadores = espMatch ? parseInt(espMatch[1]) : 0
 
     return {
         internalID, data, fase, competicao, equipa_casa, equipa_fora, resultado_casa, resultado_fora,
-        hora, logo_casa, logo_fora, parciais, pavilhao, espetadores,
+        status, hora, logo_casa, logo_fora, parciais, pavilhao, espetadores,
         gameLeaders: [], boxScoreCasa: [], boxScoreFora: [], teamStats: [],
     }
 }
