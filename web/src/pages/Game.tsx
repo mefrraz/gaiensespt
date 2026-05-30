@@ -19,7 +19,7 @@ function detailToMatch(detail: FPBGameDetail, logos?: { casa: string | null; for
         resultado_casa: detail.resultado_casa,
         resultado_fora: detail.resultado_fora,
         escalao: detail.fase,
-        competicao: '',
+        competicao: detail.competicao,
         local: detail.pavilhao,
         logotipo_casa: logos?.casa || null,
         logotipo_fora: logos?.fora || null,

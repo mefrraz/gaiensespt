@@ -619,6 +619,7 @@ export interface FPBGameDetail {
     internalID: string
     data: string
     fase: string
+    competicao: string
     equipa_casa: string
     equipa_fora: string
     resultado_casa: number
@@ -670,7 +671,9 @@ function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | nul
     const title = titleMatch?.[1]?.trim() || ''
     const titleParts = title.split(/\s+vs\.?\s+/i)
     let equipa_casa = titleParts[0]?.trim() || ''
-    let equipa_fora = titleParts[1]?.split('|')[0]?.trim() || ''
+    const awayParts = (titleParts[1] || '').split('|')
+    let equipa_fora = awayParts[0]?.trim() || ''
+    let competicao = (awayParts[1] || '').trim()
 
     // Strip style, script, and HTML tags to get plain visible text
     const fullText = html
@@ -749,7 +752,7 @@ function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | nul
     const espetadores = espMatch ? parseInt(espMatch[1]) : 0
 
     return {
-        internalID, data, fase, equipa_casa, equipa_fora,
+        internalID, data, fase, competicao, equipa_casa, equipa_fora,
         resultado_casa, resultado_fora, parciais, pavilhao, espetadores,
         gameLeaders: [], boxScoreCasa: [], boxScoreFora: [], teamStats: [],
     }
