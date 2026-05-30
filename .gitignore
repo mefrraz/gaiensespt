@@ -48,6 +48,7 @@ fpb_api_reference.md
 dribly.svg
 *.html
 *.sql
+!database/migrations/*.sql
 0
 fpb-classificacao*.md
 fpb-api-reference*.md
