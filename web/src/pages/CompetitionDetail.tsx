@@ -100,6 +100,24 @@ function findLogo(teamName: string, maps: LogoMaps): string | null {
     return null
 }
 
+/** Semi-abbreviate team names: "Futebol Clube do Porto" → "FC Porto" */
+function semiAbrev(name: string): string {
+    const rules: [RegExp, string][] = [
+        [/^Futebol\s+Clube\s+(do|da|de)\s+/i, 'FC '],
+        [/^Sporting\s+Clube\s+(de\s+)?/i, 'SC '],
+        [/^Vitória\s+Sport\s+Clube/i, 'Vitória SC'],
+        [/^União\s+Desportiva\s+/i, 'UD '],
+        [/^Clube\s+Desportivo\s+/i, 'CD '],
+        [/^Grupo\s+Desportivo\s+/i, 'GD '],
+        [/^Associação\s+Académica\s+de\s+/i, 'AA '],
+        [/^Sport\s+Lisboa\s+e\s+Benfica/i, 'SL Benfica'],
+    ]
+    for (const [regex, replacement] of rules) {
+        if (regex.test(name)) return name.replace(regex, replacement).trim()
+    }
+    return name
+}
+
 function fpbGameToMatch(g: FPBGame, logoMaps: LogoMaps): Match {
     const slug = g.jogo_id || `${g.data}-${g.equipa_casa.toLowerCase().replace(/\s+/g, '-')}-${g.equipa_fora.toLowerCase().replace(/\s+/g, '-')}`
     const status: Match['status'] = g.estado === 'FINALIZADO' ? 'FINALIZADO' : g.estado === 'A DECORRER' ? 'A DECORRER' : 'AGENDADO'
@@ -447,12 +465,22 @@ export default function CompetitionDetail() {
                                             </div>
                                         )}
                                         {standings[selectedPhase] && standings[selectedPhase].type === 'games' && (
-                                            <div className="space-y-1.5">
-                                                {standings[selectedPhase].teams.map((t, i) => (
-                                                    <div key={i} className="bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-xl px-4 py-3 text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                                                        {t.equipa}
+                                            <div className="space-y-2">
+                                                {standings[selectedPhase].teams.map((t, i) => {
+                                                    const logo = findLogo(t.equipa, logoMaps)
+                                                    return (
+                                                    <div key={i} className="bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-xl px-4 py-3 flex items-center gap-3 hover:border-dribly-purple/30 transition-all">
+                                                        {logo ? (
+                                                            <img src={logo} alt="" className="w-8 h-8 rounded-full object-contain bg-zinc-50 dark:bg-zinc-800 shrink-0" />
+                                                        ) : (
+                                                            <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
+                                                                <span className="text-xs font-bold text-zinc-500">{t.equipa.charAt(0)}</span>
+                                                            </div>
+                                                        )}
+                                                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex-1 truncate">{semiAbrev(t.equipa)}</span>
                                                     </div>
-                                                ))}
+                                                    )
+                                                })}
                                             </div>
                                         )}
                                         {standings[selectedPhase] && standings[selectedPhase].type === 'table' && standings[selectedPhase].teams.length === 0 && (
@@ -481,7 +509,10 @@ export default function CompetitionDetail() {
                                                                     <span className="text-xs font-bold text-zinc-500 tabular-nums">{team.posicao}</span>
                                                                 </td>
                                                                 <td className="pl-2 pr-3 py-2.5">
-                                                                    <span className="text-xs font-medium text-zinc-800 dark:text-zinc-200 break-words">{team.equipa}</span>
+                                                                    <span className="inline-flex items-center gap-2">
+                                                                        {(() => { const l = findLogo(team.equipa, logoMaps); return l ? <img src={l} alt="" className="w-5 h-5 rounded-full object-contain shrink-0" /> : null })()}
+                                                                        <span className="text-xs font-medium text-zinc-800 dark:text-zinc-200 break-words">{semiAbrev(team.equipa)}</span>
+                                                                    </span>
                                                                 </td>
                                                                 <td className="px-2 py-2.5 text-center"><span className="text-xs text-zinc-500 tabular-nums">{team.j}</span></td>
                                                                 <td className="px-2 py-2.5 text-center"><span className="text-xs font-medium text-emerald-600 tabular-nums">{team.v}</span></td>
