@@ -382,20 +382,28 @@ function Game() {
                         </h3>
                     </div>
                     <div className="p-4">
-                        {/* Players header */}
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex flex-col items-center gap-1 text-center">
-                                <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border-2 border-dribly-purple/20">
-                                    {topPerfCasa.foto ? <img src={topPerfCasa.foto} alt="" className="w-14 h-14 sm:w-20 sm:h-20 rounded-full object-cover" /> : <span className="text-xl font-semibold text-zinc-400">{topPerfCasa.nome.charAt(0)}</span>}
+                        {/* Players header — compacto e elegante */}
+                        <div className="flex items-center justify-center gap-3 sm:gap-5 mb-5">
+                            <div className="flex flex-col items-center gap-1.5 text-center min-w-0" style={{ flex: '1 1 0px' }}>
+                                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border-2 border-dribly-purple/20 shadow-sm">
+                                    <div className="w-10 h-10 flex items-center justify-center">
+                                        {topPerfCasa.foto ? <img src={topPerfCasa.foto} alt="" className="max-w-full max-h-full object-contain" /> : <span className="text-base sm:text-lg font-semibold text-zinc-400">{topPerfCasa.nome.charAt(0)}</span>}
+                                    </div>
                                 </div>
-                                <span className="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300 mt-1">{topPerfCasa.nome}</span>
+                                <span className="text-[10px] sm:text-sm font-semibold text-zinc-700 dark:text-zinc-200 leading-tight line-clamp-1">{topPerfCasa.nome}</span>
                             </div>
-                            <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">vs</span>
-                            <div className="flex flex-col items-center gap-1 text-center">
-                                <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border-2 border-zinc-200 dark:border-zinc-700">
-                                    {topPerfFora.foto ? <img src={topPerfFora.foto} alt="" className="w-14 h-14 sm:w-20 sm:h-20 rounded-full object-cover" /> : <span className="text-xl font-semibold text-zinc-400">{topPerfFora.nome.charAt(0)}</span>}
+                            <div className="shrink-0 flex items-center gap-2">
+                                <div className="h-px w-6 sm:w-8 bg-zinc-200 dark:bg-zinc-700 hidden sm:block" />
+                                <span className="text-[10px] sm:text-xs font-bold text-zinc-400 uppercase tracking-[0.2em]">VS</span>
+                                <div className="h-px w-6 sm:w-8 bg-zinc-200 dark:bg-zinc-700 hidden sm:block" />
+                            </div>
+                            <div className="flex flex-col items-center gap-1.5 text-center min-w-0" style={{ flex: '1 1 0px' }}>
+                                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border-2 border-zinc-200 dark:border-zinc-700 shadow-sm">
+                                    <div className="w-10 h-10 flex items-center justify-center">
+                                        {topPerfFora.foto ? <img src={topPerfFora.foto} alt="" className="max-w-full max-h-full object-contain" /> : <span className="text-base sm:text-lg font-semibold text-zinc-400">{topPerfFora.nome.charAt(0)}</span>}
+                                    </div>
                                 </div>
-                                <span className="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300 mt-1">{topPerfFora.nome}</span>
+                                <span className="text-[10px] sm:text-sm font-semibold text-zinc-700 dark:text-zinc-200 leading-tight line-clamp-1">{topPerfFora.nome}</span>
                             </div>
                         </div>
                         {/* Stats comparison */}
