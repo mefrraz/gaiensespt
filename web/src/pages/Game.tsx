@@ -3,7 +3,7 @@ import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { fetchFPBGames } from '../lib/fpbApi'
 import { fetchGameDetail, type FPBGameDetail } from '../lib/fpbCompetitionsApi'
-import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink, Calendar, Minus, Check } from 'lucide-react'
+import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink, Calendar, Minus, Check, Clock } from 'lucide-react'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 import { useClub, type Club } from '../lib/ClubContext'
@@ -35,8 +35,6 @@ function Game() {
 
     const [match, setMatch] = useState<Match | null>(null)
     const [club, setClub] = useState<Club | null>(null)
-    const [detailParciais, setDetailParciais] = useState<FPBGameDetail['parciais']>([])
-    const [detailEspetadores, setDetailEspetadores] = useState(0)
     const [detailLeaders, setDetailLeaders] = useState<FPBGameDetail['gameLeaders']>([])
     const [detailAbrev, setDetailAbrev] = useState<{ casa: string; fora: string }>({ casa: '', fora: '' })
     const [activeLeaderTab, setActiveLeaderTab] = useState(0)
@@ -77,8 +75,6 @@ function Game() {
                     const detail = await fetchGameDetail(slug)
                     if (detail) {
                         setMatch(detailToMatch(detail))
-                        setDetailParciais(detail.parciais)
-                        setDetailEspetadores(detail.espetadores)
                         setDetailLeaders(detail.gameLeaders)
                         setDetailAbrev({ casa: detail.abrev_casa, fora: detail.abrev_fora })
                     }
@@ -287,7 +283,9 @@ function Game() {
                             <span className="px-3 py-1 rounded-full bg-red-500 text-white text-[10px] font-bold animate-pulse">AO VIVO</span>
                         )}
                         {match.status === 'AGENDADO' && hasHora && (
-                            <span className="px-3 py-1 rounded-full bg-dribly-purple/10 text-dribly-purple text-[10px] font-bold">{match.hora!.slice(0, 5)}</span>
+                            <span className="px-3 py-1 rounded-full bg-dribly-purple/10 text-dribly-purple text-[10px] font-bold flex items-center gap-1">
+                                <Clock size={10} /> {match.hora!.slice(0, 5)}
+                            </span>
                         )}
                     </div>
 
@@ -313,24 +311,7 @@ function Game() {
                         <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} abrev={detailAbrev.fora || undefined} clubSlug={(() => { const n = match.equipa_fora; const found = clubs.find(c => n.toUpperCase().includes(c.name.toUpperCase())); return found ? found.slug : null })()} />
                     </div>
 
-                    {/* Quarters */}
-                    {detailParciais.length > 0 && (
-                        <div className="mt-5 flex justify-center gap-2">
-                            {detailParciais.map((q, i) => (
-                                <div key={i} className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl px-3 py-2 text-center min-w-[56px]">
-                                    <p className="text-[9px] font-bold text-zinc-400 uppercase">{q.periodo}</p>
-                                    <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300 tabular-nums">{q.casa} - {q.fora}</p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
 
-                    {/* Spectators */}
-                    {detailEspetadores > 0 && (
-                        <div className="mt-3 flex justify-center">
-                            <span className="text-[10px] font-medium text-zinc-400">{detailEspetadores} espectadores</span>
-                        </div>
-                    )}
 
                     {/* FPB Link */}
                     <div className="mt-6 flex justify-center">
@@ -375,9 +356,6 @@ function Game() {
                 <div>
                     <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Data</h4>
                     <p className="text-sm font-medium text-zinc-900 dark:text-white capitalize">{dateFormatted}</p>
-                    {hasHora && (
-                        <p className="text-sm font-medium text-zinc-500">{match.hora!.slice(0, 5)}</p>
-                    )}
                 </div>
             </div>
 
@@ -544,11 +522,6 @@ function TeamBlock({ name, logo, clubSlug, abrev }: { name: string; logo: string
             <p className="text-xs font-black text-zinc-900 dark:text-white leading-tight truncate w-full">
                 {abrev ? abrev.toUpperCase() : name.toUpperCase()}
             </p>
-            {abrev && (
-                <p className="text-[9px] text-zinc-400 dark:text-zinc-500 leading-tight truncate w-full max-w-[80px]">
-                    {name}
-                </p>
-            )}
         </div>
     );
     if (clubSlug) {
