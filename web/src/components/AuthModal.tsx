@@ -42,25 +42,20 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
 
     if (!isOpen) return null
 
-    // Minimal appearance — just match our purple, let Clerk's card shine
+    // Minimal — only purple color + dark mode, clerk handles its own card
     const clerkAppearance = {
         baseTheme: isDark ? dark : undefined,
         variables: {
             colorPrimary: '#a855f7',
             borderRadius: '0.75rem',
         },
-        elements: {
-            footerAction: { display: 'none' },
-        },
     }
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            {/* Overlay */}
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClose} />
 
             {isSignedIn && clerkUser ? (
-                /* Signed-in: keep our custom card */
                 <div className="relative w-full max-w-sm bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-white/10 p-6 animate-slide-up">
                     <button onClick={handleClose}
                         className="absolute top-4 right-4 p-1 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors">
@@ -82,16 +77,32 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                     </div>
                 </div>
             ) : (
-                /* Clerk's own native card — no wrapper, no double-styling */
-                <div className="relative animate-slide-up max-w-md w-full">
-                    {/* Close button — floats on top-right corner of Clerk card */}
-                    <button
-                        onClick={handleClose}
-                        className="absolute -top-3 -right-3 z-10 p-2 rounded-full bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 shadow-lg border border-zinc-200 dark:border-white/10 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-                        aria-label="Fechar"
-                    >
-                        <X size={16} />
+                <div className="relative w-full max-w-sm bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-white/10 p-6 animate-slide-up">
+                    <button onClick={handleClose}
+                        className="absolute top-4 right-4 z-10 p-1 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
+                        aria-label="Fechar">
+                        <X size={18} />
                     </button>
+
+                    <div className="text-center mb-5">
+                        <div className="w-14 h-14 mx-auto rounded-full bg-dribly-purple/10 flex items-center justify-center mb-3">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                {mode === 'signin' ? (
+                                    <><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></>
+                                ) : (
+                                    <><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>
+                                )}
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">
+                            {mode === 'signin' ? 'Iniciar sessão' : 'Criar conta'}
+                        </h3>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                            {mode === 'signin'
+                                ? 'Entra com o teu email e palavra-passe ou Google.'
+                                : 'Regista-te para seguir clubes e competições.'}
+                        </p>
+                    </div>
 
                     {mode === 'signin' ? (
                         <SignIn routing="virtual" signUpUrl="#" appearance={clerkAppearance} />
@@ -99,14 +110,19 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                         <SignUp routing="virtual" signInUrl="#" appearance={clerkAppearance} />
                     )}
 
-                    {/* Mode switcher below Clerk's card */}
-                    <p className="text-[12px] text-zinc-300 dark:text-zinc-400 text-center mt-3">
+                    <div className="mt-4 pt-3 border-t border-zinc-200 dark:border-white/10 text-center">
                         {mode === 'signin' ? (
-                            <>Não tens conta? <button onClick={switchMode} className="text-dribly-purple font-bold hover:underline">Criar conta</button></>
+                            <p className="text-[12px] text-zinc-500 dark:text-zinc-400">
+                                Não tens conta?{' '}
+                                <button onClick={switchMode} className="text-dribly-purple font-bold hover:underline">Criar conta</button>
+                            </p>
                         ) : (
-                            <>Já tens conta? <button onClick={switchMode} className="text-dribly-purple font-bold hover:underline">Iniciar sessão</button></>
+                            <p className="text-[12px] text-zinc-500 dark:text-zinc-400">
+                                Já tens conta?{' '}
+                                <button onClick={switchMode} className="text-dribly-purple font-bold hover:underline">Iniciar sessão</button>
+                            </p>
                         )}
-                    </p>
+                    </div>
                 </div>
             )}
         </div>
