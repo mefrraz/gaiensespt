@@ -1,5 +1,6 @@
-import { type ReactNode } from 'react'
-import { useUser, useClerk } from '@clerk/clerk-react'
+import { useEffect, type ReactNode } from 'react'
+import { useUser, useAuth as useClerkAuth, useClerk } from '@clerk/clerk-react'
+import { setClerkTokenProvider } from './supabase'
 
 interface NormalizedUser {
     id: string
@@ -29,10 +30,31 @@ function normalizeUser(clerkUser: NonNullable<ReturnType<typeof useUser>['user']
     }
 }
 
+/** Syncs Clerk session to Supabase token provider for RLS */
+function TokenProviderSetup() {
+    const { isLoaded, isSignedIn } = useUser()
+    const { getToken } = useClerkAuth()
+
+    useEffect(() => {
+        if (isLoaded) {
+            if (isSignedIn) {
+                setClerkTokenProvider(() => getToken({ template: 'supabase' }))
+            } else {
+                setClerkTokenProvider(null)
+            }
+        }
+    }, [isLoaded, isSignedIn, getToken])
+
+    return null
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-    // ClerkProvider is in main.tsx — this wrapper exists so useAuth()
-    // returns NormalizedUser instead of Clerk's UserResource
-    return <>{children}</>
+    return (
+        <>
+            <TokenProviderSetup />
+            {children}
+        </>
+    )
 }
 
 export function useAuth(): AuthContextType {
