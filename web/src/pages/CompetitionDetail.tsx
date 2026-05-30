@@ -133,8 +133,8 @@ function fpbGameToMatch(g: FPBGame, logoMaps: LogoMaps): Match {
         escalao: '',
         competicao: '',
         local: g.pavilhao || null,
-        logotipo_casa: findLogo(g.equipa_casa, logoMaps),
-        logotipo_fora: findLogo(g.equipa_fora, logoMaps),
+        logotipo_casa: g.logo_casa || findLogo(g.equipa_casa, logoMaps) || null,
+        logotipo_fora: g.logo_fora || findLogo(g.equipa_fora, logoMaps) || null,
         status,
     }
 }

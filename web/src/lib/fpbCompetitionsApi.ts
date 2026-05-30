@@ -38,6 +38,8 @@ export interface FPBGame {
     resultado_fora?: number
     pavilhao?: string
     estado?: string
+    logo_casa?: string
+    logo_fora?: string
 }
 
 export interface FPBTeam {
@@ -295,6 +297,8 @@ function scrapeGames(html: string, defaultStatus: Match['status']): FPBGame[] {
             const teamContainers = link.querySelectorAll('.team-container')
             const homeName = (teamContainers[0]?.querySelector('.fullName') || teamContainers[0]?.querySelector('.sigla'))?.textContent?.trim() || ''
             const awayName = (teamContainers[1]?.querySelector('.fullName') || teamContainers[1]?.querySelector('.sigla'))?.textContent?.trim() || ''
+            const logo_casa = teamContainers[0]?.querySelector('.image-container img')?.getAttribute('src') || undefined
+            const logo_fora = teamContainers[1]?.querySelector('.image-container img')?.getAttribute('src') || undefined
 
             let resultado_casa: number | null = null
             let resultado_fora: number | null = null
@@ -355,6 +359,8 @@ function scrapeGames(html: string, defaultStatus: Match['status']): FPBGame[] {
                 resultado_fora: resultado_fora ?? undefined,
                 pavilhao,
                 estado: status,
+                logo_casa,
+                logo_fora,
             })
         })
     })
