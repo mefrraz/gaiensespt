@@ -622,6 +622,8 @@ export interface FPBGameDetail {
     competicao: string
     equipa_casa: string
     equipa_fora: string
+    abrev_casa: string
+    abrev_fora: string
     resultado_casa: number
     resultado_fora: number
     status: string
@@ -694,6 +696,10 @@ function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | nul
     // Teams: .team.home .bigName and .team.away .bigName
     const equipa_casa = doc.querySelector('.team.home .bigName')?.textContent?.trim() || ''
     const equipa_fora = doc.querySelector('.team.away .bigName')?.textContent?.trim() || ''
+
+    // Abbreviations: .team.home .smallName and .team.away .smallName
+    const abrev_casa = doc.querySelector('.team.home .smallName')?.textContent?.trim() || ''
+    const abrev_fora = doc.querySelector('.team.away .smallName')?.textContent?.trim() || ''
 
     // Logos: .team.home img and .team.away img
     const logo_casa = doc.querySelector('.team.home img')?.getAttribute('src') || null
@@ -768,7 +774,7 @@ function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | nul
     })
 
     return {
-        internalID, data, fase, competicao, equipa_casa, equipa_fora, resultado_casa, resultado_fora,
+        internalID, data, fase, competicao, equipa_casa, equipa_fora, abrev_casa, abrev_fora, resultado_casa, resultado_fora,
         status, hora, logo_casa, logo_fora, parciais, pavilhao, espetadores,
         gameLeaders, boxScoreCasa: [], boxScoreFora: [], teamStats: [],
     }

@@ -38,6 +38,8 @@ function Game() {
     const [detailParciais, setDetailParciais] = useState<FPBGameDetail['parciais']>([])
     const [detailEspetadores, setDetailEspetadores] = useState(0)
     const [detailLeaders, setDetailLeaders] = useState<FPBGameDetail['gameLeaders']>([])
+    const [detailAbrev, setDetailAbrev] = useState<{ casa: string; fora: string }>({ casa: '', fora: '' })
+    const [activeLeaderTab, setActiveLeaderTab] = useState(0)
     const [recentGames, setRecentGames] = useState<Match[]>([])
     const [upcomingH2H, setUpcomingH2H] = useState<Match[]>([])
     const [loading, setLoading] = useState(true)
@@ -78,6 +80,7 @@ function Game() {
                         setDetailParciais(detail.parciais)
                         setDetailEspetadores(detail.espetadores)
                         setDetailLeaders(detail.gameLeaders)
+                        setDetailAbrev({ casa: detail.abrev_casa, fora: detail.abrev_fora })
                     }
                 } catch { /* ignore */ }
                 setLoading(false)
@@ -289,7 +292,7 @@ function Game() {
                     </div>
 
                     <div className="flex items-center justify-between gap-4">
-                        <TeamBlock name={match.equipa_casa} logo={match.logotipo_casa} clubSlug={(() => { const n = match.equipa_casa; const found = clubs.find(c => n.toUpperCase().includes(c.name.toUpperCase())); return found ? found.slug : null })()} />
+                        <TeamBlock name={match.equipa_casa} logo={match.logotipo_casa} abrev={detailAbrev.casa || undefined} clubSlug={(() => { const n = match.equipa_casa; const found = clubs.find(c => n.toUpperCase().includes(c.name.toUpperCase())); return found ? found.slug : null })()} />
                         <div className="flex flex-col items-center gap-1 shrink-0">
                             {isFinished || isLive ? (
                                 <div className="flex items-center gap-1 sm:gap-3">
@@ -307,7 +310,7 @@ function Game() {
                                 </div>
                             )}
                         </div>
-                        <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} clubSlug={(() => { const n = match.equipa_fora; const found = clubs.find(c => n.toUpperCase().includes(c.name.toUpperCase())); return found ? found.slug : null })()} />
+                        <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} abrev={detailAbrev.fora || undefined} clubSlug={(() => { const n = match.equipa_fora; const found = clubs.find(c => n.toUpperCase().includes(c.name.toUpperCase())); return found ? found.slug : null })()} />
                     </div>
 
                     {/* Quarters */}
@@ -379,38 +382,72 @@ function Game() {
             </div>
 
             {/* Game Leaders */}
-            {detailLeaders.length > 0 && (
+            {detailLeaders.length > 0 && (() => {
+                const leader = detailLeaders[activeLeaderTab]
+                return (
                 <div className="glass-card overflow-hidden animate-slide-up">
                     <div className="p-4 border-b border-zinc-100 dark:border-white/5">
-                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2 mb-3">
                             <span className="w-1.5 h-1.5 rounded-full bg-dribly-purple" />
                             Melhores em Campo
                         </h3>
+                        {/* Tabs */}
+                        <div className="flex gap-1.5 overflow-x-auto pb-1">
+                            {detailLeaders.map((l, i) => (
+                                <button key={i} onClick={() => setActiveLeaderTab(i)}
+                                    className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold transition-all ${
+                                        i === activeLeaderTab
+                                            ? 'bg-dribly-purple text-white'
+                                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                    }`}>
+                                    {l.categoria}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                    <div className="p-4 space-y-3">
-                        {detailLeaders.map((leader, i) => (
-                            <div key={i} className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl px-3 py-2">
-                                <span className="text-[10px] font-bold text-zinc-400 w-20 shrink-0 uppercase truncate">{leader.categoria}</span>
-                                <div className="flex-1 flex items-center gap-2 min-w-0">
+                    <div className="p-4">
+                        {leader && (
+                            <div className="flex items-center justify-around gap-4">
+                                {/* Home player */}
+                                <div className="flex-1 flex flex-col items-center text-center gap-2">
                                     {leader.casa.foto ? (
-                                        <img src={leader.casa.foto} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
-                                    ) : null}
-                                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{leader.casa.nome}</span>
-                                    <span className="text-xs font-black text-dribly-purple tabular-nums ml-auto">{leader.casa.valor}</span>
+                                        <img src={leader.casa.foto} alt="" className="w-16 h-16 rounded-xl object-cover border-2 border-zinc-200 dark:border-zinc-700" />
+                                    ) : (
+                                        <div className="w-16 h-16 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                                            <span className="text-lg font-bold text-zinc-500">{leader.casa.nome.charAt(0)}</span>
+                                        </div>
+                                    )}
+                                    <div>
+                                        <p className="text-xs font-extrabold text-zinc-900 dark:text-white truncate max-w-[100px]">{leader.casa.nome}</p>
+                                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate max-w-[100px]">{match.equipa_casa}</p>
+                                    </div>
                                 </div>
-                                <span className="text-[10px] text-zinc-400">vs</span>
-                                <div className="flex-1 flex items-center gap-2 min-w-0">
-                                    <span className="text-xs font-black text-dribly-purple tabular-nums">{leader.fora.valor}</span>
-                                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{leader.fora.nome}</span>
+                                {/* Value separator */}
+                                <div className="flex flex-col items-center gap-1">
+                                    <span className="text-3xl font-black text-dribly-purple tabular-nums">{leader.casa.valor}</span>
+                                    <span className="text-[10px] font-bold text-zinc-400 uppercase">vs</span>
+                                    <span className="text-3xl font-black text-zinc-900 dark:text-white tabular-nums">{leader.fora.valor}</span>
+                                </div>
+                                {/* Away player */}
+                                <div className="flex-1 flex flex-col items-center text-center gap-2">
                                     {leader.fora.foto ? (
-                                        <img src={leader.fora.foto} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
-                                    ) : null}
+                                        <img src={leader.fora.foto} alt="" className="w-16 h-16 rounded-xl object-cover border-2 border-zinc-200 dark:border-zinc-700" />
+                                    ) : (
+                                        <div className="w-16 h-16 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                                            <span className="text-lg font-bold text-zinc-500">{leader.fora.nome.charAt(0)}</span>
+                                        </div>
+                                    )}
+                                    <div>
+                                        <p className="text-xs font-extrabold text-zinc-900 dark:text-white truncate max-w-[100px]">{leader.fora.nome}</p>
+                                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate max-w-[100px]">{match.equipa_fora}</p>
+                                    </div>
                                 </div>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
-            )}
+                )
+            })()}
 
             {/* H2H History */}
             {recentGames.length > 0 && (
@@ -494,19 +531,24 @@ function Game() {
     )
 }
 
-function TeamBlock({ name, logo, clubSlug }: { name: string; logo: string | null; clubSlug?: string | null }) {
+function TeamBlock({ name, logo, clubSlug, abrev }: { name: string; logo: string | null; clubSlug?: string | null; abrev?: string }) {
     const content = (
-        <div className="flex-1 flex flex-col items-center text-center gap-2 min-w-0">
-            <div className="w-20 h-20 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+        <div className="flex-1 flex flex-col items-center text-center gap-1 min-w-0">
+            <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
                 {logo ? (
-                    <img src={logo} alt="" className="w-14 h-14 object-contain" />
+                    <img src={logo} alt="" className="w-11 h-11 object-contain" />
                 ) : (
-                    <span className="text-2xl font-bold text-zinc-500">{name.charAt(0)}</span>
+                    <span className="text-lg font-bold text-zinc-500">{abrev?.charAt(0) || name.charAt(0)}</span>
                 )}
             </div>
-            <p className="text-sm font-bold text-zinc-900 dark:text-white leading-tight truncate w-full">
-                {name.toUpperCase()}
+            <p className="text-xs font-black text-zinc-900 dark:text-white leading-tight truncate w-full">
+                {abrev ? abrev.toUpperCase() : name.toUpperCase()}
             </p>
+            {abrev && (
+                <p className="text-[9px] text-zinc-400 dark:text-zinc-500 leading-tight truncate w-full max-w-[80px]">
+                    {name}
+                </p>
+            )}
         </div>
     );
     if (clubSlug) {
