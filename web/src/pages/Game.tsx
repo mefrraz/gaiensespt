@@ -39,7 +39,7 @@ function Game() {
     const [detailAbrev, setDetailAbrev] = useState<{ casa: string; fora: string }>({ casa: '', fora: '' })
     const [boxScoreCasa, setBoxScoreCasa] = useState<FPBBoxScorePlayer[]>([])
     const [boxScoreFora, setBoxScoreFora] = useState<FPBBoxScorePlayer[]>([])
-    const [detailTeamStats, setDetailTeamStats] = useState<{ label: string; casa: string; fora: string }[]>([])
+    
     const [activeLeaderTab, setActiveLeaderTab] = useState(0)
     const [recentGames, setRecentGames] = useState<Match[]>([])
     const [upcomingH2H, setUpcomingH2H] = useState<Match[]>([])
@@ -82,7 +82,7 @@ function Game() {
                         setDetailAbrev({ casa: detail.abrev_casa, fora: detail.abrev_fora })
                         setBoxScoreCasa(detail.boxScoreCasa)
                         setBoxScoreFora(detail.boxScoreFora)
-                        setDetailTeamStats(detail.teamStats)
+
                     }
                 } catch { /* ignore */ }
                 setLoading(false)
@@ -250,12 +250,21 @@ function Game() {
     ) : null
     const isDraw = hasScores && match.resultado_casa === match.resultado_fora
 
-    // Top 3 players per team by VAL
-    const top3Casa = [...boxScoreCasa].filter(p => p.pts > 0).sort((a, b) => (b.val || 0) - (a.val || 0)).slice(0, 3)
-    const top3Fora = [...boxScoreFora].filter(p => p.pts > 0).sort((a, b) => (b.val || 0) - (a.val || 0)).slice(0, 3)
+    // Compute top performers per category
+    const PERF_CATS = [
+        { key: 'val' as const, label: 'Valorização', unit: '' },
+        { key: 'pts' as const, label: 'Pontos', unit: 'P' },
+        { key: 'rt' as const, label: 'Ressaltos', unit: 'R' },
+        { key: 'as' as const, label: 'Assistências', unit: 'A' },
+    ]
+    const topPerfs = PERF_CATS.map(cat => ({
+        cat,
+        casa: [...boxScoreCasa].filter(p => Number(p[cat.key] || 0) > 0).sort((a, b) => Number(b[cat.key] || 0) - Number(a[cat.key] || 0))[0],
+        fora: [...boxScoreFora].filter(p => Number(p[cat.key] || 0) > 0).sort((a, b) => Number(b[cat.key] || 0) - Number(a[cat.key] || 0))[0],
+    }))
 
     return (
-        <div className="max-w-7xl mx-auto pb-24 px-3 space-y-3">
+        <div className="max-w-xl mx-auto pb-24 px-3 space-y-3">
             {/* Header */}
             <div className="flex items-center justify-between pt-3 animate-fade-in">
                 <button onClick={() => window.history.back()} className="p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
@@ -267,17 +276,7 @@ function Game() {
                 </button>
             </div>
 
-            {/* Content grid — sidebars + center */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px_1fr] gap-4">
-                {/* Left sidebar — sticky stats (desktop only) */}
-                <div className="hidden lg:block">
-                    <div className="sticky top-20 space-y-3">
-                        <SideStats team={match.equipa_casa} label="Casa" stats={detailTeamStats} />
-                    </div>
-                </div>
 
-                {/* Center */}
-                <div className="space-y-3">
 
             {/* Hero Card */}
             <div className="glass-card overflow-hidden animate-slide-up group hover:border-dribly-blue/30 transition-all duration-200">
@@ -412,41 +411,8 @@ function Game() {
                 </div>
             )}
 
-            {/* Comparação com barras visuais */}
-            {detailTeamStats.length > 0 && (
-                <div className="glass-card overflow-hidden animate-slide-up">
-                    <div className="p-4 border-b border-zinc-100 dark:border-white/5">
-                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-dribly-purple" />
-                            Comparação
-                        </h3>
-                    </div>
-                    <div className="p-4 space-y-4">
-                        {detailTeamStats.filter(s => !/^\d/.test(s.label)).slice(0, 10).map((stat, i) => {
-                            const cv = parseInt(stat.casa) || 0
-                            const fv = parseInt(stat.fora) || 0
-                            const total = cv + fv || 1
-                            const cpct = (cv / total) * 100
-                            return (
-                                <div key={i}>
-                                    <div className="flex justify-between text-[10px] font-bold mb-1">
-                                        <span className="text-dribly-purple">{stat.casa}</span>
-                                        <span className="text-zinc-400 uppercase text-[9px]">{stat.label}</span>
-                                        <span className="text-zinc-700 dark:text-zinc-300">{stat.fora}</span>
-                                    </div>
-                                    <div className="flex h-2 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-                                        <div className="h-full bg-dribly-purple rounded-full" style={{ width: cpct + '%' }} />
-                                        <div className="h-full bg-zinc-300 dark:bg-zinc-600" style={{ width: (100 - cpct) + '%' }} />
-                                    </div>
-                                </div>
-                            )
-                        })}
-                    </div>
-                </div>
-            )}
-
-            {/* Top players por VAL */}
-            {(top3Casa.length > 0 || top3Fora.length > 0) && (
+            {/* Top Performers head-to-head */}
+            {topPerfs.some(p => p.casa && p.fora) && (
                 <div className="glass-card overflow-hidden animate-slide-up">
                     <div className="p-4 border-b border-zinc-100 dark:border-white/5">
                         <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
@@ -454,31 +420,37 @@ function Game() {
                             Top Performers
                         </h3>
                     </div>
-                    <div className="p-4 grid grid-cols-2 gap-4">
-                        <div>
-                            <p className="text-[10px] font-bold text-zinc-400 uppercase mb-2">{match.equipa_casa}</p>
-                            <div className="space-y-2">
-                                {top3Casa.map((p, i) => (
-                                    <div key={i} className="flex items-center gap-2">
-                                        <span className="text-[10px] font-bold text-zinc-400 w-5">{p.numero || '-'}</span>
-                                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex-1 truncate">{p.nome}</span>
-                                        <span className="text-xs font-black text-dribly-purple tabular-nums">{p.pts}P</span>
+                    <div className="p-4 space-y-3">
+                        {topPerfs.map((pf, i) => {
+                            if (!pf.casa || !pf.fora) return null
+                            const cv = Number(pf.casa[pf.cat.key] || 0)
+                            const fv = Number(pf.fora[pf.cat.key] || 0)
+                            return (
+                                <div key={i} className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl px-3 py-2.5">
+                                    <span className="text-[9px] font-bold text-zinc-400 uppercase w-20 shrink-0">{pf.cat.label}</span>
+                                    {/* Casa */}
+                                    <div className="flex-1 flex items-center gap-2 min-w-0">
+                                        <div className="w-7 h-7 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden shrink-0 text-[9px] font-bold text-zinc-500">
+                                            <span>{pf.casa.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                                        </div>
+                                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{pf.casa.nome}</span>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-bold text-zinc-400 uppercase mb-2">{match.equipa_fora}</p>
-                            <div className="space-y-2">
-                                {top3Fora.map((p, i) => (
-                                    <div key={i} className="flex items-center gap-2">
-                                        <span className="text-[10px] font-bold text-zinc-400 w-5">{p.numero || '-'}</span>
-                                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex-1 truncate">{p.nome}</span>
-                                        <span className="text-xs font-black text-dribly-purple tabular-nums">{p.pts}P</span>
+                                    {/* Values */}
+                                    <div className="flex items-center gap-1 shrink-0">
+                                        <span className="text-xs font-black text-dribly-purple tabular-nums">{cv}{pf.cat.unit}</span>
+                                        <span className="text-[9px] text-zinc-400">vs</span>
+                                        <span className="text-xs font-black text-zinc-700 dark:text-zinc-300 tabular-nums">{fv}{pf.cat.unit}</span>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
+                                    {/* Fora */}
+                                    <div className="flex-1 flex items-center gap-2 min-w-0 justify-end">
+                                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{pf.fora.nome}</span>
+                                        <div className="w-7 h-7 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden shrink-0 text-[9px] font-bold text-zinc-500">
+                                            <span>{pf.fora.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        })}
                     </div>
                 </div>
             )}
@@ -562,14 +534,6 @@ function Game() {
                 </div>
             )}
 
-                </div>{/* End center */}
-                {/* Right sidebar — sticky stats (desktop only) */}
-                <div className="hidden lg:block">
-                    <div className="sticky top-20 space-y-3">
-                        <SideStats team={match.equipa_fora} label="Fora" stats={detailTeamStats} />
-                    </div>
-                </div>
-            </div>{/* End grid */}
         </div>
     )
 }
@@ -609,31 +573,6 @@ function PlayerMiniCard({ nome, foto, valor, side }: { nome: string; foto?: stri
                 <p className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200 truncate max-w-[100px]">{nome}</p>
                 <p className="text-sm font-black text-dribly-purple tabular-nums">{valor}</p>
             </div>
-        </div>
-    )
-}
-
-function SideStats({ team, stats }: { team: string; label: string; stats: { label: string; casa: string; fora: string }[] }) {
-    const relevant = stats.filter(s => /\d/.test(s.label) || s.label.length < 15).slice(0, 6)
-    if (!relevant.length) return null
-    return (
-        <div className="glass-card p-4 space-y-3">
-            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{team}</p>
-            {relevant.map((s, i) => (
-                <div key={i}>
-                    <div className="flex justify-between text-[10px] font-bold mb-0.5">
-                        <span className="text-dribly-purple">{s.casa}</span>
-                        <span className="text-zinc-400 capitalize text-[9px]">{s.label}</span>
-                        <span className="text-zinc-700 dark:text-zinc-300">{s.fora}</span>
-                    </div>
-                    <div className="flex h-1.5 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-                        {(() => {
-                            const cv = parseInt(s.casa) || 0, fv = parseInt(s.fora) || 0, total = cv + fv || 1
-                            return <div className="h-full bg-dribly-purple rounded-full" style={{ width: (cv/total*100) + '%' }} />
-                        })()}
-                    </div>
-                </div>
-            ))}
         </div>
     )
 }
