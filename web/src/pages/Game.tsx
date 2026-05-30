@@ -277,6 +277,9 @@ function Game() {
                         {isLive && (
                             <span className="px-3 py-1 rounded-full bg-red-500 text-white text-[10px] font-bold animate-pulse">AO VIVO</span>
                         )}
+                        {match.status === 'AGENDADO' && hasHora && (
+                            <span className="px-3 py-1 rounded-full bg-dribly-purple/10 text-dribly-purple text-[10px] font-bold">{match.hora!.slice(0, 5)}</span>
+                        )}
                     </div>
 
                     <div className="flex items-center justify-between gap-4">
