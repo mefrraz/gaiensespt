@@ -37,9 +37,10 @@ function Game() {
     const [club, setClub] = useState<Club | null>(null)
     const [detailLeaders, setDetailLeaders] = useState<FPBGameDetail['gameLeaders']>([])
     const [detailAbrev, setDetailAbrev] = useState<{ casa: string; fora: string }>({ casa: '', fora: '' })
+    const [topPerfCasa, setTopPerfCasa] = useState<{ nome: string; foto: string }>({ nome: '', foto: '' })
+    const [topPerfFora, setTopPerfFora] = useState<{ nome: string; foto: string }>({ nome: '', foto: '' })
+    const [topPerfStats, setTopPerfStats] = useState<{ label: string; casa: string; fora: string }[]>([])
 
-    
-    const [activeLeaderTab, setActiveLeaderTab] = useState(0)
     const [recentGames, setRecentGames] = useState<Match[]>([])
     const [upcomingH2H, setUpcomingH2H] = useState<Match[]>([])
     const [loading, setLoading] = useState(true)
@@ -79,6 +80,9 @@ function Game() {
                         setMatch(detailToMatch(detail))
                         setDetailLeaders(detail.gameLeaders)
                         setDetailAbrev({ casa: detail.abrev_casa, fora: detail.abrev_fora })
+                        setTopPerfCasa(detail.topPerfCasa)
+                        setTopPerfFora(detail.topPerfFora)
+                        setTopPerfStats(detail.topPerfStats)
 
 
                     }
@@ -368,11 +372,8 @@ function Game() {
 
 
 
-            {/* Top Performers — from game leaders data with player photos */}
-            {/* Duelo — head-to-head entre os melhores de cada equipa */}
-            {detailLeaders.length > 0 && (() => {
-                const leader = detailLeaders[activeLeaderTab]
-                return (
+            {/* Duelo — comparação direta dos 2 melhores jogadores (um de cada equipa) */}
+            {topPerfCasa.nome && topPerfFora.nome && (
                 <div className="glass-card overflow-hidden animate-slide-up">
                     <div className="p-4 border-b border-zinc-100 dark:border-white/5">
                         <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
@@ -380,67 +381,46 @@ function Game() {
                             Duelo
                         </h3>
                     </div>
-                    <div className="p-3 flex gap-1.5 overflow-x-auto">
-                        {detailLeaders.map((l, i) => (
-                            <button key={i} onClick={() => setActiveLeaderTab(i)}
-                                className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-medium transition-all ${
-                                    i === activeLeaderTab
-                                        ? 'bg-dribly-purple text-white'
-                                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                                }`}>
-                                {l.categoria}
-                            </button>
-                        ))}
-                    </div>
-                    {leader && (
-                        <div className="px-4 pb-4">
-                            <div className="flex items-center gap-3">
-                                <div className="flex flex-col items-center gap-1 shrink-0" style={{ width: 68 }}>
-                                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-dribly-purple/20">
-                                        {leader.casa.foto ? (
-                                            <img src={leader.casa.foto} alt="" className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover" />
-                                        ) : (
-                                            <span className="text-sm sm:text-base font-semibold text-zinc-400">{leader.casa.nome?.charAt(0)?.toUpperCase() || '?'}</span>
-                                        )}
-                                    </div>
-                                    <span className="text-[9px] sm:text-xs font-medium text-zinc-500 dark:text-zinc-400 text-center leading-tight">{leader.casa.nome}</span>
+                    <div className="p-4">
+                        {/* Players header */}
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex flex-col items-center gap-1 text-center">
+                                <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border-2 border-dribly-purple/20">
+                                    {topPerfCasa.foto ? <img src={topPerfCasa.foto} alt="" className="w-14 h-14 sm:w-20 sm:h-20 rounded-full object-cover" /> : <span className="text-xl font-semibold text-zinc-400">{topPerfCasa.nome.charAt(0)}</span>}
                                 </div>
-                                <div className="flex-1">
-                                    {(() => {
-                                        const cv = parseInt(leader.casa.valor) || 0
-                                        const fv = parseInt(leader.fora.valor) || 0
-                                        const total = cv + fv || 1
-                                        const cpct = Math.round((cv / total) * 100)
-                                        return (
-                                            <>
-                                                <div className="flex justify-between text-[10px] sm:text-sm font-semibold mb-1.5">
-                                                    <span className="text-dribly-purple tabular-nums">{leader.casa.valor}</span>
-                                                    <span className="text-zinc-500 tabular-nums">{leader.fora.valor}</span>
-                                                </div>
-                                                <div className="flex h-2 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-                                                    <div className="h-full bg-dribly-purple/70 rounded-full" style={{ width: cpct + '%' }} />
-                                                    <div className="h-full bg-zinc-200 dark:bg-zinc-700" style={{ width: (100 - cpct) + '%' }} />
-                                                </div>
-                                            </>
-                                        )
-                                    })()}
+                                <span className="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300 mt-1">{topPerfCasa.nome}</span>
+                            </div>
+                            <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">vs</span>
+                            <div className="flex flex-col items-center gap-1 text-center">
+                                <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border-2 border-zinc-200 dark:border-zinc-700">
+                                    {topPerfFora.foto ? <img src={topPerfFora.foto} alt="" className="w-14 h-14 sm:w-20 sm:h-20 rounded-full object-cover" /> : <span className="text-xl font-semibold text-zinc-400">{topPerfFora.nome.charAt(0)}</span>}
                                 </div>
-                                <div className="flex flex-col items-center gap-1 shrink-0" style={{ width: 68 }}>
-                                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-zinc-200 dark:border-zinc-700">
-                                        {leader.fora.foto ? (
-                                            <img src={leader.fora.foto} alt="" className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover" />
-                                        ) : (
-                                            <span className="text-sm sm:text-base font-semibold text-zinc-400">{leader.fora.nome?.charAt(0)?.toUpperCase() || '?'}</span>
-                                        )}
-                                    </div>
-                                    <span className="text-[9px] sm:text-xs font-medium text-zinc-500 dark:text-zinc-400 text-center leading-tight">{leader.fora.nome}</span>
-                                </div>
+                                <span className="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300 mt-1">{topPerfFora.nome}</span>
                             </div>
                         </div>
-                    )}
+                        {/* Stats comparison */}
+                        <div className="space-y-2">
+                            {topPerfStats.map((stat, i) => {
+                                const cv = parseInt(stat.casa) || 0
+                                const fv = parseInt(stat.fora) || 0
+                                const total = cv + fv || 1
+                                const cpct = Math.round((cv / total) * 100)
+                                return (
+                                    <div key={i} className="flex items-center gap-3">
+                                        <span className="text-[10px] sm:text-xs font-medium text-zinc-400 uppercase w-24 shrink-0">{stat.label}</span>
+                                        <span className="text-xs sm:text-sm font-semibold text-dribly-purple tabular-nums w-8 text-right">{stat.casa}</span>
+                                        <div className="flex-1 h-2 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                                            <div className="h-full bg-dribly-purple/70 rounded-full" style={{ width: cpct + '%' }} />
+                                            <div className="h-full bg-zinc-200 dark:bg-zinc-700" style={{ width: (100 - cpct) + '%' }} />
+                                        </div>
+                                        <span className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300 tabular-nums w-8">{stat.fora}</span>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
                 </div>
-                )
-            })()}
+            )}
 
             {/* Top Performers — melhor jogador de cada categoria no jogo todo */}
             {detailLeaders.length > 0 && (

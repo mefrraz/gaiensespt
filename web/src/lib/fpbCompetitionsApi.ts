@@ -637,6 +637,9 @@ export interface FPBGameDetail {
     boxScoreCasa: FPBBoxScorePlayer[]
     boxScoreFora: FPBBoxScorePlayer[]
     teamStats: { label: string; casa: string; fora: string }[]
+    topPerfCasa: { nome: string; foto: string }
+    topPerfFora: { nome: string; foto: string }
+    topPerfStats: { label: string; casa: string; fora: string }[]
 }
 
 export interface FPBBoxScorePlayer {
@@ -839,9 +842,35 @@ function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | nul
         if (label && (casa || fora)) teamStats.push({ label: label.replace(/Portugal/g, '').trim(), casa, fora })
     })
 
+    // TOP Performers (best 2 players comparison)
+    let topPerfCasa = { nome: '', foto: '' }
+    let topPerfFora = { nome: '', foto: '' }
+    const topPerfStats: { label: string; casa: string; fora: string }[] = []
+    const topPerfWrapper = doc.querySelector('.players-wrapper')
+    if (topPerfWrapper) {
+        const players = topPerfWrapper.querySelectorAll('.player')
+        if (players.length >= 2) {
+            topPerfCasa = {
+                nome: players[0].querySelector('.name')?.textContent?.trim() || '',
+                foto: players[0].querySelector('img')?.getAttribute('src') || '',
+            }
+            topPerfFora = {
+                nome: players[players.length - 1].querySelector('.name')?.textContent?.trim() || '',
+                foto: players[players.length - 1].querySelector('img')?.getAttribute('src') || '',
+            }
+        }
+    }
+    doc.querySelectorAll('.topPerformers-stats .type-key-stats.big').forEach(el => {
+        const label = el.querySelector('.double p')?.textContent?.trim() || ''
+        const vals = el.querySelectorAll('.one-line-graph.single p')
+        const casa = vals[0]?.textContent?.trim() || ''
+        const fora = vals[1]?.textContent?.trim() || ''
+        if (label && (casa || fora)) topPerfStats.push({ label, casa, fora })
+    })
+
     return {
         internalID, data, fase, competicao, equipa_casa, equipa_fora, abrev_casa, abrev_fora, resultado_casa, resultado_fora,
         status, hora, logo_casa, logo_fora, parciais, pavilhao, espetadores,
-        gameLeaders, boxScoreCasa, boxScoreFora, teamStats,
+        gameLeaders, boxScoreCasa, boxScoreFora, teamStats, topPerfCasa, topPerfFora, topPerfStats,
     }
 }
