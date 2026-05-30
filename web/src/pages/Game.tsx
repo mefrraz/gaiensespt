@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { fetchFPBGames } from '../lib/fpbApi'
-import { fetchGameDetail, type FPBGameDetail, type FPBBoxScorePlayer } from '../lib/fpbCompetitionsApi'
+import { fetchGameDetail, type FPBGameDetail } from '../lib/fpbCompetitionsApi'
 import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink, Calendar, Minus, Check, Clock } from 'lucide-react'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
@@ -37,8 +37,7 @@ function Game() {
     const [club, setClub] = useState<Club | null>(null)
     const [detailLeaders, setDetailLeaders] = useState<FPBGameDetail['gameLeaders']>([])
     const [detailAbrev, setDetailAbrev] = useState<{ casa: string; fora: string }>({ casa: '', fora: '' })
-    const [boxScoreCasa, setBoxScoreCasa] = useState<FPBBoxScorePlayer[]>([])
-    const [boxScoreFora, setBoxScoreFora] = useState<FPBBoxScorePlayer[]>([])
+
     
     const [activeLeaderTab, setActiveLeaderTab] = useState(0)
     const [recentGames, setRecentGames] = useState<Match[]>([])
@@ -80,8 +79,7 @@ function Game() {
                         setMatch(detailToMatch(detail))
                         setDetailLeaders(detail.gameLeaders)
                         setDetailAbrev({ casa: detail.abrev_casa, fora: detail.abrev_fora })
-                        setBoxScoreCasa(detail.boxScoreCasa)
-                        setBoxScoreFora(detail.boxScoreFora)
+
 
                     }
                 } catch { /* ignore */ }
@@ -251,18 +249,6 @@ function Game() {
     const isDraw = hasScores && match.resultado_casa === match.resultado_fora
 
     // Compute top performers per category
-    const PERF_CATS = [
-        { key: 'val' as const, label: 'Valorização', unit: '' },
-        { key: 'pts' as const, label: 'Pontos', unit: 'P' },
-        { key: 'rt' as const, label: 'Ressaltos', unit: 'R' },
-        { key: 'as' as const, label: 'Assistências', unit: 'A' },
-    ]
-    const topPerfs = PERF_CATS.map(cat => ({
-        cat,
-        casa: [...boxScoreCasa].filter(p => Number(p[cat.key] || 0) > 0).sort((a, b) => Number(b[cat.key] || 0) - Number(a[cat.key] || 0))[0],
-        fora: [...boxScoreFora].filter(p => Number(p[cat.key] || 0) > 0).sort((a, b) => Number(b[cat.key] || 0) - Number(a[cat.key] || 0))[0],
-    }))
-
     return (
         <div className="max-w-xl mx-auto pb-24 px-3 space-y-3">
             {/* Header */}
@@ -380,15 +366,20 @@ function Game() {
                 </div>
             </div>
 
-            {/* Game Leaders — player head-to-head */}
-            {detailLeaders.length > 0 && (
+
+
+            {/* Top Performers — from game leaders data with player photos */}
+            {detailLeaders.length > 0 && (() => {
+                const leader = detailLeaders[activeLeaderTab]
+                return (
                 <div className="glass-card overflow-hidden animate-slide-up">
-                    <div className="p-4 border-b border-zinc-100 dark:border-white/5 flex items-center justify-between">
+                    <div className="p-4 border-b border-zinc-100 dark:border-white/5">
                         <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-dribly-purple" />
-                            Melhores em Campo
+                            Top Performers
                         </h3>
                     </div>
+                    {/* Tabs */}
                     <div className="p-3 flex gap-1.5 overflow-x-auto">
                         {detailLeaders.map((l, i) => (
                             <button key={i} onClick={() => setActiveLeaderTab(i)}
@@ -401,76 +392,59 @@ function Game() {
                             </button>
                         ))}
                     </div>
-                    {detailLeaders[activeLeaderTab] && (
-                        <div className="px-4 pb-4 flex items-center gap-3">
-                            <PlayerMiniCard nome={detailLeaders[activeLeaderTab].casa.nome} foto={detailLeaders[activeLeaderTab].casa.foto} valor={detailLeaders[activeLeaderTab].casa.valor} side="left" />
-                            <span className="text-[10px] font-bold text-zinc-400 shrink-0">vs</span>
-                            <PlayerMiniCard nome={detailLeaders[activeLeaderTab].fora.nome} foto={detailLeaders[activeLeaderTab].fora.foto} valor={detailLeaders[activeLeaderTab].fora.valor} side="right" />
+                    {/* Head-to-head with photos */}
+                    {leader && (
+                        <div className="px-4 pb-4">
+                            <div className="flex items-center gap-3">
+                                {/* Casa player */}
+                                <div className="flex flex-col items-center gap-1 shrink-0" style={{ width: 72 }}>
+                                    <div className="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border-2 border-dribly-purple/20">
+                                        {leader.casa.foto ? (
+                                            <img src={leader.casa.foto} alt="" className="w-14 h-14 rounded-full object-cover" />
+                                        ) : (
+                                            <span className="text-lg font-bold text-zinc-500">{leader.casa.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                                        )}
+                                    </div>
+                                    <span className="text-[9px] font-bold text-zinc-700 dark:text-zinc-300 text-center leading-tight line-clamp-2">{leader.casa.nome}</span>
+                                </div>
+                                {/* Bar + values */}
+                                <div className="flex-1">
+                                    {(() => {
+                                        const cv = parseInt(leader.casa.valor) || 0
+                                        const fv = parseInt(leader.fora.valor) || 0
+                                        const total = cv + fv || 1
+                                        const cpct = Math.round((cv / total) * 100)
+                                        return (
+                                            <>
+                                                <div className="flex justify-between text-[10px] font-bold mb-1">
+                                                    <span className="text-dribly-purple tabular-nums">{leader.casa.valor}</span>
+                                                    <span className="text-zinc-700 dark:text-zinc-300 tabular-nums">{leader.fora.valor}</span>
+                                                </div>
+                                                <div className="flex h-2.5 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                                                    <div className="h-full bg-dribly-purple rounded-full" style={{ width: cpct + '%' }} />
+                                                    <div className="h-full bg-zinc-300 dark:bg-zinc-600" style={{ width: (100 - cpct) + '%' }} />
+                                                </div>
+                                            </>
+                                        )
+                                    })()}
+                                </div>
+                                {/* Fora player */}
+                                <div className="flex flex-col items-center gap-1 shrink-0" style={{ width: 72 }}>
+                                    <div className="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border-2 border-zinc-300 dark:border-zinc-600">
+                                        {leader.fora.foto ? (
+                                            <img src={leader.fora.foto} alt="" className="w-14 h-14 rounded-full object-cover" />
+                                        ) : (
+                                            <span className="text-lg font-bold text-zinc-500">{leader.fora.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                                        )}
+                                    </div>
+                                    <span className="text-[9px] font-bold text-zinc-700 dark:text-zinc-300 text-center leading-tight line-clamp-2">{leader.fora.nome}</span>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
-            )}
-
-            {/* Top Performers head-to-head */}
-            {topPerfs.some(p => p.casa && p.fora) && (
-                <div className="glass-card overflow-hidden animate-slide-up">
-                    <div className="p-4 border-b border-zinc-100 dark:border-white/5">
-                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-dribly-purple" />
-                            Top Performers
-                        </h3>
-                    </div>
-                    <div className="p-4 space-y-4">
-                        {topPerfs.map((pf, i) => {
-                            if (!pf.casa || !pf.fora) return null
-                            const cv = Number(pf.casa[pf.cat.key] || 0)
-                            const fv = Number(pf.fora[pf.cat.key] || 0)
-                            const total = cv + fv || 1
-                            const cpct = Math.round((cv / total) * 100)
-                            return (
-                                <div key={i}>
-                                    <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider mb-2">{pf.cat.label}</p>
-                                    <div className="flex items-center gap-3">
-                                        {/* Casa player */}
-                                        <div className="flex flex-col items-center gap-1 shrink-0" style={{ width: 68 }}>
-                                            <div className="w-11 h-11 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden">
-                                                {pf.casa.foto ? (
-                                                    <img src={pf.casa.foto} alt="" className="w-11 h-11 rounded-full object-cover" />
-                                                ) : (
-                                                    <span className="text-xs font-bold text-zinc-500">{pf.casa.nome?.charAt(0)?.toUpperCase() || '?'}</span>
-                                                )}
-                                            </div>
-                                            <span className="text-[8px] font-bold text-zinc-700 dark:text-zinc-300 text-center leading-tight line-clamp-2">{pf.casa.nome}</span>
-                                        </div>
-                                        {/* Bar */}
-                                        <div className="flex-1">
-                                            <div className="flex justify-between text-[10px] font-bold mb-1">
-                                                <span className="text-dribly-purple tabular-nums">{cv}{pf.cat.unit}</span>
-                                                <span className="text-zinc-700 dark:text-zinc-300 tabular-nums">{fv}{pf.cat.unit}</span>
-                                            </div>
-                                            <div className="flex h-2.5 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-                                                <div className="h-full bg-dribly-purple rounded-full" style={{ width: cpct + '%' }} />
-                                                <div className="h-full bg-zinc-300 dark:bg-zinc-600" style={{ width: (100 - cpct) + '%' }} />
-                                            </div>
-                                        </div>
-                                        {/* Fora player */}
-                                        <div className="flex flex-col items-center gap-1 shrink-0" style={{ width: 68 }}>
-                                            <div className="w-11 h-11 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden">
-                                                {pf.fora.foto ? (
-                                                    <img src={pf.fora.foto} alt="" className="w-11 h-11 rounded-full object-cover" />
-                                                ) : (
-                                                    <span className="text-xs font-bold text-zinc-500">{pf.fora.nome?.charAt(0)?.toUpperCase() || '?'}</span>
-                                                )}
-                                            </div>
-                                            <span className="text-[8px] font-bold text-zinc-700 dark:text-zinc-300 text-center leading-tight line-clamp-2">{pf.fora.nome}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            )
-                        })}
-                    </div>
-                </div>
-            )}
+                )
+            })()}
 
             {/* H2H History */}
             {recentGames.length > 0 && (
@@ -576,22 +550,6 @@ function TeamBlock({ name, logo, clubSlug, abrev }: { name: string; logo: string
     return content;
 }
 
-function PlayerMiniCard({ nome, foto, valor, side }: { nome: string; foto?: string; valor: string; side: 'left' | 'right' }) {
-    return (
-        <div className={`flex-1 flex items-center gap-2 ${side === 'right' ? 'flex-row-reverse text-right' : ''}`}>
-            {foto ? (
-                <img src={foto} alt="" className="w-10 h-10 rounded-full object-cover shrink-0 border-2 border-zinc-100 dark:border-zinc-700" />
-            ) : (
-                <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-                    <span className="text-xs font-bold text-zinc-500">{nome?.charAt(0) || '?'}</span>
-                </div>
-            )}
-            <div className="min-w-0">
-                <p className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200 truncate max-w-[100px]">{nome}</p>
-                <p className="text-sm font-black text-dribly-purple tabular-nums">{valor}</p>
-            </div>
-        </div>
-    )
-}
+
 
 export default Game
