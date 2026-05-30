@@ -147,41 +147,37 @@ export default function CompetitionDetail() {
     const { clubs, loadClubs } = useClub()
 
     const [tab, setTab] = useState<Tab>('geral')
-    const tabRef = useRef(tab)
-    tabRef.current = tab
     const [standings, setStandings] = useState<FPBStandingPhase[]>([])
     const [selectedPhase, setSelectedPhase] = useState(0)
     const [games, setGames] = useState<FPBGame[]>([])
     const [teams, setTeams] = useState<FPBTeam[]>([])
     const [playerStats, setPlayerStats] = useState<FPBPlayerStat[]>([])
+    const lastFetchRef = useRef(0)
+    const CACHE_TTL = 15 * 60 * 1000 // 15 minutes
+
     const [loading, setLoading] = useState(true)
     useEffect(() => { loadClubs() }, [])
 
     useEffect(() => {
         if (!provaId) return
+
+        const now = Date.now()
+        if (now - lastFetchRef.current < CACHE_TTL && games.length > 0) return // cache fresh
+
         setLoading(true)
+        lastFetchRef.current = now
 
-        const loadData = async () => {
+        const loadAll = async () => {
             try {
-                const currentTab = tabRef.current
-                const isGeral = currentTab === 'geral'
                 const results = await Promise.allSettled([
-                    (isGeral || currentTab === 'classificacao') ? fetchStandings(provaId) : Promise.resolve([] as FPBStandingPhase[]),
-                    (isGeral || currentTab === 'resultados' || currentTab === 'calendario')
-                        ? Promise.all([fetchSchedule(provaId), fetchResults(provaId)])
-                        : Promise.resolve([[], []] as [FPBGame[], FPBGame[]]),
-                    (isGeral || currentTab === 'equipas') ? fetchTeams(provaId) : Promise.resolve([]),
-                    ((isGeral || currentTab === 'estatisticas') && TOP_LEAGUES.includes(provaId))
-                        ? fetchPlayerStats(provaId, 'val')
-                        : Promise.resolve([]),
+                    fetchStandings(provaId),
+                    Promise.all([fetchSchedule(provaId), fetchResults(provaId)]),
+                    fetchTeams(provaId),
+                    TOP_LEAGUES.includes(provaId) ? fetchPlayerStats(provaId, 'val') : Promise.resolve([]),
                 ])
-                // Ignore if tab changed while loading
-                if (tabRef.current !== currentTab) return
+                if (Date.now() - lastFetchRef.current >= CACHE_TTL + 5000) return // stale (fetch took > 5s past TTL)
 
-                if (results[0].status === 'fulfilled') {
-                    setStandings(results[0].value)
-                    setSelectedPhase(0)
-                }
+                if (results[0].status === 'fulfilled') { setStandings(results[0].value); setSelectedPhase(0) }
                 if (results[1].status === 'fulfilled') {
                     const [sched, res] = results[1].value as [FPBGame[], FPBGame[]]
                     const merged = new Map<string, FPBGame>()
@@ -191,14 +187,11 @@ export default function CompetitionDetail() {
                 }
                 if (results[2].status === 'fulfilled') setTeams(results[2].value)
                 if (results[3].status === 'fulfilled') setPlayerStats(results[3].value)
-            } catch (e) {
-                console.error('Failed to load competition data:', e)
-            }
+            } catch (e) { console.error('Failed to load competition data:', e) }
             setLoading(false)
         }
-
-        loadData()
-    }, [provaId, tab])
+        loadAll()
+    }, [provaId]) // ← only depends on provaId, NOT tab
 
     const isFollowed = user ? isFollowing('competition', provaId) : false
 
