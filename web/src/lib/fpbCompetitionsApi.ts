@@ -624,6 +624,9 @@ export interface FPBGameDetail {
     equipa_fora: string
     resultado_casa: number
     resultado_fora: number
+    hora: string
+    logo_casa: string | null
+    logo_fora: string | null
     parciais: { periodo: string; casa: number; fora: number }[]
     pavilhao: string
     espetadores: number
@@ -747,13 +750,35 @@ function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | nul
         }
     }
 
-    // Espetadores
+    // Hora: look for HH:MM or HHhMM pattern near the date in game section
+    const horaMatch = dateMatch
+        ? gameText.slice(dateMatch.index! + dateMatch[0].length, dateMatch.index! + dateMatch[0].length + 50).match(/(\d{1,2})[h:](\d{2})/)
+        : gameText.match(/(\d{1,2})[h:](\d{2})/)
+    const hora = horaMatch ? `${horaMatch[1].padStart(2, '0')}:${horaMatch[2]}` : ''
+
+    // Logos: extract from raw HTML img tags (CLU/logotipo in src)
+    const imgRe = /<img[^>]*src="([^"]*(?:CLU_|logotipo)[^"]*)"[^>]*>/gi
+    const logos: string[] = []
+    let im: RegExpExecArray | null
+    while ((im = imgRe.exec(html)) !== null) {
+        const url = im[1]
+        if (!logos.includes(url)) logos.push(url)
+    }
+    let logo_casa: string | null = null
+    let logo_fora: string | null = null
+    if (logos.length >= 2) {
+        logo_casa = logos[0]
+        logo_fora = logos[1]
+    } else if (logos.length === 1) {
+        logo_casa = logos[0] // single logo, assign to home
+    }
+
     const espMatch = gameText.match(/(\d+)\s*Espectadores/i)
     const espetadores = espMatch ? parseInt(espMatch[1]) : 0
 
     return {
-        internalID, data, fase, competicao, equipa_casa, equipa_fora,
-        resultado_casa, resultado_fora, parciais, pavilhao, espetadores,
+        internalID, data, fase, competicao, equipa_casa, equipa_fora, resultado_casa, resultado_fora,
+        hora, logo_casa, logo_fora, parciais, pavilhao, espetadores,
         gameLeaders: [], boxScoreCasa: [], boxScoreFora: [], teamStats: [],
     }
 }

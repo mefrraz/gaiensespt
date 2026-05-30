@@ -8,12 +8,14 @@ import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 import { useClub, type Club } from '../lib/ClubContext'
 
-function detailToMatch(detail: FPBGameDetail, logos?: { casa: string | null; fora: string | null }): Match {
+function detailToMatch(detail: FPBGameDetail): Match {
+    const hasScores = detail.resultado_casa > 0 || detail.resultado_fora > 0
+    const isFuture = detail.data && new Date(detail.data) > new Date()
     return {
         id: detail.internalID,
         slug: detail.internalID,
         data: detail.data,
-        hora: '',
+        hora: detail.hora || '',
         equipa_casa: detail.equipa_casa,
         equipa_fora: detail.equipa_fora,
         resultado_casa: detail.resultado_casa,
@@ -21,54 +23,10 @@ function detailToMatch(detail: FPBGameDetail, logos?: { casa: string | null; for
         escalao: detail.fase,
         competicao: detail.competicao,
         local: detail.pavilhao,
-        logotipo_casa: logos?.casa || null,
-        logotipo_fora: logos?.fora || null,
-        status: 'FINALIZADO',
+        logotipo_casa: detail.logo_casa,
+        logotipo_fora: detail.logo_fora,
+        status: !hasScores && isFuture ? 'AGENDADO' : 'FINALIZADO',
     }
-}
-
-/** Normalize a name for comparison */
-function norm(s: string): string {
-    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
-}
-
-/** Match a team name to a club logo */
-function findClubLogo(teamName: string, clubs: Club[]): string | null {
-    const n = norm(teamName)
-
-    // 1. Exact match on name or search_name
-    for (const c of clubs) {
-        if (!c.logo_url) continue
-        const cn = norm(c.name)
-        const sn = norm(c.search_name || '')
-        if (cn === n || sn === n) return c.logo_url
-    }
-
-    // 2. Substring: team contains club name or vice versa
-    for (const c of clubs) {
-        if (!c.logo_url) continue
-        const cn = norm(c.name)
-        if (n.includes(cn) || cn.includes(n)) return c.logo_url
-    }
-    for (const c of clubs) {
-        if (!c.logo_url) continue
-        const sn = norm(c.search_name || '')
-        if (sn && (n.includes(sn) || sn.includes(n))) return c.logo_url
-    }
-
-    // 3. Word-level: match only if the word uniquely identifies ONE club
-    const teamWords = n.split(/\s+/).filter(w => w.length > 2)
-    for (const tw of teamWords) {
-        const matches = clubs.filter(c => {
-            if (!c.logo_url) return false
-            const cn = norm(c.name)
-            const cw = cn.split(/\s+/).filter(w => w.length > 2)
-            return cw.some(cx => cx === tw)
-        })
-        if (matches.length === 1) return matches[0].logo_url!
-    }
-
-    return null
 }
 
 function Game() {
@@ -115,13 +73,7 @@ function Game() {
                 try {
                     const detail = await fetchGameDetail(slug)
                     if (detail) {
-                        // Load clubs from Supabase for logo matching
-                        const { data: clubData } = await supabase.from('clubs').select('name, search_name, logo_url')
-                        const allClubs = (clubData || []) as Club[]
-                        setMatch(detailToMatch(detail, {
-                            casa: findClubLogo(detail.equipa_casa, allClubs),
-                            fora: findClubLogo(detail.equipa_fora, allClubs),
-                        }))
+                        setMatch(detailToMatch(detail))
                     }
                 } catch { /* ignore */ }
                 setLoading(false)
