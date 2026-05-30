@@ -773,9 +773,71 @@ function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | nul
         }
     })
 
+    // Box Score: .team-players-table-wrapper tables
+    const boxScoreCasa: FPBBoxScorePlayer[] = []
+    const boxScoreFora: FPBBoxScorePlayer[] = []
+    doc.querySelectorAll('.team-players-table-wrapper').forEach((wrapper, teamIdx) => {
+        const roster: FPBBoxScorePlayer[] = teamIdx === 0 ? boxScoreCasa : boxScoreFora
+        const playerRows = wrapper.querySelectorAll('tr.player-row')
+        playerRows.forEach(row => {
+            const cols = row.querySelectorAll('td')
+            if (cols.length < 3) return
+            roster.push({
+                numero: parseInt(cols[0]?.textContent?.trim() || '0') || 0,
+                nome: cols[1]?.textContent?.trim() || '',
+                min: cols[2]?.textContent?.trim() || '',
+                pts: parseInt(cols[3]?.textContent?.trim() || '0') || 0,
+                l2: cols[4]?.textContent?.trim() || '',
+                l2pct: cols[5]?.textContent?.trim() || '',
+                l3: cols[6]?.textContent?.trim() || '',
+                l3pct: cols[7]?.textContent?.trim() || '',
+                ll: cols[8]?.textContent?.trim() || '',
+                llpct: cols[9]?.textContent?.trim() || '',
+                ro: parseInt(cols[10]?.textContent?.trim() || '0') || 0,
+                rd: parseInt(cols[11]?.textContent?.trim() || '0') || 0,
+                rt: parseInt(cols[12]?.textContent?.trim() || '0') || 0,
+                as: parseInt(cols[13]?.textContent?.trim() || '0') || 0,
+                rb: parseInt(cols[14]?.textContent?.trim() || '0') || 0,
+                to: parseInt(cols[15]?.textContent?.trim() || '0') || 0,
+                dl: parseInt(cols[16]?.textContent?.trim() || '0') || 0,
+                fc: parseInt(cols[17]?.textContent?.trim() || '0') || 0,
+                fs: parseInt(cols[18]?.textContent?.trim() || '0') || 0,
+                mais_menos: parseInt(cols[19]?.textContent?.trim() || '0') || 0,
+                val: parseFloat(cols[20]?.textContent?.trim()?.replace(',', '.') || '0') || 0,
+            })
+        })
+    })
+
+    // Team Stats: .type-shooting + .type-rebound + .type-key-stats
+    const teamStats: { label: string; casa: string; fora: string }[] = []
+    // Shooting percentages
+    doc.querySelectorAll('.type-shooting').forEach(el => {
+        const label = el.querySelector('p')?.textContent?.trim() || ''
+        const vals = el.querySelectorAll('.bar p')
+        const casa = vals[0]?.textContent?.trim() || ''
+        const fora = vals[1]?.textContent?.trim() || ''
+        if (label && (casa || fora)) teamStats.push({ label, casa, fora })
+    })
+    // Rebounds
+    doc.querySelectorAll('.type-rebound').forEach(el => {
+        const label = el.querySelector('p')?.textContent?.trim() || ''
+        const vals = el.querySelectorAll('.counter span')
+        const casa = vals[0]?.textContent?.trim() || ''
+        const fora = vals[1]?.textContent?.trim() || ''
+        if (label && (casa || fora)) teamStats.push({ label, casa, fora })
+    })
+    // Key stats  
+    doc.querySelectorAll('.type-key-stats:not(.big)').forEach(el => {
+        const label = el.querySelector('p')?.textContent?.trim() || ''
+        const vals = el.querySelectorAll('.one-line-graph.single p')
+        const casa = vals[0]?.textContent?.trim() || ''
+        const fora = vals[1]?.textContent?.trim() || ''
+        if (label && (casa || fora)) teamStats.push({ label: label.replace(/Portugal/g, '').trim(), casa, fora })
+    })
+
     return {
         internalID, data, fase, competicao, equipa_casa, equipa_fora, abrev_casa, abrev_fora, resultado_casa, resultado_fora,
         status, hora, logo_casa, logo_fora, parciais, pavilhao, espetadores,
-        gameLeaders, boxScoreCasa: [], boxScoreFora: [], teamStats: [],
+        gameLeaders, boxScoreCasa, boxScoreFora, teamStats,
     }
 }

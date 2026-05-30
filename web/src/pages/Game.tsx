@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { fetchFPBGames } from '../lib/fpbApi'
-import { fetchGameDetail, type FPBGameDetail } from '../lib/fpbCompetitionsApi'
+import { fetchGameDetail, type FPBGameDetail, type FPBBoxScorePlayer } from '../lib/fpbCompetitionsApi'
 import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink, Calendar, Minus, Check, Clock } from 'lucide-react'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
@@ -37,6 +37,9 @@ function Game() {
     const [club, setClub] = useState<Club | null>(null)
     const [detailLeaders, setDetailLeaders] = useState<FPBGameDetail['gameLeaders']>([])
     const [detailAbrev, setDetailAbrev] = useState<{ casa: string; fora: string }>({ casa: '', fora: '' })
+    const [boxScoreCasa, setBoxScoreCasa] = useState<FPBBoxScorePlayer[]>([])
+    const [boxScoreFora, setBoxScoreFora] = useState<FPBBoxScorePlayer[]>([])
+    const [detailTeamStats, setDetailTeamStats] = useState<{ label: string; casa: string; fora: string }[]>([])
     const [activeLeaderTab, setActiveLeaderTab] = useState(0)
     const [recentGames, setRecentGames] = useState<Match[]>([])
     const [upcomingH2H, setUpcomingH2H] = useState<Match[]>([])
@@ -77,6 +80,9 @@ function Game() {
                         setMatch(detailToMatch(detail))
                         setDetailLeaders(detail.gameLeaders)
                         setDetailAbrev({ casa: detail.abrev_casa, fora: detail.abrev_fora })
+                        setBoxScoreCasa(detail.boxScoreCasa)
+                        setBoxScoreFora(detail.boxScoreFora)
+                        setDetailTeamStats(detail.teamStats)
                     }
                 } catch { /* ignore */ }
                 setLoading(false)
@@ -427,6 +433,143 @@ function Game() {
                 )
             })()}
 
+            {/* Box Score */}
+            {(boxScoreCasa.length > 0 || boxScoreFora.length > 0) && (
+                <div className="glass-card overflow-hidden animate-slide-up">
+                    <div className="p-4 border-b border-zinc-100 dark:border-white/5">
+                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-dribly-purple" />
+                            Estatísticas
+                        </h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-[10px]">
+                            <thead>
+                                <tr className="bg-zinc-50 dark:bg-zinc-800/50">
+                                    <th className="p-2 text-left">#</th>
+                                    <th className="p-2 text-left min-w-[100px]">Jogador</th>
+                                    <th className="p-2">MIN</th>
+                                    <th className="p-2">PTS</th>
+                                    <th className="p-2">L2</th>
+                                    <th className="p-2">L2%</th>
+                                    <th className="p-2">L3</th>
+                                    <th className="p-2">L3%</th>
+                                    <th className="p-2">LL</th>
+                                    <th className="p-2">LL%</th>
+                                    <th className="p-2">RO</th>
+                                    <th className="p-2">RD</th>
+                                    <th className="p-2">RT</th>
+                                    <th className="p-2">AS</th>
+                                    <th className="p-2">RB</th>
+                                    <th className="p-2">TO</th>
+                                    <th className="p-2">DL</th>
+                                    <th className="p-2">FC</th>
+                                    <th className="p-2">FS</th>
+                                    <th className="p-2">+/-</th>
+                                    <th className="p-2 font-bold text-dribly-purple">VAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {boxScoreCasa.length > 0 && (
+                                    <>
+                                        <tr className="bg-zinc-100/50 dark:bg-zinc-800/30">
+                                            <td colSpan={20} className="p-2 text-[10px] font-black text-zinc-500 uppercase">{match.equipa_casa}</td>
+                                        </tr>
+                                        {boxScoreCasa.map((p, i) => (
+                                            <tr key={'h'+i} className="border-b border-zinc-50 dark:border-zinc-800/20">
+                                                <td className="p-2">{p.numero || '-'}</td>
+                                                <td className="p-2 font-bold truncate max-w-[120px]">{p.nome}</td>
+                                                <td className="p-2">{p.min || '-'}</td>
+                                                <td className="p-2 font-bold">{p.pts || '-'}</td>
+                                                <td className="p-2">{p.l2 || '-'}</td>
+                                                <td className="p-2">{p.l2pct || '-'}</td>
+                                                <td className="p-2">{p.l3 || '-'}</td>
+                                                <td className="p-2">{p.l3pct || '-'}</td>
+                                                <td className="p-2">{p.ll || '-'}</td>
+                                                <td className="p-2">{p.llpct || '-'}</td>
+                                                <td className="p-2">{p.ro || '-'}</td>
+                                                <td className="p-2">{p.rd || '-'}</td>
+                                                <td className="p-2">{p.rt || '-'}</td>
+                                                <td className="p-2">{p.as || '-'}</td>
+                                                <td className="p-2">{p.rb || '-'}</td>
+                                                <td className="p-2">{p.to || '-'}</td>
+                                                <td className="p-2">{p.dl || '-'}</td>
+                                                <td className="p-2">{p.fc || '-'}</td>
+                                                <td className="p-2">{p.fs || '-'}</td>
+                                                <td className="p-2">{p.mais_menos || '-'}</td>
+                                                <td className="p-2 font-bold text-dribly-purple">{p.val || '-'}</td>
+                                            </tr>
+                                        ))}
+                                    </>
+                                )}
+                                {boxScoreFora.length > 0 && (
+                                    <>
+                                        <tr className="bg-zinc-100/50 dark:bg-zinc-800/30">
+                                            <td colSpan={20} className="p-2 text-[10px] font-black text-zinc-500 uppercase">{match.equipa_fora}</td>
+                                        </tr>
+                                        {boxScoreFora.map((p, i) => (
+                                            <tr key={'a'+i} className="border-b border-zinc-50 dark:border-zinc-800/20">
+                                                <td className="p-2">{p.numero || '-'}</td>
+                                                <td className="p-2 font-bold truncate max-w-[120px]">{p.nome}</td>
+                                                <td className="p-2">{p.min || '-'}</td>
+                                                <td className="p-2 font-bold">{p.pts || '-'}</td>
+                                                <td className="p-2">{p.l2 || '-'}</td>
+                                                <td className="p-2">{p.l2pct || '-'}</td>
+                                                <td className="p-2">{p.l3 || '-'}</td>
+                                                <td className="p-2">{p.l3pct || '-'}</td>
+                                                <td className="p-2">{p.ll || '-'}</td>
+                                                <td className="p-2">{p.llpct || '-'}</td>
+                                                <td className="p-2">{p.ro || '-'}</td>
+                                                <td className="p-2">{p.rd || '-'}</td>
+                                                <td className="p-2">{p.rt || '-'}</td>
+                                                <td className="p-2">{p.as || '-'}</td>
+                                                <td className="p-2">{p.rb || '-'}</td>
+                                                <td className="p-2">{p.to || '-'}</td>
+                                                <td className="p-2">{p.dl || '-'}</td>
+                                                <td className="p-2">{p.fc || '-'}</td>
+                                                <td className="p-2">{p.fs || '-'}</td>
+                                                <td className="p-2">{p.mais_menos || '-'}</td>
+                                                <td className="p-2 font-bold text-dribly-purple">{p.val || '-'}</td>
+                                            </tr>
+                                        ))}
+                                    </>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {/* Team Stats */}
+            {detailTeamStats.length > 0 && (
+                <div className="glass-card overflow-hidden animate-slide-up">
+                    <div className="p-4 border-b border-zinc-100 dark:border-white/5">
+                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-dribly-purple" />
+                            Comparação
+                        </h3>
+                    </div>
+                    <div className="p-4 space-y-3">
+                        {detailTeamStats.map((stat, i) => {
+                            const cv = parseInt(stat.casa) || 0
+                            const fv = parseInt(stat.fora) || 0
+                            const total = cv + fv || 1
+                            const cpct = Math.round((cv / total) * 100)
+                            return (
+                                <div key={i} className="flex items-center gap-2">
+                                    <span className="text-[9px] font-bold text-zinc-400 uppercase w-24 shrink-0 truncate">{stat.label}</span>
+                                    <span className="text-[10px] font-bold text-dribly-purple tabular-nums w-8 text-right">{stat.casa}</span>
+                                    <div className="flex-1 h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden flex">
+                                        <div className="h-full bg-dribly-purple rounded-full" style={{ width: cpct + '%' }} />
+                                    </div>
+                                    <span className="text-[10px] font-bold text-zinc-900 dark:text-white tabular-nums w-8">{stat.fora}</span>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            )}
+
             {/* H2H History */}
             {recentGames.length > 0 && (
                 <div className="glass-card overflow-hidden animate-slide-up">
@@ -512,11 +655,11 @@ function Game() {
 function TeamBlock({ name, logo, clubSlug, abrev }: { name: string; logo: string | null; clubSlug?: string | null; abrev?: string }) {
     const content = (
         <div className="flex-1 flex flex-col items-center text-center gap-1 min-w-0">
-            <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+            <div className="w-20 h-20 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
                 {logo ? (
-                    <img src={logo} alt="" className="w-11 h-11 object-contain" />
+                    <img src={logo} alt="" className="w-14 h-14 object-contain" />
                 ) : (
-                    <span className="text-lg font-bold text-zinc-500">{abrev?.charAt(0) || name.charAt(0)}</span>
+                    <span className="text-2xl font-bold text-zinc-500">{abrev?.charAt(0) || name.charAt(0)}</span>
                 )}
             </div>
             <p className="text-xs font-black text-zinc-900 dark:text-white leading-tight truncate w-full">
