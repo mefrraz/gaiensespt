@@ -642,6 +642,7 @@ export interface FPBGameDetail {
 export interface FPBBoxScorePlayer {
     numero: number
     nome: string
+    foto?: string
     min: string
     pts: number
     l2: string
@@ -782,9 +783,12 @@ function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | nul
         playerRows.forEach(row => {
             const cols = row.querySelectorAll('td')
             if (cols.length < 3) return
+            const nomeTd = cols[1]
+            const fotoUrl = nomeTd?.querySelector('img')?.getAttribute('src') || undefined
             roster.push({
                 numero: parseInt(cols[0]?.textContent?.trim() || '0') || 0,
-                nome: cols[1]?.textContent?.trim() || '',
+                nome: nomeTd?.textContent?.trim() || '',
+                foto: fotoUrl,
                 min: cols[2]?.textContent?.trim() || '',
                 pts: parseInt(cols[3]?.textContent?.trim() || '0') || 0,
                 l2: cols[4]?.textContent?.trim() || '',

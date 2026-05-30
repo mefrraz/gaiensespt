@@ -430,8 +430,12 @@ function Game() {
                                     <span className="text-[9px] font-bold text-zinc-400 uppercase w-20 shrink-0">{pf.cat.label}</span>
                                     {/* Casa */}
                                     <div className="flex-1 flex items-center gap-2 min-w-0">
-                                        <div className="w-7 h-7 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden shrink-0 text-[9px] font-bold text-zinc-500">
-                                            <span>{pf.casa.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                                        <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden shrink-0">
+                                            {pf.casa.foto ? (
+                                                <img src={pf.casa.foto} alt="" className="w-8 h-8 rounded-full object-cover" />
+                                            ) : (
+                                                <span className="text-[9px] font-bold text-zinc-500">{pf.casa.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                                            )}
                                         </div>
                                         <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{pf.casa.nome}</span>
                                     </div>
@@ -444,8 +448,12 @@ function Game() {
                                     {/* Fora */}
                                     <div className="flex-1 flex items-center gap-2 min-w-0 justify-end">
                                         <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{pf.fora.nome}</span>
-                                        <div className="w-7 h-7 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden shrink-0 text-[9px] font-bold text-zinc-500">
-                                            <span>{pf.fora.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                                        <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden shrink-0">
+                                            {pf.fora.foto ? (
+                                                <img src={pf.fora.foto} alt="" className="w-8 h-8 rounded-full object-cover" />
+                                            ) : (
+                                                <span className="text-[9px] font-bold text-zinc-500">{pf.fora.nome?.charAt(0)?.toUpperCase() || '?'}</span>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
