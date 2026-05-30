@@ -530,7 +530,7 @@ export default function CompetitionDetail() {
                                                                 </td>
                                                                 <td className="pl-2 pr-3 py-2.5">
                                                                     <span className="inline-flex items-center gap-2">
-                                                                        {(() => { const l = findLogo(team.equipa, logoMaps); return l ? <img src={l} alt="" className="w-5 h-5 rounded-full object-contain shrink-0" /> : null })()}
+                                                                        {team.logo ? <img src={team.logo} alt="" className="w-5 h-5 rounded-full object-contain shrink-0" /> : null}
                                                                         <span className="text-xs font-medium text-zinc-800 dark:text-zinc-200 break-words">{semiAbrev(team.equipa)}</span>
                                                                     </span>
                                                                 </td>

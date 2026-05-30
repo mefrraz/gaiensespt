@@ -217,6 +217,10 @@ function scrapeStandings(html: string): FPBStandingTeam[] {
         const nome = nameMatch[1].trim()
         if (!nome || nome.length < 3) continue
 
+        // Extract logo from .logo img
+        const logoMatch = row.match(/<div class="logo[^"]*"[^>]*><img[^>]*src="([^"]*)"[^>]*><\/div>/)
+        const logo = logoMatch?.[1]
+
         // Collect all h5 values (with optional attributes, <b>/<strong>)
         const h5s: string[] = []
         const h5Regex = /<h5[^>]*>(?:\s*<(?:b|strong)>)?([^<]*?)(?:<\/(?:b|strong)>)?\s*<\/h5>/g
@@ -234,6 +238,7 @@ function scrapeStandings(html: string): FPBStandingTeam[] {
         standings.push({
             posicao: standings.length + 1,
             equipa: nome,
+            logo,
             j: num(stats[0]),
             v: num(stats[1]),
             d: num(stats[2]),
