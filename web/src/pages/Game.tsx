@@ -35,6 +35,9 @@ function Game() {
 
     const [match, setMatch] = useState<Match | null>(null)
     const [club, setClub] = useState<Club | null>(null)
+    const [detailParciais, setDetailParciais] = useState<FPBGameDetail['parciais']>([])
+    const [detailEspetadores, setDetailEspetadores] = useState(0)
+    const [detailLeaders, setDetailLeaders] = useState<FPBGameDetail['gameLeaders']>([])
     const [recentGames, setRecentGames] = useState<Match[]>([])
     const [upcomingH2H, setUpcomingH2H] = useState<Match[]>([])
     const [loading, setLoading] = useState(true)
@@ -72,6 +75,9 @@ function Game() {
                     const detail = await fetchGameDetail(slug)
                     if (detail) {
                         setMatch(detailToMatch(detail))
+                        setDetailParciais(detail.parciais)
+                        setDetailEspetadores(detail.espetadores)
+                        setDetailLeaders(detail.gameLeaders)
                     }
                 } catch { /* ignore */ }
                 setLoading(false)
@@ -304,6 +310,25 @@ function Game() {
                         <TeamBlock name={match.equipa_fora} logo={match.logotipo_fora} clubSlug={(() => { const n = match.equipa_fora; const found = clubs.find(c => n.toUpperCase().includes(c.name.toUpperCase())); return found ? found.slug : null })()} />
                     </div>
 
+                    {/* Quarters */}
+                    {detailParciais.length > 0 && (
+                        <div className="mt-5 flex justify-center gap-2">
+                            {detailParciais.map((q, i) => (
+                                <div key={i} className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl px-3 py-2 text-center min-w-[56px]">
+                                    <p className="text-[9px] font-bold text-zinc-400 uppercase">{q.periodo}</p>
+                                    <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300 tabular-nums">{q.casa} - {q.fora}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Spectators */}
+                    {detailEspetadores > 0 && (
+                        <div className="mt-3 flex justify-center">
+                            <span className="text-[10px] font-medium text-zinc-400">{detailEspetadores} espectadores</span>
+                        </div>
+                    )}
+
                     {/* FPB Link */}
                     <div className="mt-6 flex justify-center">
                         {match.id && (
@@ -352,6 +377,40 @@ function Game() {
                     )}
                 </div>
             </div>
+
+            {/* Game Leaders */}
+            {detailLeaders.length > 0 && (
+                <div className="glass-card overflow-hidden animate-slide-up">
+                    <div className="p-4 border-b border-zinc-100 dark:border-white/5">
+                        <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-dribly-purple" />
+                            Melhores em Campo
+                        </h3>
+                    </div>
+                    <div className="p-4 space-y-3">
+                        {detailLeaders.map((leader, i) => (
+                            <div key={i} className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl px-3 py-2">
+                                <span className="text-[10px] font-bold text-zinc-400 w-20 shrink-0 uppercase truncate">{leader.categoria}</span>
+                                <div className="flex-1 flex items-center gap-2 min-w-0">
+                                    {leader.casa.foto ? (
+                                        <img src={leader.casa.foto} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
+                                    ) : null}
+                                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{leader.casa.nome}</span>
+                                    <span className="text-xs font-black text-dribly-purple tabular-nums ml-auto">{leader.casa.valor}</span>
+                                </div>
+                                <span className="text-[10px] text-zinc-400">vs</span>
+                                <div className="flex-1 flex items-center gap-2 min-w-0">
+                                    <span className="text-xs font-black text-dribly-purple tabular-nums">{leader.fora.valor}</span>
+                                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{leader.fora.nome}</span>
+                                    {leader.fora.foto ? (
+                                        <img src={leader.fora.foto} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
+                                    ) : null}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* H2H History */}
             {recentGames.length > 0 && (

@@ -631,7 +631,7 @@ export interface FPBGameDetail {
     parciais: { periodo: string; casa: number; fora: number }[]
     pavilhao: string
     espetadores: number
-    gameLeaders: { categoria: string; casa: { nome: string; valor: string }; fora: { nome: string; valor: string } }[]
+    gameLeaders: { categoria: string; casa: { nome: string; valor: string; foto?: string }; fora: { nome: string; valor: string; foto?: string } }[]
     boxScoreCasa: FPBBoxScorePlayer[]
     boxScoreFora: FPBBoxScorePlayer[]
     teamStats: { label: string; casa: string; fora: string }[]
@@ -703,44 +703,73 @@ function scrapeGameDetail(html: string, internalID: string): FPBGameDetail | nul
     const matchTimeEl = doc.querySelector('.match-time')
     const hora = matchTimeEl?.textContent?.trim()?.replace(/\s*H\s*/, ':').replace(/\s+/g, '') || ''
 
-    // Scores: look for results_text elements (only in finished games)
-    const scoreEls = doc.querySelectorAll('.results_text')
+    // Scores: .points span elements (e.g., <span>86</span><div class="dash"></div><span>76</span>)
+    const pointsSpans = doc.querySelectorAll('.points span')
     let resultado_casa = 0
     let resultado_fora = 0
     let status = 'AGENDADO'
-    if (scoreEls.length >= 2) {
-        resultado_casa = parseInt(scoreEls[0].textContent?.trim() || '0') || 0
-        resultado_fora = parseInt(scoreEls[1].textContent?.trim() || '0') || 0
-        status = 'FINALIZADO'
-    } else if (hora) {
+    if (pointsSpans.length >= 2) {
+        const s1 = parseInt(pointsSpans[0].textContent?.trim() || '0') || 0
+        const s2 = parseInt(pointsSpans[1].textContent?.trim() || '0') || 0
+        // If both are 0, this might be a scheduled game with no scores yet
+        if (s1 > 0 || s2 > 0) {
+            resultado_casa = s1
+            resultado_fora = s2
+            status = 'FINALIZADO'
+        }
+    }
+    if (status !== 'FINALIZADO' && hora) {
         status = 'AGENDADO'
-    } else {
-        // Check if this is a live game (unlikely to reach here from competition page)
+    } else if (status !== 'FINALIZADO') {
         status = 'FINALIZADO' // fallback
     }
 
-    // Quarters: in text content for finished games
+    // Quarters: .match-period .partial-score → "21 - 20" format
     const parciais: FPBGameDetail['parciais'] = []
-    if (status === 'FINALIZADO') {
-        const bodyText = doc.body?.textContent || ''
-        const qRe = /(Q\d+|1T|2T|OT)\s+(\d+)\s*[-–]\s*(\d+)/gi
-        let qm: RegExpExecArray | null
-        while ((qm = qRe.exec(bodyText)) !== null) {
-            parciais.push({ periodo: qm[1], casa: parseInt(qm[2]), fora: parseInt(qm[3]) })
+    doc.querySelectorAll('.match-period').forEach(period => {
+        const label = period.querySelector('p')?.textContent?.trim() || ''
+        const partialMatch = period.querySelector('.partial-score')?.textContent?.match(/(\d+)\s*[-–]\s*(\d+)/)
+        if (label && partialMatch) {
+            parciais.push({ periodo: label, casa: parseInt(partialMatch[1]), fora: parseInt(partialMatch[2]) })
         }
-    }
+    })
 
-    // Pavilhao: .location a or .location text
+    // Pavilhao: .location a or .location
     const locEl = doc.querySelector('.location a') || doc.querySelector('.location')
     const pavilhao = locEl?.textContent?.trim() || ''
 
-    // Espetadores: in body text for finished games
-    const espMatch = (doc.body?.textContent || '').match(/(\d+)\s*Espectadores/i)
-    const espetadores = espMatch ? parseInt(espMatch[1]) : 0
+    // Espetadores: .attendance element (e.g., "1286 Espectadores")
+    const attEl = doc.querySelector('.attendance')
+    const attMatch = attEl?.textContent?.match(/(\d+)\s*Espectadores/i)
+    const espetadores = attMatch ? parseInt(attMatch[1]) : 0
+
+    // Game Leaders: .player-performance-head-to-head / .players-wrapper
+    const gameLeaders: FPBGameDetail['gameLeaders'] = []
+    doc.querySelectorAll('.performance-wrapper').forEach((wrapper, idx) => {
+        const players = wrapper.querySelectorAll('.player')
+        if (players.length >= 2) {
+            const homePlayer = players[0]
+            const awayPlayer = players[1]
+            const divider = wrapper.querySelector('.divider')
+            gameLeaders.push({
+                categoria: ['PONTOS', 'RESSALTOS', 'ASSISTÊNCIAS', 'ROUBOS', 'DESARMES'][Math.min(idx, 4)] || '',
+                casa: {
+                    nome: homePlayer.querySelector('.name')?.textContent?.trim() || '',
+                    foto: homePlayer.querySelector('img')?.getAttribute('src') || '',
+                    valor: divider?.children[0]?.textContent?.trim() || '0',
+                },
+                fora: {
+                    nome: awayPlayer.querySelector('.name')?.textContent?.trim() || '',
+                    foto: awayPlayer.querySelector('img')?.getAttribute('src') || '',
+                    valor: divider?.children[2]?.textContent?.trim() || '0',
+                },
+            } as any)
+        }
+    })
 
     return {
         internalID, data, fase, competicao, equipa_casa, equipa_fora, resultado_casa, resultado_fora,
         status, hora, logo_casa, logo_fora, parciais, pavilhao, espetadores,
-        gameLeaders: [], boxScoreCasa: [], boxScoreFora: [], teamStats: [],
+        gameLeaders, boxScoreCasa: [], boxScoreFora: [], teamStats: [],
     }
 }
