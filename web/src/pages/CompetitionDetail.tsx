@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Loader2, Heart, ListOrdered, CalendarDays, Trophy, Users, BarChart4, LayoutDashboard } from 'lucide-react'
 import { useFollows } from '../hooks/useFollows'
@@ -147,6 +147,8 @@ export default function CompetitionDetail() {
     const { clubs, loadClubs } = useClub()
 
     const [tab, setTab] = useState<Tab>('geral')
+    const tabRef = useRef(tab)
+    tabRef.current = tab
     const [standings, setStandings] = useState<FPBStandingPhase[]>([])
     const [selectedPhase, setSelectedPhase] = useState(0)
     const [games, setGames] = useState<FPBGame[]>([])
@@ -161,17 +163,20 @@ export default function CompetitionDetail() {
 
         const loadData = async () => {
             try {
-                const isGeral = tab === 'geral'
+                const currentTab = tabRef.current
+                const isGeral = currentTab === 'geral'
                 const results = await Promise.allSettled([
-                    (isGeral || tab === 'classificacao') ? fetchStandings(provaId) : Promise.resolve([] as FPBStandingPhase[]),
-                    (isGeral || tab === 'resultados' || tab === 'calendario')
+                    (isGeral || currentTab === 'classificacao') ? fetchStandings(provaId) : Promise.resolve([] as FPBStandingPhase[]),
+                    (isGeral || currentTab === 'resultados' || currentTab === 'calendario')
                         ? Promise.all([fetchSchedule(provaId), fetchResults(provaId)])
                         : Promise.resolve([[], []] as [FPBGame[], FPBGame[]]),
-                    (isGeral || tab === 'equipas') ? fetchTeams(provaId) : Promise.resolve([]),
-                    ((isGeral || tab === 'estatisticas') && TOP_LEAGUES.includes(provaId))
+                    (isGeral || currentTab === 'equipas') ? fetchTeams(provaId) : Promise.resolve([]),
+                    ((isGeral || currentTab === 'estatisticas') && TOP_LEAGUES.includes(provaId))
                         ? fetchPlayerStats(provaId, 'val')
                         : Promise.resolve([]),
                 ])
+                // Ignore if tab changed while loading
+                if (tabRef.current !== currentTab) return
 
                 if (results[0].status === 'fulfilled') {
                     setStandings(results[0].value)
