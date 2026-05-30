@@ -35,17 +35,39 @@ function norm(s: string): string {
 /** Match a team name to a club logo */
 function findClubLogo(teamName: string, clubs: Club[]): string | null {
     const n = norm(teamName)
+
+    // 1. Exact match on name or search_name
     for (const c of clubs) {
         if (!c.logo_url) continue
         const cn = norm(c.name)
         const sn = norm(c.search_name || '')
         if (cn === n || sn === n) return c.logo_url
-        if (n.includes(cn) || cn.includes(n)) return c.logo_url
-        // Word-level match
-        const tw = n.split(/\s+/).filter(w => w.length > 2)
-        const cw = cn.split(/\s+/).filter(w => w.length > 2)
-        if (tw.some(t => cw.some(c => c === t))) return c.logo_url
     }
+
+    // 2. Substring: team contains club name or vice versa
+    for (const c of clubs) {
+        if (!c.logo_url) continue
+        const cn = norm(c.name)
+        if (n.includes(cn) || cn.includes(n)) return c.logo_url
+    }
+    for (const c of clubs) {
+        if (!c.logo_url) continue
+        const sn = norm(c.search_name || '')
+        if (sn && (n.includes(sn) || sn.includes(n))) return c.logo_url
+    }
+
+    // 3. Word-level: match only if the word uniquely identifies ONE club
+    const teamWords = n.split(/\s+/).filter(w => w.length > 2)
+    for (const tw of teamWords) {
+        const matches = clubs.filter(c => {
+            if (!c.logo_url) return false
+            const cn = norm(c.name)
+            const cw = cn.split(/\s+/).filter(w => w.length > 2)
+            return cw.some(cx => cx === tw)
+        })
+        if (matches.length === 1) return matches[0].logo_url!
+    }
+
     return null
 }
 

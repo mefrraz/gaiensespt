@@ -81,19 +81,20 @@ function findLogo(teamName: string, maps: LogoMaps): string | null {
         if (n.includes(name) || name.includes(n)) return logo
     }
 
-    // 3. Word-level: exact token match between team and club names
+    // 3. Word-level: match only if the word uniquely identifies ONE club
     const teamWords = n.split(/\s+/).filter(w => w.length > 2)
-    if (teamWords.length > 0) {
-        // Check club names
-        for (const [clubName, logo] of maps.logos) {
-            const clubWords = clubName.split(/\s+/).filter(w => w.length > 2)
-            if (teamWords.some(tw => clubWords.some(cw => cw === tw))) return logo
+    for (const tw of teamWords) {
+        // Count clubs with this word in their name
+        const logoHits = new Map<string, number>()
+        for (const [cn, logo] of maps.logos) {
+            const cw = cn.split(/\s+/).filter(w => w.length > 2)
+            if (cw.includes(tw)) logoHits.set(logo, (logoHits.get(logo) || 0) + 1)
         }
-        // Check search names
-        for (const [searchName, logo] of maps.searchNames) {
-            const searchWords = searchName.split(/\s+/).filter(w => w.length > 2)
-            if (teamWords.some(tw => searchWords.some(sw => sw === tw))) return logo
+        for (const [sn, logo] of maps.searchNames) {
+            const sw = sn.split(/\s+/).filter(w => w.length > 2)
+            if (sw.includes(tw)) logoHits.set(logo, (logoHits.get(logo) || 0) + 1)
         }
+        if (logoHits.size === 1) return logoHits.keys().next().value ?? null
     }
 
     return null
