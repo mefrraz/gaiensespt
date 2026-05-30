@@ -554,9 +554,10 @@ export default function CompetitionDetail() {
                                                 <span><b className="text-zinc-500">J</b> Jogos</span>
                                                 <span><b className="text-zinc-500">V</b> Vitórias</span>
                                                 <span><b className="text-zinc-500">D</b> Derrotas</span>
-                                                <span><b className="text-zinc-500">PM</b> Pontos Marcados</span>
-                                                <span><b className="text-zinc-500">PS</b> Pontos Sofridos</span>
-                                                <span><b className="text-zinc-500">DIF</b> Diferença</span>
+                                                <span className="hidden sm:inline"><b className="text-zinc-500">FC</b> Faltas Comp.</span>
+                                                <span className="hidden sm:inline"><b className="text-zinc-500">PM</b> Pontos Marcados</span>
+                                                <span className="hidden sm:inline"><b className="text-zinc-500">PS</b> Pontos Sofridos</span>
+                                                <span className="hidden sm:inline"><b className="text-zinc-500">DIF</b> Diferença</span>
                                                 <span><b className="text-zinc-500">Pts</b> Pontos</span>
                                             </div>
                                         </div>
