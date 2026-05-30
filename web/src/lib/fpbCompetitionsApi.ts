@@ -15,6 +15,14 @@ export interface FPBStandingTeam {
     dif?: number
     pts: number
     logo?: string
+    // Game-type (phase-game) fields
+    data?: string
+    casa?: string
+    fora?: string
+    score_casa?: number
+    score_fora?: number
+    logo_casa?: string
+    logo_fora?: string
 }
 
 export interface FPBGame {
@@ -165,6 +173,7 @@ function parsePhaseGames(html: string): FPBStandingTeam[] {
         // Teams and scores
         const siglas = [...block.matchAll(/<div class="sigla">([^<]*)<\/div>/g)].map(m => m[1].trim())
         const scores = [...block.matchAll(/<div class="score">(\d+)<\/div>/g)].map(m => parseInt(m[1]))
+        const logos = [...block.matchAll(/<div class="logo"><img[^>]*src="([^"]*)"[^>]*><\/div>/g)].map(m => m[1])
 
         const homeName = siglas[0] || ''
         const awayName = siglas[1] || ''
@@ -172,10 +181,14 @@ function parsePhaseGames(html: string): FPBStandingTeam[] {
         const entry: FPBStandingTeam = {
             posicao: standings.length + 1,
             equipa: `${homeName} ${scores[0] ?? '?'} - ${scores[1] ?? '?'} ${awayName}`,
-            j: 1,
-            v: 0,
-            d: 0,
-            pts: 0,
+            j: 1, v: 0, d: 0, pts: 0,
+            data: date,
+            casa: homeName,
+            fora: awayName,
+            score_casa: scores[0],
+            score_fora: scores[1],
+            logo_casa: logos[0],
+            logo_fora: logos[1],
         }
         if (date) entry.equipa = `${date} · ` + entry.equipa
         standings.push(entry)

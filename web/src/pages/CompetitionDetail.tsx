@@ -465,22 +465,42 @@ export default function CompetitionDetail() {
                                             </div>
                                         )}
                                         {standings[selectedPhase] && standings[selectedPhase].type === 'games' && (
-                                            <div className="space-y-2">
-                                                {standings[selectedPhase].teams.map((t, i) => {
-                                                    const logo = findLogo(t.equipa, logoMaps)
-                                                    return (
-                                                    <div key={i} className="bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-xl px-4 py-3 flex items-center gap-3 hover:border-dribly-purple/30 transition-all">
-                                                        {logo ? (
-                                                            <img src={logo} alt="" className="w-8 h-8 rounded-full object-contain bg-zinc-50 dark:bg-zinc-800 shrink-0" />
-                                                        ) : (
-                                                            <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-                                                                <span className="text-xs font-bold text-zinc-500">{t.equipa.charAt(0)}</span>
-                                                            </div>
+                                            <div className="space-y-3">
+                                                {standings[selectedPhase].teams.map((t, i) => (
+                                                    <div key={i} className="bg-white dark:bg-zinc-900/90 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-4">
+                                                        {/* Date header */}
+                                                        {t.data && (
+                                                            <div className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2.5 text-center">{t.data}</div>
                                                         )}
-                                                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex-1 truncate">{semiAbrev(t.equipa)}</span>
+                                                        {/* Game row */}
+                                                        <div className="flex items-center gap-2">
+                                                            {/* Home team */}
+                                                            <div className="flex-1 flex items-center gap-2 min-w-0">
+                                                                <div className="w-9 h-9 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                                                                    {t.logo_casa ? (
+                                                                        <img src={t.logo_casa} alt="" className="w-9 h-9 rounded-full object-contain" />
+                                                                    ) : null}
+                                                                </div>
+                                                                <span className="text-[11px] sm:text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{t.casa || t.equipa}</span>
+                                                            </div>
+                                                            {/* Score */}
+                                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                                <span className={`text-base sm:text-lg font-black tabular-nums ${(t.score_casa ?? 0) >= (t.score_fora ?? 0) ? 'text-dribly-purple' : 'text-zinc-400 dark:text-zinc-600'}`}>{t.score_casa ?? '?'}</span>
+                                                                <span className="text-xs text-zinc-300 dark:text-zinc-600 font-bold">-</span>
+                                                                <span className={`text-base sm:text-lg font-black tabular-nums ${(t.score_fora ?? 0) >= (t.score_casa ?? 0) ? 'text-dribly-purple' : 'text-zinc-400 dark:text-zinc-600'}`}>{t.score_fora ?? '?'}</span>
+                                                            </div>
+                                                            {/* Away team */}
+                                                            <div className="flex-1 flex items-center gap-2 min-w-0 justify-end">
+                                                                <span className="text-[11px] sm:text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{t.fora || ''}</span>
+                                                                <div className="w-9 h-9 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                                                                    {t.logo_fora ? (
+                                                                        <img src={t.logo_fora} alt="" className="w-9 h-9 rounded-full object-contain" />
+                                                                    ) : null}
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    )
-                                                })}
+                                                ))}
                                             </div>
                                         )}
                                         {standings[selectedPhase] && standings[selectedPhase].type === 'table' && standings[selectedPhase].teams.length === 0 && (
