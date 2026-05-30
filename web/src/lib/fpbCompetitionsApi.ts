@@ -313,6 +313,11 @@ function scrapeGames(html: string, defaultStatus: Match['status']): FPBGame[] {
                 hora = (hourText || '').replace('H', ':').replace(/\s+/g, '')
             }
 
+            // Fix: if default was FINALIZADO but no scores found and has hour → it's scheduled
+            if (status === 'FINALIZADO' && !resultado_casa && !resultado_fora && hora) {
+                status = 'AGENDADO'
+            }
+
             // Competition name
             // (Not needed for competition pages — all games belong to same competition)
 

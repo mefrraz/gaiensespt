@@ -53,10 +53,10 @@ export default function Leagues() {
                 ) : (
                     <div className="space-y-8">
                         {masc.length > 0 && (
-                            <Section title="🏀 Masculino" comps={masc} user={user} isFollowing={isFollowing} toggleFollow={toggleFollow} />
+                            <Section title="Masculino" comps={masc} user={user} isFollowing={isFollowing} toggleFollow={toggleFollow} />
                         )}
                         {fem.length > 0 && (
-                            <Section title="🏀 Feminino" comps={fem} user={user} isFollowing={isFollowing} toggleFollow={toggleFollow} />
+                            <Section title="Feminino" comps={fem} user={user} isFollowing={isFollowing} toggleFollow={toggleFollow} />
                         )}
                         {outros.length > 0 && (
                             <Section title="Outras" comps={outros} user={user} isFollowing={isFollowing} toggleFollow={toggleFollow} />
