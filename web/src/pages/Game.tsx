@@ -8,6 +8,24 @@ import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 import { useClub, type Club } from '../lib/ClubContext'
 
+/** Converts a long team name to a semi-abbreviated version (e.g. "Futebol Clube do Porto" → "FC Porto") */
+function semiAbrev(fullName: string): string {
+    const rules: [RegExp, string][] = [
+        [/^Futebol\s+Clube\s+(do|da|de)\s+/i, 'FC '],
+        [/^Sporting\s+Clube\s+(de\s+)?/i, 'SC '],
+        [/^Vitória\s+Sport\s+Clube/i, 'Vitória SC'],
+        [/^União\s+Desportiva\s+/i, 'UD '],
+        [/^Clube\s+Desportivo\s+/i, 'CD '],
+        [/^Grupo\s+Desportivo\s+/i, 'GD '],
+        [/^Associação\s+Académica\s+de\s+/i, 'AA '],
+        [/^Sport\s+Lisboa\s+e\s+Benfica/i, 'SL Benfica'],
+    ]
+    for (const [regex, replacement] of rules) {
+        if (regex.test(fullName)) return fullName.replace(regex, replacement).trim()
+    }
+    return fullName
+}
+
 function detailToMatch(detail: FPBGameDetail): Match {
     return {
         id: detail.internalID,
@@ -548,11 +566,11 @@ function TeamBlock({ name, logo, clubSlug, abrev }: { name: string; logo: string
                 {logo ? (
                     <img src={logo} alt="" className="w-14 h-14 object-contain" />
                 ) : (
-                    <span className="text-2xl font-bold text-zinc-500">{abrev?.charAt(0) || name.charAt(0)}</span>
+                    <span className="text-2xl font-bold text-zinc-500">{(abrev ? semiAbrev(name) : name).charAt(0)}</span>
                 )}
             </div>
             <p className="text-xs font-black text-zinc-900 dark:text-white leading-tight truncate w-full">
-                {abrev ? abrev.toUpperCase() : name.toUpperCase()}
+                {abrev ? semiAbrev(name) : name.toUpperCase()}
             </p>
         </div>
     );
