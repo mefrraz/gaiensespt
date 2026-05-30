@@ -35,7 +35,7 @@ INSERT INTO competitions_meta (id, name, abrev, gradient_from, gradient_to, logo
 (10974, 'Jogos Preparação Masculino', 'JPM',   'from-zinc-500',  'to-zinc-700',    'https://sav2.fpb.pt/uploads/provas/logotipos/logo109741758451196.png'),
 (10976, 'Jogos Preparação BCR', 'JPB',         'from-lime-500',  'to-lime-700',    'https://sav2.fpb.pt/uploads/provas/logotipos/logo109761758451443.png'),
 (11078, 'CNT Ponte de Sor', 'CPS',             'from-sky-500',   'to-sky-700',     'https://sav2.fpb.pt/uploads/provas/logotipos/logo110781759766686.png'),
-(11160, 'Campeonato Nacional Sub18 Masculinos', 'S18M','from-cyan-600','to-cyan-800','https://sav2.fpb.pt/uploads/provas/logotipos/logo111601779285085.png'),
+(11160, 'Campeonato Nacional Sub18 Masculinos', 'S18M','from-cyan-600','to-cyan-800', 'https://sav2.fpb.pt/uploads/provas/logotipos/logo111601779285085.png'),
 (11162, 'Taça Nacional Sub18 Masculinos', 'TS18M','from-sky-600', 'to-sky-800',    'https://sav2.fpb.pt/uploads/provas/logotipos/logo111621779285135.png'),
 (11164, 'Campeonato Nacional Sub16 Masculinos', 'S16M','from-teal-600','to-teal-800','https://sav2.fpb.pt/uploads/provas/logotipos/logo111641779719721.png'),
 (11166, 'Taça Nacional Sub16 Masculinos', 'TS16M','from-green-600','to-green-800',  'https://sav2.fpb.pt/uploads/provas/logotipos/logo111661779739255.png'),
@@ -72,6 +72,7 @@ INSERT INTO competitions_meta (id, name, abrev, gradient_from, gradient_to) VALU
     (11167, 'Campeonato Nacional Sub14 Femininos', 'S14F','from-fuchsia-600','to-fuchsia-800'),
     (11169, 'Taça Nacional Sub14 Femininos', 'TS14F','from-pink-600','to-pink-800'),
     (11170, 'Taça Nacional Sub14 Masculinos', 'TS14M','from-cyan-600','to-cyan-800'),
+-- 11160 já tem logo na secção acima
     (11171, 'Taça Nacional Seniores Femininos', 'TSF', 'from-rose-500','to-rose-700'),
     (11172, 'Taça Nacional Seniores Masculinos', 'TSM', 'from-sky-500','to-sky-700'),
     (11383, 'Taça Nacional BCR', 'TBCR', 'from-indigo-600','to-indigo-800')
