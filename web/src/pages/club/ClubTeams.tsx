@@ -3,7 +3,7 @@ import { Link, useOutletContext } from 'react-router-dom'
 import { Users, ChevronRight } from 'lucide-react'
 import { useGames } from '../../hooks/useGames'
 import { SkeletonGameGrid } from '../../components/Skeleton'
-import { type Club } from '../../lib/ClubContext'
+import { type Club, displayName } from '../../lib/ClubContext'
 import { type Match } from '../../components/types'
 
 function extractTeamId(fullTeamName: string, clubName: string, fallbackEscalao: string): string {
@@ -96,7 +96,7 @@ function ClubTeams() {
         return (
             <div className="max-w-xl mx-auto px-3 py-20 text-center">
                 <Users size={40} className="mx-auto text-zinc-300 dark:text-zinc-700 mb-4" />
-                <p className="text-sm text-zinc-500">Nenhuma equipa encontrada para {club.name}</p>
+                <p className="text-sm text-zinc-500">Nenhuma equipa encontrada para {displayName(club)}</p>
                 <p className="text-xs text-zinc-400 mt-2">Os dados podem ainda não estar disponíveis. Volta mais tarde.</p>
             </div>
         )
@@ -105,7 +105,7 @@ function ClubTeams() {
     return (
         <div className="max-w-xl mx-auto space-y-3 pb-20 px-3">
             <div className="pt-2 pb-1">
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Equipas de {club.name}</h2>
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Equipas de {displayName(club)}</h2>
                 <p className="text-xs text-zinc-500 mt-1">{teams.length} equipas encontradas</p>
             </div>
 

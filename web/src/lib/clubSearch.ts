@@ -21,20 +21,22 @@ function acronym(s: string): string {
 /**
  * Build a combined, normalized search string from a club.
  *
- * Uses **all** fields — name, search_name, and the acronym — so that
- * abbreviations like "FC", "GD", "SC" match clubs whose full name
+ * Uses **all** fields — name, short_name, search_name, and the acronym —
+ * so that abbreviations like "FC", "GD", "SC" match clubs whose full name
  * spells out "Futebol Clube", "Grupo Desportivo", "Sporting Clube", etc.
  */
 export function buildSearchText(club: Club): string {
     const nameNorm = normalize(club.name)
+    const shortNorm = normalize(club.short_name || '')
     const searchNorm = normalize(club.search_name || '')
     const acro = acronym(club.name)
 
-    // Also try acronym from search_name if different (e.g. "fcporto" → "fp")
+    // Also try acronym from search_name if different
     const acro2 = club.search_name ? acronym(club.search_name) : ''
-    const uniqueAcros = [...new Set([acro, acro2].filter(Boolean))].join(' ')
+    const acro3 = club.short_name ? acronym(club.short_name) : ''
+    const uniqueAcros = [...new Set([acro, acro2, acro3].filter(Boolean))].join(' ')
 
-    // Join all searchable tokens with a space so partial words match
-    // e.g. "futebol clube de gaia futebolclubedegaia fcdg"
-    return [nameNorm, searchNorm, uniqueAcros].filter(Boolean).join(' ')
+    // Join all searchable tokens — name, short_name, search_name, and all acronyms
+    // e.g. "futebol clube de gaia fc gaia futebolclubedegaia fcdg fcg"
+    return [nameNorm, shortNorm, searchNorm, uniqueAcros].filter(Boolean).join(' ')
 }

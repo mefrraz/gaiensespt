@@ -4,12 +4,18 @@ import { supabase } from './supabase'
 export interface Club {
     id: number
     name: string
+    short_name: string | null
     slug: string
     search_name: string
     logo_url: string | null
     logo_secondary: string | null
     primary_color: string | null
     priority: number | null
+}
+
+/** Display name: short_name if available, otherwise name. */
+export function displayName(club: Club): string {
+    return club.short_name || club.name
 }
 
 interface ClubContextType {
@@ -35,7 +41,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
         if (clubs.length > 0) return
         const { data } = await supabase
             .from('clubs')
-            .select('id, name, slug, search_name, logo_url, logo_secondary, primary_color, priority')
+            .select('id, name, short_name, slug, search_name, logo_url, logo_secondary, primary_color, priority')
             .order('name')
         if (data) setClubs(data as Club[])
     }, [clubs.length])
@@ -45,7 +51,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
         if (cached) return cached
         const { data } = await supabase
             .from('clubs')
-            .select('id, name, slug, search_name, logo_url, logo_secondary, primary_color, priority')
+            .select('id, name, short_name, slug, search_name, logo_url, logo_secondary, primary_color, priority')
             .eq('slug', slug)
             .single()
         if (data) {

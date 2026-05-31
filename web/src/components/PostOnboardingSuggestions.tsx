@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Star, Heart, Trophy, ArrowRight, Loader2, Check, X, Search } from 'lucide-react'
-import { useClub, type Club } from '../lib/ClubContext'
+import { useClub, type Club, displayName } from '../lib/ClubContext'
 import { useFollows } from '../hooks/useFollows'
 import { supabase } from '../lib/supabase'
 
@@ -198,10 +198,10 @@ export function PostOnboardingSuggestions({ onComplete }: Props) {
                     <img src={club.logo_url} alt="" className="w-7 h-7 object-contain rounded-full shrink-0" />
                 ) : (
                     <span className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center text-[10px] font-bold shrink-0">
-                        {club.name.charAt(0)}
+                        {displayName(club).charAt(0)}
                     </span>
                 )}
-                <span className="flex-1 text-left truncate">{club.name}</span>
+                <span className="flex-1 text-left truncate">{displayName(club)}</span>
                 {icon}
             </button>
         )

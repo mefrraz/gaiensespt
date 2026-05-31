@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Search, Loader2, Star, Heart } from 'lucide-react'
-import { useClub } from '../lib/ClubContext'
+import { useClub, displayName } from '../lib/ClubContext'
 import { useAuth } from '../lib/AuthContext'
 import { useFollows } from '../hooks/useFollows'
 import { normalize, buildSearchText } from '../lib/clubSearch'
@@ -67,11 +67,11 @@ export default function ClubsPage() {
                                             {club.logo_url ? (
                                                 <img src={club.logo_url} alt="" className="w-12 h-12 object-contain" loading="lazy" />
                                             ) : (
-                                                <span className="text-xl font-bold text-zinc-400">{club.name.charAt(0)}</span>
+                                                <span className="text-xl font-bold text-zinc-400">{displayName(club).charAt(0)}</span>
                                             )}
                                         </div>
                                         <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300 leading-tight line-clamp-2">
-                                            {club.name}
+                                            {displayName(club)}
                                         </p>
                                     </Link>
                                     {/* Action buttons */}

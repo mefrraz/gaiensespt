@@ -3,7 +3,7 @@ import { Link, useParams, useOutletContext } from 'react-router-dom'
 import { ArrowLeft, Clock, Users } from 'lucide-react'
 import { useGames } from '../../hooks/useGames'
 import { SkeletonGameGrid } from '../../components/Skeleton'
-import { type Club } from '../../lib/ClubContext'
+import { type Club, displayName } from '../../lib/ClubContext'
 
 function extractTeamId(fullTeamName: string, clubName: string, fallbackEscalao: string): string {
     const upperTeam = fullTeamName.toUpperCase()
@@ -101,7 +101,7 @@ function ClubTeamDetail() {
                         </div>
                         <div className="min-w-0">
                             <h1 className="text-lg font-bold text-zinc-900 dark:text-white truncate">{decoded}</h1>
-                            <p className="text-xs text-zinc-500">{club.name}</p>
+                            <p className="text-xs text-zinc-500">{displayName(club)}</p>
                         </div>
                     </div>
 

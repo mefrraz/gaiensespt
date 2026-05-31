@@ -6,7 +6,7 @@ import { useFollows } from '../../hooks/useFollows'
 import { useAuth } from '../../lib/AuthContext'
 import { SkeletonHero } from '../../components/Skeleton'
 import { Match } from '../../components/types'
-import { useClub, type Club } from '../../lib/ClubContext'
+import { useClub, type Club, displayName } from '../../lib/ClubContext'
 
 function ClubHome() {
     const { club } = useOutletContext<{ club: Club }>()
@@ -137,10 +137,10 @@ function ClubHome() {
                     {club.logo_url ? (
                         <img src={club.logo_url} alt="" className="w-7 h-7 object-contain" />
                     ) : (
-                        <span className="text-sm font-bold text-zinc-500">{club.name.charAt(0)}</span>
+                        <span className="text-sm font-bold text-zinc-500">{displayName(club).charAt(0)}</span>
                     )}
                 </div>
-                <h1 className="text-lg font-bold text-zinc-900 dark:text-white truncate flex-1">{club.name}</h1>
+                <h1 className="text-lg font-bold text-zinc-900 dark:text-white truncate flex-1">{displayName(club)}</h1>
                 <div className="flex items-center gap-1">
                     <button onClick={handleFavorite} data-tour="favorite"
                         className={`p-2 rounded-full transition-all active:scale-[0.9] ${

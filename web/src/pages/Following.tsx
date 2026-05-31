@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Star, Heart, LogIn, Search, Bookmark, X } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
 import { useFollows } from '../hooks/useFollows'
-import { type Club } from '../lib/ClubContext'
+import { type Club, displayName } from '../lib/ClubContext'
 import { supabase } from '../lib/supabase'
 
 interface FollowedComp {
@@ -138,10 +138,10 @@ export default function Following() {
                                         {club.logo_url ? (
                                             <img src={club.logo_url} alt="" className="w-10 h-10 object-contain" />
                                         ) : (
-                                            <span className="text-lg font-bold text-zinc-400">{club.name.charAt(0)}</span>
+                                            <span className="text-lg font-bold text-zinc-400">{displayName(club).charAt(0)}</span>
                                         )}
                                     </div>
-                                    <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300 leading-tight truncate">{club.name}</p>
+                                    <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300 leading-tight truncate">{displayName(club)}</p>
                                 </Link>
                                 <button
                                     onClick={(e) => { e.preventDefault(); handleUnfollowClub(club.id) }}

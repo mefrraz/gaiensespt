@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { Search, Building2, Trophy, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import { useClub, type Club } from '../lib/ClubContext'
+import { useClub, type Club, displayName } from '../lib/ClubContext'
 import { associationLogoUrl } from '../lib/associationLogos'
 import { normalize, buildSearchText } from '../lib/clubSearch'
 
@@ -113,9 +113,9 @@ function SearchPage() {
                                             {club.logo_url ? (
                                                 <img src={club.logo_url} alt="" className="w-7 h-7 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
                                             ) : null}
-                                            <span className={club.logo_url ? 'hidden' : 'text-sm font-bold text-zinc-500'}>{club.name.charAt(0).toUpperCase()}</span>
+                                            <span className={club.logo_url ? 'hidden' : 'text-sm font-bold text-zinc-500'}>{displayName(club).charAt(0).toUpperCase()}</span>
                                         </div>
-                                        <span className="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-dribly-purple transition-colors truncate">{club.name}</span>
+                                        <span className="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-dribly-purple transition-colors truncate">{displayName(club)}</span>
                                     </button>
                                 ))}
                             </div>

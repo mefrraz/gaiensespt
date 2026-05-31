@@ -7,7 +7,7 @@ import { SearchModal } from './components/SearchModal'
 import { AuthModal } from './components/AuthModal'
 import { OnboardingTour, type TourTrigger } from './components/OnboardingTour'
 import { PostOnboardingSuggestions } from './components/PostOnboardingSuggestions'
-import { useClub } from './lib/ClubContext'
+import { useClub, displayName } from './lib/ClubContext'
 import { useAuth } from './lib/AuthContext'
 
 function Layout() {
@@ -103,7 +103,7 @@ function Layout() {
                                 <button onClick={() => setSearchOpen(true)}
                                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-dribly-purple/30 text-dribly-purple hover:bg-dribly-purple/5 hover:border-dribly-purple/60 active:scale-[0.97]">
                                     <Star size={14} strokeWidth={activeClub ? 2 : 1.5} className={activeClub ? 'fill-dribly-purple text-dribly-purple' : 'text-dribly-purple'} />
-                                    {activeClub ? activeClub.name : 'Escolher clube'}
+                                    {activeClub ? displayName(activeClub) : 'Escolher clube'}
                                 </button>
                             </div>
                         )}
@@ -117,7 +117,7 @@ function Layout() {
                                 <button onClick={() => setSearchOpen(true)}
                                     className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-dribly-purple/30 text-dribly-purple hover:bg-dribly-purple/5 hover:border-dribly-purple/60 active:scale-[0.97]">
                                     <Star size={14} strokeWidth={activeClub ? 2 : 1.5} className={activeClub ? 'fill-dribly-purple text-dribly-purple' : 'text-dribly-purple'} />
-                                    <span className="max-w-[80px] truncate">{activeClub ? activeClub.name : 'Clube'}</span>
+                                    <span className="max-w-[80px] truncate">{activeClub ? displayName(activeClub) : 'Clube'}</span>
                                 </button>
                             )}
                             <Link to="/about" className={`hidden sm:flex ${navIcon} ${isActive('/about') ? 'text-dribly-purple bg-dribly-purple/10' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5'}`} aria-label="Sobre">

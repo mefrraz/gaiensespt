@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, X, Building2, Trophy, Star, Heart } from 'lucide-react'
-import { useClub, type Club } from '../lib/ClubContext'
+import { useClub, type Club, displayName } from '../lib/ClubContext'
 import { useAuth } from '../lib/AuthContext'
 import { useFollows } from '../hooks/useFollows'
 import { supabase } from '../lib/supabase'
@@ -160,9 +160,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                                 {club.logo_url ? (
                                                     <img src={club.logo_url} alt="" className="w-5 h-5 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
                                                 ) : null}
-                                                <span className={club.logo_url ? 'hidden' : 'text-xs font-bold text-zinc-500'}>{club.name.charAt(0)}</span>
+                                                <span className={club.logo_url ? 'hidden' : 'text-xs font-bold text-zinc-500'}>{displayName(club).charAt(0)}</span>
                                             </div>
-                                            <span className="text-sm font-medium text-zinc-900 dark:text-white truncate flex-1">{club.name}</span>
+                                            <span className="text-sm font-medium text-zinc-900 dark:text-white truncate flex-1">{displayName(club)}</span>
                                         </div>
                                         <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
                                             <button onClick={() => user && setFavoriteClub(isFav ? null : club)}
