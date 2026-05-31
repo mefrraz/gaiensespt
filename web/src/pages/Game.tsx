@@ -3,7 +3,7 @@ import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { fetchFPBGames } from '../lib/fpbApi'
 import { fetchGameDetail, type FPBGameDetail } from '../lib/fpbCompetitionsApi'
-import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, TrendingDown, ExternalLink, Calendar, Minus, Check, Clock } from 'lucide-react'
+import { ArrowLeft, MapPin, Share2, Trophy, Navigation, TrendingUp, ExternalLink, Calendar, Check, Clock } from 'lucide-react'
 import { SkeletonHero } from '../components/Skeleton'
 import { Match } from '../components/types'
 import { useClub, type Club } from '../lib/ClubContext'
@@ -195,7 +195,7 @@ function Game() {
                     (g.equipa_casa.toUpperCase().includes(away.toUpperCase()) && g.equipa_fora.toUpperCase().includes(home.toUpperCase()))
                 )
                 .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
-                .slice(0, 5)
+                .slice(0, 3)
             setRecentGames(h2h)
         })
     }, [match, slug])
@@ -492,11 +492,11 @@ function Game() {
             {/* H2H History */}
             {recentGames.length > 0 && (
                 <div className="glass-card overflow-hidden animate-slide-up">
-                    <div className="p-4 border-b border-zinc-100 dark:border-white/5">
+                    <div className="p-3.5 border-b border-zinc-100 dark:border-white/5 bg-zinc-50/50 dark:bg-white/[0.02]">
                         <h3 className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-dribly-blue" />
                             Últimos Confrontos
-                            <span className="text-zinc-500 dark:text-zinc-500 font-medium truncate">{match.equipa_casa} vs {match.equipa_fora}</span>
+                            <span className="text-zinc-400 dark:text-zinc-500 font-medium truncate text-[10px]">{match.equipa_casa} vs {match.equipa_fora}</span>
                         </h3>
                     </div>
                     <div className="divide-y divide-zinc-100 dark:divide-white/5">
@@ -506,27 +506,27 @@ function Game() {
                             const secondTeam = isHome ? game.equipa_fora : game.equipa_casa
                             const firstScore = isHome ? game.resultado_casa : game.resultado_fora
                             const secondScore = isHome ? game.resultado_fora : game.resultado_casa
-                            const firstWon = firstScore !== null && secondScore !== null && firstScore > secondScore
-                            const draw = firstScore !== null && secondScore !== null && firstScore === secondScore
                             const shortDate = new Date(game.data).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' })
+                            const homeLogo = game.logotipo_casa || undefined
+                            const awayLogo = game.logotipo_fora || undefined
 
                             return (
-                                <Link to={`/game/${game.slug}${clubSlug ? `?clube=${clubSlug}` : ''}`} key={game.slug} className="flex items-center gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
-                                    {firstWon ? (
-                                        <TrendingUp size={12} className="text-green-500 shrink-0" />
-                                    ) : draw ? (
-                                        <Minus size={12} className="text-blue-500 shrink-0" />
-                                    ) : (
-                                        <TrendingDown size={12} className="text-red-500 shrink-0" />
-                                    )}
+                                <Link to={`/game/${game.slug}${clubSlug ? `?clube=${clubSlug}` : ''}`} key={game.slug} className="flex items-center gap-3 px-4 py-3.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
+                                    <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-zinc-200 dark:border-zinc-700/50">
+                                        {(isHome ? homeLogo : awayLogo) ? (
+                                            <img src={isHome ? homeLogo : awayLogo} alt="" className="w-6 h-6 object-contain" />
+                                        ) : (
+                                            <span className="text-[10px] font-bold text-zinc-500">{firstTeam.charAt(0)}</span>
+                                        )}
+                                    </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs text-zinc-900 dark:text-white truncate group-hover:text-dribly-blue transition-colors">
-                                            <span className={firstWon ? 'font-bold' : ''}>{firstTeam}</span>
-                                            <span className="text-zinc-500 mx-1">{firstScore}-{secondScore}</span>
-                                            <span className="text-zinc-400 dark:text-zinc-500">{secondTeam}</span>
+                                        <p className="text-[13px] font-semibold text-zinc-900 dark:text-white truncate group-hover:text-dribly-blue transition-colors">
+                                            <span className="font-bold">{firstTeam}</span>
+                                            <span className="text-zinc-400 mx-1.5 font-medium text-sm tabular-nums">{firstScore}-{secondScore}</span>
+                                            <span className="text-zinc-500 dark:text-zinc-400 font-normal">{secondTeam}</span>
                                         </p>
                                     </div>
-                                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase shrink-0">{shortDate}</span>
+                                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase shrink-0 font-medium">{shortDate}</span>
                                 </Link>
                             )
                         })}

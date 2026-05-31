@@ -4,6 +4,14 @@
 
 ---
 
+## [v5.12] — 2026-05-31
+
+### Fix
+- **Limite de 3 jogos nos H2H:** "Últimos Confrontos" e "Próximos Confrontos" na ficha de jogo mostram agora no máximo 3 jogos cada (em vez de 5)
+- **Redesign dos cards H2H:** cards redesenhados com logotipos das equipas, layout mais limpo, melhor contraste e hover states mais suaves
+
+---
+
 ## [v5.11] — 2026-05-31
 
 ### Fix
