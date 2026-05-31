@@ -104,8 +104,8 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
         try {
             await signIn.authenticateWithRedirect({
                 strategy: 'oauth_google',
-                redirectUrl: window.location.href,
-                redirectUrlComplete: window.location.href,
+                redirectUrl: '/',
+                redirectUrlComplete: '/',
             })
         } catch {
             setErrorMsg('Erro ao iniciar sessão com Google.')
