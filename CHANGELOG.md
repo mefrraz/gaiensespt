@@ -4,6 +4,16 @@
 
 ---
 
+## [v5.11] — 2026-05-31
+
+### Fix
+- **Cache de competições por ID:** a verificação de cache na página de detalhe de competição passou a ser feita por `provaId` em vez de um timestamp global — resolve o bug de mostrar dados da competição errada ao navegar entre diferentes competições seguidas
+
+### Feat
+- **Link "Ver na FPB":** adicionado botão no topo da página de cada competição que abre a página oficial na FPB (`https://www.fpb.pt/competicao/{id}/`)
+
+---
+
 ## [v5.10] — 2026-05-31
 
 ### Fix

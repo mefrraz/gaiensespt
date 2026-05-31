@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Loader2, Heart, ListOrdered, CalendarDays, Trophy, Users, BarChart4, LayoutDashboard } from 'lucide-react'
+import { ArrowLeft, Loader2, Heart, ListOrdered, CalendarDays, Trophy, Users, BarChart4, LayoutDashboard, ExternalLink } from 'lucide-react'
 import { useFollows } from '../hooks/useFollows'
 import { useAuth } from '../lib/AuthContext'
 import { useClub } from '../lib/ClubContext'
@@ -153,7 +153,7 @@ export default function CompetitionDetail() {
     const [games, setGames] = useState<FPBGame[]>([])
     const [teams, setTeams] = useState<FPBTeam[]>([])
     const [playerStats, setPlayerStats] = useState<FPBPlayerStat[]>([])
-    const lastFetchRef = useRef(0)
+    const lastFetchMapRef = useRef<Map<number, number>>(new Map())
     const CACHE_TTL = 15 * 60 * 1000 // 15 minutes
 
     const [loading, setLoading] = useState(true)
@@ -176,10 +176,11 @@ export default function CompetitionDetail() {
         if (!provaId) return
 
         const now = Date.now()
-        if (now - lastFetchRef.current < CACHE_TTL && games.length > 0) return // cache fresh
+        const lastFetch = lastFetchMapRef.current.get(provaId)
+        if (lastFetch && now - lastFetch < CACHE_TTL && games.length > 0) return // cache fresh for this competition
 
         setLoading(true)
-        lastFetchRef.current = now
+        lastFetchMapRef.current.set(provaId, now)
 
         const loadAll = async () => {
             try {
@@ -189,7 +190,8 @@ export default function CompetitionDetail() {
                     fetchTeams(provaId),
                     TOP_LEAGUES.includes(provaId) ? fetchPlayerStats(provaId, 'val') : Promise.resolve([]),
                 ])
-                if (Date.now() - lastFetchRef.current >= CACHE_TTL + 5000) return // stale (fetch took > 5s past TTL)
+                const fetchStart = lastFetchMapRef.current.get(provaId) || 0
+                if (Date.now() - fetchStart >= CACHE_TTL + 5000) return // stale (fetch took > 5s past TTL)
 
                 if (results[0].status === 'fulfilled') { setStandings(results[0].value); setSelectedPhase(0) }
                 if (results[1].status === 'fulfilled') {
@@ -292,7 +294,15 @@ export default function CompetitionDetail() {
                 <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white mb-1 tracking-tight">
                     {compName || COMP_NAMES[provaId] || `Competição #${provaId}`}
                 </h1>
-                <p className="text-sm text-zinc-400 mb-6">2025/2026 · Fase Regular</p>
+                <p className="text-sm text-zinc-400 mb-4">2025/2026 · Fase Regular</p>
+
+                <div className="flex items-center gap-3 mb-6">
+                    <a href={`https://www.fpb.pt/competicao/${provaId}/`} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 hover:text-dribly-purple transition-colors">
+                        <ExternalLink size={11} />
+                        Ver na FPB
+                    </a>
+                </div>
 
                 {/* Tab bar */}
                 <div className="sticky top-16 z-40 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl -mx-3 sm:-mx-5 px-3 sm:px-5 pb-2 mb-5 border-b border-zinc-100 dark:border-white/5 overflow-x-auto">
