@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Mail, Lock, User, Loader2, CheckCircle, LogIn, LogOut } from 'lucide-react'
+import { X, Mail, Lock, User, Loader2, CheckCircle, LogIn, LogOut, Eye, EyeOff } from 'lucide-react'
 import { useSignIn, useSignUp, useUser, useClerk } from '@clerk/clerk-react'
 
 interface AuthModalProps {
@@ -22,7 +22,9 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
     const [newPassword, setNewPassword] = useState('')
     const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'sent' | 'verified'>('idle')
     const [errorMsg, setErrorMsg] = useState('')
-    const [forgotStep, setForgotStep] = useState<'email' | 'code'>('email')
+    const [forgotStep, setForgotStep] = useState<'email' | 'code' | 'password'>('email')
+    const [showPassword, setShowPassword] = useState(false)
+    const [showNewPassword, setShowNewPassword] = useState(false)
 
     const isLoaded = siLoaded && suLoaded
 
@@ -37,6 +39,8 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
         setStatus('idle')
         setErrorMsg('')
         setForgotStep('email')
+        setShowPassword(false)
+        setShowNewPassword(false)
     }
 
     const handleClose = () => {
@@ -154,9 +158,12 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
             })
             if (result.status === 'complete') {
                 await setActive!({ session: result.createdSessionId! })
-                reset()
-                onClose()
-                onAuthSuccess?.('signin')
+                setForgotStep('password')
+                setTimeout(() => {
+                    reset()
+                    onClose()
+                    onAuthSuccess?.('signin')
+                }, 1500)
             } else {
                 setStatus('error')
                 setErrorMsg('Código inválido. Tenta novamente.')
@@ -222,50 +229,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                         {mode === 'forgot' ? (
                             /* Forgot password mode */
                             <div className="space-y-3">
-                                {forgotStep === 'code' ? (
-                                    /* Step 2: enter code + new password */
-                                    <>
-                                        <div className="relative">
-                                            <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-                                            <input
-                                                type="text"
-                                                value={resetCode}
-                                                onChange={e => setResetCode(e.target.value)}
-                                                placeholder="Código de 6 dígitos"
-                                                autoFocus
-                                                required
-                                                maxLength={6}
-                                                className="w-full pl-9 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple"
-                                            />
-                                        </div>
-                                        <div className="relative">
-                                            <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-                                            <input
-                                                type="password"
-                                                value={newPassword}
-                                                onChange={e => setNewPassword(e.target.value)}
-                                                placeholder="Nova palavra-passe"
-                                                minLength={6}
-                                                required
-                                                className="w-full pl-9 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple"
-                                            />
-                                        </div>
-
-                                        {status === 'error' && errorMsg && (
-                                            <p className="text-xs text-red-500 font-medium text-center">{errorMsg}</p>
-                                        )}
-
-                                        <button
-                                            type="button"
-                                            onClick={handleVerifyResetCode}
-                                            disabled={!isLoaded || status === 'loading'}
-                                            className="w-full py-2.5 rounded-full bg-dribly-purple text-white text-sm font-bold hover:bg-dribly-purple/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.97] flex items-center justify-center gap-2"
-                                        >
-                                            {status === 'loading' ? <Loader2 size={16} className="animate-spin" /> : null}
-                                            Redefinir palavra-passe
-                                        </button>
-                                    </>
-                                ) : (
+                                {forgotStep === 'email' ? (
                                     /* Step 1: enter email */
                                     <>
                                         <div className="relative">
@@ -295,6 +259,72 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                                             Enviar email
                                         </button>
                                     </>
+                                ) : forgotStep === 'code' ? (
+                                    /* Step 2: code sent + enter code + new password */
+                                    <>
+                                        <div className="text-center">
+                                            <CheckCircle size={24} className="text-green-500 mx-auto mb-1" />
+                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+                                                Código enviado para o teu email.
+                                            </p>
+                                        </div>
+
+                                        <div className="relative">
+                                            <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                                            <input
+                                                type="text"
+                                                value={resetCode}
+                                                onChange={e => setResetCode(e.target.value)}
+                                                placeholder="Código de 6 dígitos"
+                                                autoFocus
+                                                required
+                                                maxLength={6}
+                                                className="w-full pl-9 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple"
+                                            />
+                                        </div>
+
+                                        <div className="relative">
+                                            <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                                            <input
+                                                type={showNewPassword ? 'text' : 'password'}
+                                                value={newPassword}
+                                                onChange={e => setNewPassword(e.target.value)}
+                                                placeholder="Nova palavra-passe"
+                                                minLength={6}
+                                                required
+                                                className="w-full pl-9 pr-10 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                                            >
+                                                {showNewPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                                            </button>
+                                        </div>
+
+                                        {status === 'error' && errorMsg && (
+                                            <p className="text-xs text-red-500 font-medium text-center">{errorMsg}</p>
+                                        )}
+
+                                        <button
+                                            type="button"
+                                            onClick={handleVerifyResetCode}
+                                            disabled={!isLoaded || status === 'loading'}
+                                            className="w-full py-2.5 rounded-full bg-dribly-purple text-white text-sm font-bold hover:bg-dribly-purple/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+                                        >
+                                            {status === 'loading' ? <Loader2 size={16} className="animate-spin" /> : null}
+                                            Redefinir palavra-passe
+                                        </button>
+                                    </>
+                                ) : (
+                                    /* Step 3: password changed */
+                                    <div className="text-center py-2">
+                                        <CheckCircle size={32} className="text-green-500 mx-auto mb-2" />
+                                        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                                            Palavra-passe alterada com sucesso!
+                                        </p>
+                                    </div>
                                 )}
                             </div>
                         ) : (
@@ -333,14 +363,21 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                             <div className="relative">
                                 <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
                                 <input
-                                    type="password"
+                                    type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     placeholder="Palavra-passe"
                                     minLength={6}
                                     required
-                                    className="w-full pl-9 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple"
+                                    className="w-full pl-9 pr-10 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                                >
+                                    {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                                </button>
                             </div>
 
                             {/* Forgot password link — sign in only */}
