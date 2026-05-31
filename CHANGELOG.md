@@ -6,9 +6,13 @@
 
 ## [v5.2] — 2026-05-31
 
+### Feat
+- **short_name na BD:** nova coluna `short_name` na tabela `clubs` com o nome curto/meio-termo (ex: "FC Gaia", "FC Porto", "SL Benfica") populado a partir dos dados de scraping
+- **Nomes de exibição curtos:** todos os locais que mostram o nome do clube usam agora `displayName()` — exibe o short_name se disponível, caso contrário o nome completo
+
 ### Fix
 - **Navbar no iPhone:** adicionado `pt-safe` (safe-area-inset-top) à navbar superior para não ficar atrás do relógio/bateria nos iPhones com notch; adicionadas utilities CSS `pt-safe` / `pb-safe` no index.css
-- **Pesquisa com abreviaturas:** pesquisar "FC", "GD", "SC", "AD" etc. agora encontra clubes cujo nome completo contém "Futebol Clube", "Grupo Desportivo", etc. — a pesquisa gera acrónimos a partir do nome e pesquisa contra nome + search_name + acrónimo combinados
+- **Pesquisa com abreviaturas:** pesquisar "FC", "GD", "SC", "AD" etc. agora encontra clubes cujo nome completo contém "Futebol Clube", "Grupo Desportivo", etc. — a pesquisa gera acrónimos a partir do nome e pesquisa contra nome + short_name + search_name + acrónimo combinados
 
 ---
 
