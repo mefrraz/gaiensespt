@@ -14,11 +14,11 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
     const { signIn, isLoaded: siLoaded, setActive } = useSignIn()
     const { signUp, isLoaded: suLoaded } = useSignUp()
 
-    const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+    const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>('signin')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [username, setUsername] = useState('')
-    const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
+    const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'sent'>('idle')
     const [errorMsg, setErrorMsg] = useState('')
 
     const isLoaded = siLoaded && suLoaded
@@ -111,9 +111,28 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
     }
 
     const switchMode = () => {
-        setMode(mode === 'signin' ? 'signup' : 'signin')
+        if (mode === 'forgot') {
+            setMode('signin')
+        } else {
+            setMode(mode === 'signin' ? 'signup' : 'signin')
+        }
         setErrorMsg('')
         setStatus('idle')
+    }
+
+    const handleForgotPassword = async () => {
+        if (!email.trim() || !signIn) return
+        setStatus('loading')
+        try {
+            await signIn.create({
+                identifier: email.trim(),
+                strategy: 'reset_password_email_code',
+            })
+            setStatus('sent')
+        } catch (err: any) {
+            setStatus('error')
+            setErrorMsg('Email não encontrado. Verifica se está correto.')
+        }
     }
 
     return (
@@ -157,15 +176,59 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                                 )}
                             </div>
                             <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">
-                                {mode === 'signin' ? 'Iniciar sessão' : 'Criar conta'}
+                                {mode === 'forgot' ? 'Recuperar palavra-passe' : mode === 'signin' ? 'Iniciar sessão' : 'Criar conta'}
                             </h3>
                             <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                                {mode === 'signin'
-                                    ? 'Entra com a tua conta.'
-                                    : 'Regista-te para seguir clubes e competições.'}
+                                {mode === 'forgot'
+                                    ? 'Receberás um email para redefinir a palavra-passe.'
+                                    : mode === 'signin'
+                                        ? 'Entra com a tua conta.'
+                                        : 'Regista-te para seguir clubes e competições.'}
                             </p>
                         </div>
 
+                        {mode === 'forgot' ? (
+                            /* Forgot password mode */
+                            <div className="space-y-3">
+                                {status === 'sent' ? (
+                                    <div className="text-center py-2">
+                                        <CheckCircle size={28} className="text-green-500 mx-auto mb-2" />
+                                        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                                            Email enviado! Verifica a tua caixa de entrada para redefinir a palavra-passe.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="relative">
+                                            <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                                            <input
+                                                type="email"
+                                                value={email}
+                                                onChange={e => setEmail(e.target.value)}
+                                                placeholder="Email"
+                                                autoFocus
+                                                required
+                                                className="w-full pl-9 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple"
+                                            />
+                                        </div>
+
+                                        {status === 'error' && errorMsg && (
+                                            <p className="text-xs text-red-500 font-medium text-center">{errorMsg}</p>
+                                        )}
+
+                                        <button
+                                            type="button"
+                                            onClick={handleForgotPassword}
+                                            disabled={!isLoaded || status === 'loading'}
+                                            className="w-full py-2.5 rounded-full bg-dribly-purple text-white text-sm font-bold hover:bg-dribly-purple/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+                                        >
+                                            {status === 'loading' ? <Loader2 size={16} className="animate-spin" /> : null}
+                                            Enviar email
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        ) : (
                         <form onSubmit={handleSubmit} className="space-y-3">
                             {/* Username — signup only */}
                             {mode === 'signup' && (
@@ -211,6 +274,19 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                                 />
                             </div>
 
+                            {/* Forgot password link — sign in only */}
+                            {mode === 'signin' && (
+                                <p className="text-right">
+                                    <button
+                                        type="button"
+                                        onClick={() => { setMode('forgot'); setErrorMsg(''); setStatus('idle') }}
+                                        className="text-[11px] text-zinc-400 hover:text-dribly-purple transition-colors"
+                                    >
+                                        Esqueci a palavra-passe?
+                                    </button>
+                                </p>
+                            )}
+
                             {/* Error */}
                             {status === 'error' && errorMsg && (
                                 <p className="text-xs text-red-500 font-medium text-center">{errorMsg}</p>
@@ -226,10 +302,13 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                                 {mode === 'signin' ? 'Entrar' : 'Criar conta'}
                             </button>
                         </form>
+                        )}
 
                         {/* Mode switch */}
                         <p className="text-[11px] text-zinc-400 dark:text-zinc-500 text-center mt-4">
-                            {mode === 'signin' ? (
+                            {mode === 'forgot' ? (
+                                <>Lembraste-te? <button onClick={switchMode} className="text-dribly-purple font-bold hover:underline">Iniciar sessão</button></>
+                            ) : mode === 'signin' ? (
                                 <>Não tens conta? <button onClick={switchMode} className="text-dribly-purple font-bold hover:underline">Criar conta</button></>
                             ) : (
                                 <>Já tens conta? <button onClick={switchMode} className="text-dribly-purple font-bold hover:underline">Iniciar sessão</button></>
