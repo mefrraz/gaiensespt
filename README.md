@@ -38,24 +38,27 @@ O Dribly nasceu da frustração de não existir uma plataforma única, rápida e
 
 ## ✨ Funcionalidades
 
-| Funcionalidade | Estado | Detalhes |
+| Funcionalidade | Versão | Detalhes |
 |---|---|---|
-| 🔍 **Pesquisa de clubes** | ✅ Completo | 281 clubes com cores, logos, pesquisa fuzzy |
-| 📅 **Jogos e agenda** | ✅ Completo | Calendário, resultados, fichas de jogo detalhadas |
-| 🏆 **Classificações** | ✅ Completo | Tabelas Fase Regular com J, V, D, PM, PS, DIF, PTS |
-| 📊 **Estatísticas individuais** | ✅ Ligas topo | 22 campos — PTS, REB, AST, VAL, %L2, %L3, %LL |
-| 🔐 **Contas (Clerk)** | ✅ v4 | Email/password + Google OAuth, username único |
-| ⭐ **Favoritos** | ✅ Completo | Favoritar clube + segui-lo automaticamente |
-| ❤️ **Seguir clubes/liga** | ✅ Completo | Página dedicada "Seguidos" com RLS |
-| 🗺️ **Mapas e localização** | ✅ Completo | Pavilhões no mapa |
-| 🌓 **Modo claro/escuro** | ✅ Completo | Com transição suave |
-| 📱 **PWA instalável** | ✅ Completo | Instala como app nativa |
-| 🔌 **Offline parcial** | ✅ Completo | Service Worker + cache inteligente |
-| 🎨 **Tema dinâmico** | ✅ Completo | Cada clube com accent color própria |
-| 🎯 **Tour onboarding** | ✅ v3.3 | Tour guiado ao criar conta |
-| 💡 **Sugestões pós-registo** | ✅ v3.3 | Favoritar e seguir clubes/ligas na 1ª vez |
-| 🔑 **Google OAuth** | ✅ v4 | Login com conta Google (1 clique) |
-| 🌍 **Domínio próprio** | ✅ v4 | [dribly.pt](https://dribly.pt) |
+| 🔍 **Pesquisa de clubes** | — | 281 clubes com cores, logos, pesquisa fuzzy |
+| 📅 **Jogos e agenda** | — | Calendário, resultados, fichas de jogo detalhadas |
+| 🏆 **Classificações** | — | Tabelas Fase Regular com J, V, D, PM, PS, DIF, PTS |
+| 📊 **Estatísticas individuais** | — | 22 campos — PTS, REB, AST, VAL, %L2, %L3, %LL |
+| ⭐ **Favoritar clube** | — | Favoritar clube + segui-lo automaticamente |
+| ❤️ **Seguir clubes/ligas** | — | Página dedicada "Seguidos" |
+| 🗺️ **Mapas / Pavilhões** | — | Pavilhões no mapa |
+| 🌓 **Modo claro/escuro** | — | Transição suave |
+| 📱 **PWA instalável** | — | Instala como app nativa |
+| 🔌 **Offline parcial** | — | Service Worker + cache inteligente |
+| 🎨 **Tema dinâmico** | — | Cada clube com accent color própria |
+| 🎯 **Tour onboarding** | v3.3 | Tour guiado ao criar conta |
+| 💡 **Sugestões pós-registo** | v3.3 | Sugestões de clubes/ligas na 1ª vez |
+| 🔐 **Contas email/password** | v4 | Login + registo com username único (Clerk) |
+| 🔑 **Recuperar palavra-passe** | v4.8 | Email com código de reset |
+| 👤 **Perfil completo** | v4.9 | Editar username, nome, bio, mudar password |
+| 🔒 **Sessões ativas** | v4.9 | Ver e terminar sessões remotas |
+| 🗑️ **Apagar conta** | v4.9 | Auto-remoção com confirmação |
+| 🌍 **Domínio próprio** | v4 | [dribly.pt](https://dribly.pt) |
 
 ---
 
@@ -72,83 +75,17 @@ O Dribly nasceu da frustração de não existir uma plataforma única, rápida e
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td>Mobile-first</td>
-      <td align="center">✅</td>
-      <td align="center">✅</td>
-      <td align="center">✅</td>
-      <td align="center">❌</td>
-    </tr>
-    <tr>
-      <td>PWA instalável</td>
-      <td align="center">✅</td>
-      <td align="center">❌</td>
-      <td align="center">✅</td>
-      <td align="center">❌</td>
-    </tr>
-    <tr>
-      <td>Open Source</td>
-      <td align="center">✅</td>
-      <td align="center">❌</td>
-      <td align="center">❌</td>
-      <td align="center">❌</td>
-    </tr>
-    <tr>
-      <td>Gratuito</td>
-      <td align="center">✅</td>
-      <td align="center">✅</td>
-      <td align="center">❌</td>
-      <td align="center">✅</td>
-    </tr>
-    <tr>
-      <td>Multi-clube</td>
-      <td align="center">✅</td>
-      <td align="center">✅</td>
-      <td align="center">⚠️</td>
-      <td align="center">❌</td>
-    </tr>
-    <tr>
-      <td>Multi-escalão</td>
-      <td align="center">✅</td>
-      <td align="center">✅</td>
-      <td align="center">⚠️</td>
-      <td align="center">❌</td>
-    </tr>
-    <tr>
-      <td>Offline parcial</td>
-      <td align="center">✅</td>
-      <td align="center">❌</td>
-      <td align="center">❌</td>
-      <td align="center">❌</td>
-    </tr>
-    <tr>
-      <td>Ficha de jogo detalhada</td>
-      <td align="center">✅</td>
-      <td align="center">✅</td>
-      <td align="center">✅</td>
-      <td align="center">❌</td>
-    </tr>
-    <tr>
-      <td>Estatísticas individuais</td>
-      <td align="center">✅</td>
-      <td align="center">✅</td>
-      <td align="center">✅</td>
-      <td align="center">❌</td>
-    </tr>
-    <tr>
-      <td>Contas / Seguir clubes</td>
-      <td align="center">✅</td>
-      <td align="center">❌</td>
-      <td align="center">✅</td>
-      <td align="center">❌</td>
-    </tr>
-    <tr>
-      <td>Login Google</td>
-      <td align="center">✅</td>
-      <td align="center">❌</td>
-      <td align="center">❌</td>
-      <td align="center">❌</td>
-    </tr>
+    <tr><td>Mobile-first</td><td align="center">✅</td><td align="center">✅</td><td align="center">✅</td><td align="center">❌</td></tr>
+    <tr><td>PWA instalável</td><td align="center">✅</td><td align="center">❌</td><td align="center">✅</td><td align="center">❌</td></tr>
+    <tr><td>Open Source</td><td align="center">✅</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td></tr>
+    <tr><td>Gratuito</td><td align="center">✅</td><td align="center">✅</td><td align="center">❌</td><td align="center">✅</td></tr>
+    <tr><td>Multi-clube</td><td align="center">✅</td><td align="center">✅</td><td align="center">⚠️</td><td align="center">❌</td></tr>
+    <tr><td>Multi-escalão</td><td align="center">✅</td><td align="center">✅</td><td align="center">⚠️</td><td align="center">❌</td></tr>
+    <tr><td>Offline parcial</td><td align="center">✅</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td></tr>
+    <tr><td>Ficha de jogo detalhada</td><td align="center">✅</td><td align="center">✅</td><td align="center">✅</td><td align="center">❌</td></tr>
+    <tr><td>Estatísticas individuais</td><td align="center">✅</td><td align="center">✅</td><td align="center">✅</td><td align="center">❌</td></tr>
+    <tr><td>Contas / Seguir clubes</td><td align="center">✅</td><td align="center">❌</td><td align="center">✅</td><td align="center">❌</td></tr>
+    <tr><td>Perfil + Segurança</td><td align="center">✅</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td></tr>
   </tbody>
 </table>
 
@@ -161,11 +98,11 @@ O Dribly nasceu da frustração de não existir uma plataforma única, rápida e
 | Frontend | React 18 + TypeScript |
 | Build | Vite 5 |
 | Estilos | Tailwind CSS 3 |
-| Auth | Clerk (email/password + Google OAuth) |
+| Auth | Clerk (email/password, username único, recuperação de password) |
 | Base de dados | Supabase (PostgreSQL) |
 | Deploy | Vercel (Edge Functions) |
 | Cache local | localStorage + Service Worker |
-| API externa | FPB + TugaBasket (HTML scraping + WordPress AJAX) |
+| API externa | FPB + TugaBasket (scraping HTML + WordPress AJAX) |
 | PWA | vite-plugin-pwa (Workbox) |
 
 ---
@@ -177,19 +114,19 @@ web/
 ├── src/
 │   ├── lib/
 │   │   ├── fpbApi.ts               # Parser HTML FPB (clubes)
-│   │   ├── fpbCompetitionsApi.ts    # Parser HTML + WordPress AJAX (competições)
-│   │   ├── tugabasketApi.ts         # Parser TugaBasket
+│   │   ├── fpbCompetitionsApi.ts   # Parser HTML + WordPress AJAX (competições)
+│   │   ├── tugabasketApi.ts        # Parser TugaBasket
 │   │   ├── ClubContext.tsx          # Estado global clubes
-│   │   ├── AuthContext.tsx          # Autenticação Clerk (hooks)
+│   │   ├── AuthContext.tsx          # Autenticação Clerk (useAuth, TokenProvider)
 │   │   └── supabase.ts             # Cliente Supabase (DB + RLS via Clerk JWT)
 │   ├── hooks/
-│   │   ├── useGames.ts              # Jogos com cache
-│   │   ├── useStandings.ts          # Classificações com cache
-│   │   └── useFollows.ts            # Seguir clubes/liga (DB + RLS)
+│   │   ├── useGames.ts             # Jogos com cache
+│   │   ├── useStandings.ts         # Classificações com cache
+│   │   └── useFollows.ts           # Seguir clubes/liga (DB + RLS)
 │   ├── components/
-│   │   ├── AuthModal.tsx            # Login / Criar conta (Clerk hooks)
+│   │   ├── AuthModal.tsx           # Login / Criar conta / Recuperar password
 │   │   ├── OnboardingTour.tsx       # Tour guiado pós-registo
-│   │   ├── PostOnboardingSuggestions.tsx  # Sugestões iniciais
+│   │   ├── PostOnboardingSuggestions.tsx # Sugestões iniciais
 │   │   ├── GameCard.tsx             # Cartão de jogo reutilizável
 │   │   └── SegmentControl.tsx       # Navegação por tabs
 │   └── pages/
@@ -199,9 +136,9 @@ web/
 │       ├── club/ClubGames.tsx       # Jogos do clube
 │       ├── Game.tsx                 # Ficha de jogo detalhada
 │       ├── Following.tsx           # Seguidos (clubes + ligas)
-│       └── ProfilePage.tsx         # Perfil do utilizador
+│       └── ProfilePage.tsx         # Perfil, password, sessões, apagar conta
 ├── api/
-│   ├── fpb.ts                      # Edge Function (proxy FPB + WordPress AJAX)
+│   ├── fpb.ts                      # Edge Function (proxy FPB)
 │   └── tugabasket.ts               # Edge Function (proxy TugaBasket)
 └── public/
     ├── logo.svg                    # Logo Dribly
@@ -219,36 +156,27 @@ O Dribly é uma **SPA (Single Page Application)** sem backend próprio. Toda a l
 ```
 Browser (React SPA)
     │
-    ├── Clerk SDK ────────────► Clerk (Auth + sessões + Google OAuth)
+    ├── Clerk SDK ────────────► Clerk (Auth + sessões)
     │
-    ├── Supabase SDK ─────────► Supabase (DB + RLS via Clerk JWT)
+    ├── Supabase SDK ─────────► Supabase (DB + follows)
     │
     ├── /api/* (Edge Funcs) ──► FPB / TugaBasket (scraping)
     │
     └── Service Worker ───────► Cache local (PWA offline)
 ```
 
-### Autenticação (Clerk)
+### Autenticação (Clerk v4)
 
-A partir da v4, o Dribly usa **Clerk** para gestão de contas:
-
-- **Email/password** — registo clássico com username único validado pelo Clerk
-- **Google OAuth** — login com 1 clique via conta Google
-- **JWT bridge** — o token Clerk é injetado no Supabase via `accessToken` callback, permitindo RLS (`auth.uid() = user_id`) nas tabelas de seguidores
+- **Email/password** — registo com username único validado pelo Clerk
+- **Recuperação de password** — email com código de 6 dígitos + nova password
+- **Perfil** — editar username, nome, bio, mudar password, ver sessões ativas, apagar conta
+- **Tour onboarding** — guiado apenas ao criar conta
 
 ### Fontes de dados
 
-- **FPB (www.fpb.pt)** — scraping HTML + WordPress AJAX (`/wp-admin/admin-ajax.php`)
-- **TugaBasket** — scraping HTML para estatísticas individuais e histórico
+- **FPB (www.fpb.pt)** — scraping HTML + WordPress AJAX
+- **TugaBasket** — scraping HTML para estatísticas
 - **Logos e cores** — mapeamento manual de 281 clubes
-
-### Cache em três camadas
-
-| Camada | Onde | TTL | O que guarda |
-|---|---|---|---|
-| **localStorage** | Browser | ~15 min | Jogos e classificações |
-| **Supabase (PostgreSQL)** | Cloud | Médio prazo | Clubes, resultados, seguidores |
-| **Service Worker** | Browser | Longo prazo | Logos, assets estáticos, PWA offline |
 
 ---
 
@@ -278,15 +206,6 @@ git push origin main
 ```
 
 A Vercel faz auto-deploy. Domínio: **[dribly.pt](https://dribly.pt)**.
-
----
-
-## 🧪 Scrapers
-
-```bash
-cd scrapers
-python discover-competitions.py
-```
 
 ---
 
