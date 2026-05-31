@@ -34,6 +34,20 @@ function normalizeUser(clerkUser: NonNullable<ReturnType<typeof useUser>['user']
 function TokenProviderSetup() {
     const { isLoaded, isSignedIn } = useUser()
     const { getToken } = useClerkAuth()
+    const clerk = useClerk()
+
+    // Handle OAuth redirect callback — complete transferable verifications
+    useEffect(() => {
+        if (isLoaded && !isSignedIn) {
+            clerk
+                .handleRedirectCallback({
+                    transfer: true,
+                } as any)
+                .catch(() => {
+                    // Not a redirect callback — safe to ignore
+                })
+        }
+    }, [isLoaded, isSignedIn, clerk])
 
     useEffect(() => {
         if (isLoaded) {
