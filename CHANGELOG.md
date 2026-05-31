@@ -4,6 +4,16 @@
 
 ---
 
+## [v5.5] — 2026-05-31
+
+### Feat
+- **Estatísticas de jogo para clubes:** ao abrir a ficha de jogo de qualquer clube, o Dribly tenta agora obter as estatísticas da FPB (top performers, duelo, box scores) — se existirem, são exibidas automaticamente; se não, a ficha mantém-se apenas com os dados básicos
+
+### Fix
+- A ficha de jogo para jogos de clubes faz agora uma chamada não-bloqueante ao `fetchGameDetail` com o ID FPB do jogo, extraindo as mesmas estatísticas que já eram mostradas nas competições
+
+---
+
 ## [v5.4] — 2026-05-31
 
 ### Feat

@@ -84,8 +84,21 @@ function Game() {
                     .eq('slug', slug)
                     .single()
                 if (!error && data) {
-                    setMatch(data as Match)
+                    const m = data as Match
+                    setMatch(m)
                     setLoading(false)
+                    // Also try to fetch full FPB game detail for stats (non-blocking)
+                    if (m.id) {
+                        fetchGameDetail(String(m.id)).then(detail => {
+                            if (detail) {
+                                setDetailLeaders(detail.gameLeaders)
+                                setDetailAbrev({ casa: detail.abrev_casa, fora: detail.abrev_fora })
+                                setTopPerfCasa(detail.topPerfCasa)
+                                setTopPerfFora(detail.topPerfFora)
+                                setTopPerfStats(detail.topPerfStats)
+                            }
+                        }).catch(() => { /* FPB stats not available — fine */ })
+                    }
                     return
                 }
             }
