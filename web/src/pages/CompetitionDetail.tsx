@@ -4,7 +4,7 @@ import { ArrowLeft, Loader2, Heart, ListOrdered, CalendarDays, Trophy, Users, Ba
 import { useFollows } from '../hooks/useFollows'
 import { useAuth } from '../lib/AuthContext'
 import { useClub } from '../lib/ClubContext'
-// supabase available if needed for competition name lookup
+import { supabase } from '../lib/supabase'
 import {
     fetchStandings, fetchSchedule, fetchResults, fetchTeams, fetchPlayerStats,
     type FPBStandingPhase, type FPBGame, type FPBTeam, type FPBPlayerStat
@@ -147,6 +147,7 @@ export default function CompetitionDetail() {
     const { clubs, loadClubs } = useClub()
 
     const [tab, setTab] = useState<Tab>('geral')
+    const [compName, setCompName] = useState('')
     const [standings, setStandings] = useState<FPBStandingPhase[]>([])
     const [selectedPhase, setSelectedPhase] = useState(0)
     const [games, setGames] = useState<FPBGame[]>([])
@@ -157,6 +158,19 @@ export default function CompetitionDetail() {
 
     const [loading, setLoading] = useState(true)
     useEffect(() => { loadClubs() }, [])
+
+    // Fetch competition name from Supabase (much larger catalogue than COMP_NAMES)
+    useEffect(() => {
+        if (!provaId) return
+        supabase.from('competitions')
+            .select('competition_name')
+            .eq('competition_id', provaId)
+            .eq('season', '2025/2026')
+            .single()
+            .then(({ data }) => {
+                if (data?.competition_name) setCompName(data.competition_name)
+            }, () => { /* fallback to COMP_NAMES or raw ID */ })
+    }, [provaId])
 
     useEffect(() => {
         if (!provaId) return
@@ -276,7 +290,7 @@ export default function CompetitionDetail() {
                 </div>
 
                 <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white mb-1 tracking-tight">
-                    {COMP_NAMES[provaId] || `Competição #${provaId}`}
+                    {compName || COMP_NAMES[provaId] || `Competição #${provaId}`}
                 </h1>
                 <p className="text-sm text-zinc-400 mb-6">2025/2026 · Fase Regular</p>
 

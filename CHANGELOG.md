@@ -4,6 +4,16 @@
 
 ---
 
+## [v5.7] — 2026-05-31
+
+### Fix
+- **Nome da competição:** a página de detalhe de competição (`/competicao/:id`) agora procura o nome da competição na tabela `competitions` do Supabase — deixou de mostrar "Competição #10910" para ligas como a CN2, passando a mostrar o nome real
+
+### Feat
+- **Botão "Página da Competição":** na página de classificações (`/standings/:assoc/:comp`) foi adicionado um botão que redireciona para a página completa da competição com todos os separadores (equipas, resultados, agenda, estatísticas)
+
+---
+
 ## [v5.6] — 2026-05-31
 
 ### Fix

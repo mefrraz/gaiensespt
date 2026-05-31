@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Loader2, ArrowLeft, Search } from 'lucide-react'
+import { Loader2, ArrowLeft, Search, ExternalLink } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useStandings } from '../hooks/useStandings'
 import { StandingsTable } from '../components/StandingsTable'
@@ -85,14 +85,25 @@ export default function CompetitionPhases() {
                 </Link>
 
                 <div className="mb-6">
-                    <h1 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight line-clamp-2">
-                        {compName || 'Competição'}
-                    </h1>
-                    {assocName && (
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium mt-1">
-                            {assocName} · {season}
-                        </p>
-                    )}
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                            <h1 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight line-clamp-2">
+                                {compName || 'Competição'}
+                            </h1>
+                            {assocName && (
+                                <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium mt-1">
+                                    {assocName} · {season}
+                                </p>
+                            )}
+                        </div>
+                        <Link
+                            to={`/competicao/${compId}`}
+                            className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-dribly-purple text-white text-xs font-bold hover:bg-dribly-purple-dim transition-colors active:scale-[0.97] shadow-sm shadow-dribly-purple/20"
+                        >
+                            <ExternalLink size={13} />
+                            <span className="hidden sm:inline">Página da</span> Competição
+                        </Link>
+                    </div>
                 </div>
 
                 {loading ? (
