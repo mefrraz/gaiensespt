@@ -254,6 +254,9 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                                 <p className="text-xs text-red-500 font-medium text-center">{errorMsg}</p>
                             )}
 
+                            {/* Clerk CAPTCHA — rendered inside modal so it's visible */}
+                            <div id="clerk-captcha" className="flex justify-center" />
+
                             {/* Submit */}
                             <button
                                 type="submit"

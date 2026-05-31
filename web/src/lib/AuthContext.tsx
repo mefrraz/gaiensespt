@@ -64,8 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return (
         <>
             <TokenProviderSetup />
-            {/* Required by Clerk for bot protection / sign-up completion */}
-            <div id="clerk-captcha" />
             {children}
         </>
     )
