@@ -44,15 +44,15 @@ O Dribly nasceu da frustração de não existir uma plataforma única, rápida e
 |---|---|---|
 | 🔍 **Pesquisa de clubes** | v1.0 | 281 clubes com cores, logos, pesquisa fuzzy |
 | 📅 **Jogos e agenda** | v1.0 | Calendário, resultados, fichas de jogo detalhadas |
-| 🏆 **Classificações** | v1.0 | Tabelas Fase Regular com J, V, D, PM, PS, DIF, PTS |
-| 📊 **Estatísticas individuais** | v2.0 | 22 campos — PTS, REB, AST, VAL, %L2, %L3, %LL |
-| ⭐ **Favoritar clube** | v1.0 | Favoritar clube + segui-lo automaticamente |
-| ❤️ **Seguir clubes/ligas** | v3.0 | Página dedicada "Seguidos" |
-| 🗺️ **Mapas / Pavilhões** | v2.0 | Pavilhões no mapa |
+| 🏆 **Classificações** | v3.3 | Tabelas via WordPress AJAX com J, V, D, PM, PS, DIF, PTS |
+| 📊 **Estatísticas individuais** | v3.4 | 22 campos — PTS, REB, AST, VAL, %L2, %L3, %LL |
+| ⭐ **Favoritar clube** | v3.4 | Favoritar clube + segui-lo automaticamente |
+| ❤️ **Seguir clubes/ligas** | v3.4 | Página dedicada "Seguidos" |
+| 🗺️ **Mapas / Pavilhões** | v3.4 | Pavilhões no mapa |
 | 🌓 **Modo claro/escuro** | v1.0 | Transição suave |
-| 📱 **PWA instalável** | v1.0 | Instala como app nativa |
-| 🔌 **Offline parcial** | v1.0 | Service Worker + cache inteligente |
-| 🎨 **Tema dinâmico** | v3.0 | Cada clube com accent color própria |
+| 📱 **PWA instalável** | v1.2 | Instala como app nativa |
+| 🔌 **Offline parcial** | v3.0 | Service Worker + cache inteligente |
+| 🎨 **Tema dinâmico** | v2.9 | Cada clube com accent color própria |
 | 🎯 **Tour onboarding** | v3.3 | Tour guiado ao criar conta |
 | 💡 **Sugestões pós-registo** | v3.3 | Sugestões de clubes/ligas na 1ª vez |
 | 🔐 **Contas email/password** | v5.0 | Login + registo com username único (Clerk) |
