@@ -380,19 +380,6 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                                 </button>
                             </div>
 
-                            {/* Forgot password link — sign in only */}
-                            {mode === 'signin' && (
-                                <p className="text-right">
-                                    <button
-                                        type="button"
-                                        onClick={() => { setMode('forgot'); setErrorMsg(''); setStatus('idle') }}
-                                        className="text-[11px] text-zinc-400 hover:text-dribly-purple transition-colors"
-                                    >
-                                        Esqueci a palavra-passe?
-                                    </button>
-                                </p>
-                            )}
-
                             {/* Error */}
                             {status === 'error' && errorMsg && (
                                 <p className="text-xs text-red-500 font-medium text-center">{errorMsg}</p>
@@ -408,6 +395,19 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                                 {mode === 'signin' ? 'Entrar' : 'Criar conta'}
                             </button>
                         </form>
+                        )}
+
+                        {/* Forgot password — sign in only */}
+                        {mode === 'signin' && (
+                            <p className="text-center mt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => { setMode('forgot'); setErrorMsg(''); setStatus('idle') }}
+                                    className="text-[11px] text-zinc-400 hover:text-dribly-purple transition-colors"
+                                >
+                                    Esqueci a palavra-passe?
+                                </button>
+                            </p>
                         )}
 
                         {/* Mode switch */}
