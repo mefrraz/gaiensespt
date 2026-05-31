@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, useMemo, useCallback, type ReactNode } from 'react'
 import { useUser, useAuth as useClerkAuth, useClerk } from '@clerk/clerk-react'
 import { setClerkTokenProvider } from './supabase'
 
@@ -78,9 +78,14 @@ export function useAuth(): AuthContextType {
     const { isLoaded, isSignedIn, user: clerkUser } = useUser()
     const clerk = useClerk()
 
+    const normalizedUser = useMemo(() => {
+        if (!isSignedIn || !clerkUser) return null
+        return normalizeUser(clerkUser)
+    }, [isSignedIn, clerkUser])
+
     return {
-        user: isSignedIn && clerkUser ? normalizeUser(clerkUser) : null,
+        user: normalizedUser,
         loading: !isLoaded,
-        signOut: () => clerk.signOut(),
+        signOut: useCallback(() => clerk.signOut(), [clerk]),
     }
 }
