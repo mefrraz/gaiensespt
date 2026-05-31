@@ -40,9 +40,7 @@ function TokenProviderSetup() {
     useEffect(() => {
         if (isLoaded && !isSignedIn) {
             clerk
-                .handleRedirectCallback({
-                    transfer: true,
-                } as any)
+                .handleRedirectCallback({} as any)
                 .catch(() => {
                     // Not a redirect callback — safe to ignore
                 })
@@ -66,6 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return (
         <>
             <TokenProviderSetup />
+            {/* Required by Clerk for bot protection / sign-up completion */}
+            <div id="clerk-captcha" style={{ display: 'none' }} />
             {children}
         </>
     )
