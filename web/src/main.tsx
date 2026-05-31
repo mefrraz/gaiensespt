@@ -15,13 +15,14 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <ClerkProvider
             publishableKey={clerkPubKey || ''}
             routerPush={(to) => {
-                // Block redirects to our own domain (Clerk tries to redirect to sign-in page)
-                if (to.startsWith('https://dribly.pt') || to.startsWith('/')) return
-                // Allow OAuth redirects (google.com, etc.)
+                // Block clean redirects to our domain (infinite loop on sign-in)
+                const isOwnDomain = to.startsWith('https://dribly.pt') || to.startsWith('/')
+                if (isOwnDomain && !to.includes('__clerk')) return
                 window.location.href = to
             }}
             routerReplace={(to) => {
-                if (to.startsWith('https://dribly.pt') || to.startsWith('/')) return
+                const isOwnDomain = to.startsWith('https://dribly.pt') || to.startsWith('/')
+                if (isOwnDomain && !to.includes('__clerk')) return
                 window.location.href = to
             }}
         >
