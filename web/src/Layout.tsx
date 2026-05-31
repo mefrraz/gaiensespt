@@ -21,11 +21,12 @@ function Layout() {
     const { user } = useAuth()
 
     const handleAuthSuccess = useCallback((method: 'signin' | 'signup') => {
-        // Close auth modal, then show onboarding after a brief delay
-        // so the auth modal closing animation plays first
-        setTimeout(() => {
-            setOnboardingTrigger(method as TourTrigger)
-        }, 500)
+        // Only show onboarding tour after sign-up, not sign-in
+        if (method === 'signup') {
+            setTimeout(() => {
+                setOnboardingTrigger(method as TourTrigger)
+            }, 500)
+        }
     }, [])
 
     const activeClub = selectedClub || favoriteClub

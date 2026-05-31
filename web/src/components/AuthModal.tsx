@@ -97,7 +97,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                     onClose()
                     onAuthSuccess?.('signin')
                 } else {
-                    setErrorMsg('Verificação adicional necessária.')
+                    setErrorMsg('Verificação adicional necessária. Verifica o teu email.')
                     setStatus('error')
                 }
             }
