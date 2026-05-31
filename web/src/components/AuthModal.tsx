@@ -104,6 +104,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
         try {
             await signIn.authenticateWithRedirect({
                 strategy: 'oauth_google',
+                redirectUrl: window.location.href,
                 redirectUrlComplete: window.location.href,
             })
         } catch {
