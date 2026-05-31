@@ -22,6 +22,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
     const [newPassword, setNewPassword] = useState('')
     const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'sent' | 'verified'>('idle')
     const [errorMsg, setErrorMsg] = useState('')
+    const [forgotStep, setForgotStep] = useState<'email' | 'code'>('email')
 
     const isLoaded = siLoaded && suLoaded
 
@@ -31,8 +32,11 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
         setEmail('')
         setPassword('')
         setUsername('')
+        setResetCode('')
+        setNewPassword('')
         setStatus('idle')
         setErrorMsg('')
+        setForgotStep('email')
     }
 
     const handleClose = () => {
@@ -131,6 +135,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                 strategy: 'reset_password_email_code',
             })
             setStatus('sent')
+            setForgotStep('code')
         } catch {
             setStatus('error')
             setErrorMsg('Email não encontrado. Verifica se está correto.')
@@ -217,7 +222,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                         {mode === 'forgot' ? (
                             /* Forgot password mode */
                             <div className="space-y-3">
-                                {status === 'sent' || status === 'loading' && resetCode ? (
+                                {forgotStep === 'code' ? (
                                     /* Step 2: enter code + new password */
                                     <>
                                         <div className="relative">
