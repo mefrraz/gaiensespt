@@ -221,6 +221,7 @@ function ClubHome() {
                                 <Link to={`/game/${slug}?clube=${club.slug}`} key={slug} className="flex items-center gap-3 p-3 glass-card hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
                                     <div className="w-1.5 h-1.5 rounded-full shrink-0 bg-zinc-300 dark:bg-zinc-600" />
                                     <div className="flex-1 min-w-0">
+                                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 truncate block leading-tight">{match.escalao || 'Sénior Masculino'}</span>
                                         <p className="text-xs text-zinc-900 dark:text-white truncate">
                                             <span>{match.equipa_casa}</span>
                                             <span className="text-zinc-400 mx-1">vs</span>
@@ -252,6 +253,7 @@ function ClubHome() {
                                 <Link to={`/game/${slug}?clube=${club.slug}`} key={slug} className="flex items-center gap-3 p-3 glass-card hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
                                     <Clock size={12} className="text-[var(--club-color)] shrink-0" />
                                     <div className="flex-1 min-w-0">
+                                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 truncate block leading-tight">{match.escalao || 'Sénior Masculino'}</span>
                                         <p className="text-xs text-zinc-900 dark:text-white truncate">
                                             <span>{match.equipa_casa}</span>
                                             <span className="text-zinc-400 mx-1">vs</span>

@@ -4,6 +4,13 @@
 
 ---
 
+## [v5.4] — 2026-05-31
+
+### Feat
+- **Escalão nos cards de jogos:** "Últimos Resultados" e "Próximos Jogos" na página do clube mostram agora o escalão (ex: "Sénior Masculino") antes dos nomes das equipas
+
+---
+
 ## [v5.3] — 2026-05-31
 
 ### Fix
