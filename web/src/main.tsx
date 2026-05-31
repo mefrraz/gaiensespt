@@ -14,12 +14,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
         <ClerkProvider
             publishableKey={clerkPubKey || ''}
-            signInUrl="/"
-            signUpUrl="/"
-            afterSignInUrl="/"
-            afterSignUpUrl="/"
+            signInUrl={window.location.origin + '/'}
+            signUpUrl={window.location.origin + '/'}
+            afterSignInUrl={window.location.origin + '/'}
+            afterSignUpUrl={window.location.origin + '/'}
             routerPush={(to) => {
-                // Prevent Clerk from navigating to hosted pages
                 if (to.includes('accounts.dribly.pt')) return
                 window.location.href = to
             }}
