@@ -51,11 +51,16 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                     setStatus('error')
                     return
                 }
-                const result = await signUp!.create({
-                    emailAddress: email.trim(),
-                    password,
-                    username: username.trim(),
-                })
+                const result = await Promise.race([
+                    signUp!.create({
+                        emailAddress: email.trim(),
+                        password,
+                        username: username.trim(),
+                    }),
+                    new Promise<never>((_, reject) =>
+                        setTimeout(() => reject(new Error('timeout')), 15000)
+                    ),
+                ])
                 if (result.status === 'complete') {
                     await setActive!({ session: result.createdSessionId! })
                     reset()
@@ -67,10 +72,15 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                     setStatus('error')
                 }
             } else {
-                const result = await signIn!.create({
-                    identifier: email.trim(),
-                    password,
-                })
+                const result = await Promise.race([
+                    signIn!.create({
+                        identifier: email.trim(),
+                        password,
+                    }),
+                    new Promise<never>((_, reject) =>
+                        setTimeout(() => reject(new Error('timeout')), 15000)
+                    ),
+                ])
                 if (result.status === 'complete') {
                     await setActive!({ session: result.createdSessionId! })
                     reset()
@@ -91,6 +101,8 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                 setErrorMsg('Palavra-passe demasiado fraca.')
             else if (msg.includes('username'))
                 setErrorMsg('Este username já está em uso.')
+            else if (msg.includes('timeout'))
+                setErrorMsg('O pedido demorou demasiado. Verifica a tua ligação e tenta novamente.')
             else if (msg.includes('email address'))
                 setErrorMsg('Este email já está registado.')
             else
