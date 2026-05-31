@@ -31,20 +31,38 @@ interface ClubContextType {
 const ClubContext = createContext<ClubContextType | null>(null)
 
 const FAVORITE_KEY = 'dribly_favorite_club'
+const CLUBS_CACHE_KEY = 'dribly_clubs_cache'
+
+function loadCachedClubs(): Club[] {
+    try {
+        const raw = localStorage.getItem(CLUBS_CACHE_KEY)
+        if (raw) return JSON.parse(raw) as Club[]
+    } catch { /* ignore */ }
+    return []
+}
+
+function saveClubsCache(clubs: Club[]) {
+    try { localStorage.setItem(CLUBS_CACHE_KEY, JSON.stringify(clubs)) } catch { /* ignore */ }
+}
 
 export function ClubProvider({ children }: { children: ReactNode }) {
     const [selectedClub, setSelectedClub] = useState<Club | null>(null)
     const [favoriteClub, setFavoriteClubState] = useState<Club | null>(null)
-    const [clubs, setClubs] = useState<Club[]>([])
+    const [clubs, setClubs] = useState<Club[]>(() => loadCachedClubs())
+    const [clubsFetched, setClubsFetched] = useState(false)
 
     const loadClubs = useCallback(async () => {
-        if (clubs.length > 0) return
+        if (clubsFetched) return
         const { data } = await supabase
             .from('clubs')
             .select('id, name, short_name, slug, search_name, logo_url, logo_secondary, primary_color, priority')
             .order('name')
-        if (data) setClubs(data as Club[])
-    }, [clubs.length])
+        if (data) {
+            setClubsFetched(true)
+            setClubs(data as Club[])
+            saveClubsCache(data as Club[])
+        }
+    }, [clubsFetched])
 
     const getClubBySlug = useCallback(async (slug: string): Promise<Club | null> => {
         const cached = clubs.find(c => c.slug === slug)
