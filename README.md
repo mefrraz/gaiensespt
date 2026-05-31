@@ -22,7 +22,7 @@
   </a>
 </p>
 
-> **v5.1** — semi-final · Auth Clerk completa · [dribly.pt](https://dribly.pt)
+> **v5.1.0** — semi-final · Auth Clerk completa · [dribly.pt](https://dribly.pt)
 
 ---
 
@@ -42,26 +42,26 @@ O Dribly nasceu da frustração de não existir uma plataforma única, rápida e
 
 | Funcionalidade | Versão | Detalhes |
 |---|---|---|
-| 🔍 **Pesquisa de clubes** | v1 | 281 clubes com cores, logos, pesquisa fuzzy |
-| 📅 **Jogos e agenda** | v1 | Calendário, resultados, fichas de jogo detalhadas |
-| 🏆 **Classificações** | v1 | Tabelas Fase Regular com J, V, D, PM, PS, DIF, PTS |
-| 📊 **Estatísticas individuais** | v2 | 22 campos — PTS, REB, AST, VAL, %L2, %L3, %LL |
-| ⭐ **Favoritar clube** | v1 | Favoritar clube + segui-lo automaticamente |
-| ❤️ **Seguir clubes/ligas** | v3 | Página dedicada "Seguidos" |
-| 🗺️ **Mapas / Pavilhões** | v2 | Pavilhões no mapa |
-| 🌓 **Modo claro/escuro** | v1 | Transição suave |
-| 📱 **PWA instalável** | v1 | Instala como app nativa |
-| 🔌 **Offline parcial** | v1 | Service Worker + cache inteligente |
-| 🎨 **Tema dinâmico** | v3 | Cada clube com accent color própria |
+| 🔍 **Pesquisa de clubes** | v1.0 | 281 clubes com cores, logos, pesquisa fuzzy |
+| 📅 **Jogos e agenda** | v1.0 | Calendário, resultados, fichas de jogo detalhadas |
+| 🏆 **Classificações** | v1.0 | Tabelas Fase Regular com J, V, D, PM, PS, DIF, PTS |
+| 📊 **Estatísticas individuais** | v2.0 | 22 campos — PTS, REB, AST, VAL, %L2, %L3, %LL |
+| ⭐ **Favoritar clube** | v1.0 | Favoritar clube + segui-lo automaticamente |
+| ❤️ **Seguir clubes/ligas** | v3.0 | Página dedicada "Seguidos" |
+| 🗺️ **Mapas / Pavilhões** | v2.0 | Pavilhões no mapa |
+| 🌓 **Modo claro/escuro** | v1.0 | Transição suave |
+| 📱 **PWA instalável** | v1.0 | Instala como app nativa |
+| 🔌 **Offline parcial** | v1.0 | Service Worker + cache inteligente |
+| 🎨 **Tema dinâmico** | v3.0 | Cada clube com accent color própria |
 | 🎯 **Tour onboarding** | v3.3 | Tour guiado ao criar conta |
 | 💡 **Sugestões pós-registo** | v3.3 | Sugestões de clubes/ligas na 1ª vez |
-| 🔐 **Contas email/password** | v5 | Login + registo com username único (Clerk) |
-| 🔑 **Recuperar palavra-passe** | v5 | Email com código de 6 dígitos |
-| 👤 **Perfil completo** | v5 | Editar username, nome, bio, mudar password |
-| 🔒 **Sessões ativas** | v5 | Ver e terminar sessões remotas |
-| 🗑️ **Apagar conta** | v5 | Auto-remoção com confirmação |
-| 🌍 **Domínio próprio** | v5 | [dribly.pt](https://dribly.pt) |
-| 🎨 **Novo logo** | v5 | Logo Dribly atualizado |
+| 🔐 **Contas email/password** | v5.0 | Login + registo com username único (Clerk) |
+| 🔑 **Recuperar palavra-passe** | v5.0 | Email com código de 6 dígitos |
+| 👤 **Perfil completo** | v5.0 | Editar username, nome, bio, mudar password |
+| 🔒 **Sessões ativas** | v5.0 | Ver e terminar sessões remotas |
+| 🗑️ **Apagar conta** | v5.0 | Auto-remoção com confirmação |
+| 🌍 **Domínio próprio** | v5.0 | [dribly.pt](https://dribly.pt) |
+| 🎨 **Novo logo** | v5.0 | Logo Dribly atualizado |
 
 ---
 
