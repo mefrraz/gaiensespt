@@ -4,6 +4,13 @@
 
 ---
 
+## [v5.6] — 2026-05-31
+
+### Fix
+- **Logos das equipas nas competições:** adicionada terceira estratégia de parsing no `fetchTeams()` que extrai logos diretamente da estrutura HTML `.equipa` + `img.logo` + `.equipa-name` da página da FPB — os logotipos passam a vir diretamente da FPB em vez de depender do fallback do Supabase
+
+---
+
 ## [v5.5] — 2026-05-31
 
 ### Feat

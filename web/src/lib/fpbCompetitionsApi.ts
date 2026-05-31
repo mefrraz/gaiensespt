@@ -515,6 +515,24 @@ export async function fetchTeams(provaId: number): Promise<FPBTeam[]> {
                 }
                 if (teams.length > 0) return teams
             }
+
+            // Strategy 3: FPB page HTML structure — .equipa blocks with img.logo + .equipa-name
+            const equipaRe = /<div class="equipa">\s*<a href="([^"]*)">[\s\S]*?<img class="logo" src="([^"]*)"[^>]*>[\s\S]*?<div class="equipa-name">([^<]*)<\/div>/g
+            let em: RegExpExecArray | null
+            while ((em = equipaRe.exec(html)) !== null) {
+                const href = em[1]
+                const logoUrl = em[2]
+                const nome = em[3].trim()
+                const equipaId = href.match(/equipa_(\d+)/)?.[1]
+                // Extract photo from equipa-head background-image
+                const blockStart = em.index
+                const blockEnd = html.indexOf('</div>', html.indexOf('equipa-name', blockStart) + 12) + 6
+                const block = html.slice(blockStart, Math.min(blockEnd, blockStart + 2000))
+                const bgMatch = block.match(/background-image:\s*url\(['"]?([^'")]*equipas[^'")]*)['"]?\)/i)
+                const photo = bgMatch?.[1]
+                teams.push({ nome, equipa_id: equipaId ? `equipa_${equipaId}` : undefined, logo: logoUrl, photo })
+            }
+            if (teams.length > 0) return teams
         }
     }
 
