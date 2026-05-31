@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useUser, useAuth as useClerkAuth, useClerk } from '@clerk/clerk-react'
 import { setClerkTokenProvider } from './supabase'
 
@@ -35,18 +35,23 @@ function TokenProviderSetup() {
     const { isLoaded, isSignedIn } = useUser()
     const { getToken } = useClerkAuth()
     const clerk = useClerk()
+    const [oauthChecked, setOauthChecked] = useState(false)
 
-    // Handle OAuth redirect callback — complete transferable verifications
+    // Handle OAuth redirect
     useEffect(() => {
-        if (isLoaded && !isSignedIn) {
+        if (isLoaded && !isSignedIn && !oauthChecked) {
             clerk
                 .handleRedirectCallback({} as any)
+                .then(() => {
+                    setOauthChecked(true)
+                })
                 .catch(() => {
-                    // Not a redirect callback — safe to ignore
+                    setOauthChecked(true)
                 })
         }
-    }, [isLoaded, isSignedIn, clerk])
+    }, [isLoaded, isSignedIn, clerk, oauthChecked])
 
+    // Sync Clerk session to Supabase token provider
     useEffect(() => {
         if (isLoaded) {
             if (isSignedIn) {
