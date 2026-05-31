@@ -18,10 +18,6 @@ export default function CompetitionPhases() {
 
     const [compName, setCompName] = useState('')
     const [assocName, setAssocName] = useState('')
-    const [compLogo, setCompLogo] = useState<string | null>(null)
-    const [compAbrev, setCompAbrev] = useState('')
-    const [compGradFrom, setCompGradFrom] = useState('from-dribly-purple')
-    const [compGradTo, setCompGradTo] = useState('to-purple-700')
     const [showLoadingMsg, setShowLoadingMsg] = useState(false)
     const [clubSearch, setClubSearch] = useState('')
 
@@ -38,18 +34,6 @@ export default function CompetitionPhases() {
                     setAssocName(data.association_name as string)
                 }
             })
-        // Also fetch logo from competitions_meta
-        supabase.from('competitions_meta')
-            .select('logo_url, abrev, gradient_from, gradient_to')
-            .eq('id', compId).single()
-            .then(({ data }) => {
-                if (data) {
-                    setCompLogo(data.logo_url || null)
-                    setCompAbrev(data.abrev || '')
-                    setCompGradFrom(data.gradient_from || 'from-dribly-purple')
-                    setCompGradTo(data.gradient_to || 'to-purple-700')
-                }
-            }, () => {})
     }, [compId])
 
     useEffect(() => {
@@ -103,18 +87,9 @@ export default function CompetitionPhases() {
                 <div className="mb-6">
                     <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                                {compLogo ? (
-                                    <img src={compLogo} alt="" className="w-10 h-10 rounded-xl object-contain bg-white dark:bg-zinc-800 shrink-0 shadow-sm border border-zinc-200 dark:border-white/10" />
-                                ) : compAbrev ? (
-                                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${compGradFrom} ${compGradTo} flex items-center justify-center shrink-0 shadow-sm`}>
-                                        <span className="text-[9px] font-black text-white">{compAbrev}</span>
-                                    </div>
-                                ) : null}
-                                <h1 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight line-clamp-2">
-                                    {compName || 'Competição'}
-                                </h1>
-                            </div>
+                            <h1 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight line-clamp-2">
+                                {compName || 'Competição'}
+                            </h1>
                             {assocName && (
                                 <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium mt-1">
                                     {assocName} · {season}

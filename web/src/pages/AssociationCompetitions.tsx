@@ -175,16 +175,16 @@ export default function AssociationCompetitions() {
                                             onClick={() => navigate(`/standings/${id}/${c.competition_id}`)}
                                             className="w-full text-left bg-white dark:bg-zinc-900/90 hover:bg-zinc-50 dark:hover:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 hover:border-dribly-purple/30 dark:hover:border-dribly-purple/30 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 group flex items-center justify-between gap-4">
                                             <div className="min-w-0 flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden shadow-sm border border-zinc-100 dark:border-zinc-700/50">
+                                                <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 overflow-hidden shadow-sm border border-zinc-100 dark:border-zinc-700/50">
                                                     {c.logo_url ? (
-                                                        <img src={c.logo_url} alt="" className="w-8 h-8 object-contain" />
+                                                        <img src={c.logo_url} alt="" className="w-10 h-10 object-contain" />
                                                     ) : c.abrev ? (
-                                                        <div className={`w-10 h-10 bg-gradient-to-br ${c.gradient_from} ${c.gradient_to} flex items-center justify-center`}>
-                                                            <span className="text-[8px] font-black text-white">{c.abrev}</span>
+                                                        <div className={`w-14 h-14 bg-gradient-to-br ${c.gradient_from} ${c.gradient_to} flex items-center justify-center`}>
+                                                            <span className="text-[11px] font-black text-white">{c.abrev}</span>
                                                         </div>
                                                     ) : (
-                                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-800/50 flex items-center justify-center">
-                                                            <Trophy size={16} className="text-dribly-purple" />
+                                                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-800/50 flex items-center justify-center">
+                                                            <Trophy size={22} className="text-dribly-purple" />
                                                         </div>
                                                     )}
                                                 </div>

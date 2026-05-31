@@ -4,6 +4,14 @@
 
 ---
 
+## [v5.10] — 2026-05-31
+
+### Fix
+- **Logo removido da página de classificações:** o logo da competição foi removido do topo da página de classificações (`/standings/:assoc/:comp`) — mantém-se apenas o nome
+- **Logos maiores na lista de competições:** os logos na página `/standings/:assoc` passaram de 40px para 56px (w-14 h-14), com abreviatura e ícone aumentados proporcionalmente
+
+---
+
 ## [v5.9] — 2026-05-31
 
 ### Feat
