@@ -5,7 +5,6 @@ import { useGames } from '../../hooks/useGames'
 import { useFollows } from '../../hooks/useFollows'
 import { useAuth } from '../../lib/AuthContext'
 import { SkeletonHero } from '../../components/Skeleton'
-import { Match } from '../../components/types'
 import { useClub, type Club, displayName } from '../../lib/ClubContext'
 
 function ClubHome() {
@@ -23,20 +22,6 @@ function ClubHome() {
         const t = setTimeout(() => setShowLoadingMsg(true), 1000)
         return () => clearTimeout(t)
     }, [loading])
-
-    /** Normalize for comparison: remove diacritics, uppercase, trim */
-    const norm = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim()
-    /** Match team name to club name with word-level fallback */
-    const matchName = (team: string) => {
-        const t = norm(team), c = norm(club.name)
-        if (t.includes(c) || c.includes(t)) return true
-        const tW = t.split(/\s+/).filter(w => w.length > 2)
-        const cW = c.split(/\s+/).filter(w => w.length > 2)
-        if (tW.length === 0 || cW.length === 0) return false
-        const [shorter, longer] = tW.length <= cW.length ? [tW, cW] : [cW, tW]
-        const matching = shorter.filter(w => longer.some(lw => lw.includes(w) || w.includes(lw)))
-        return matching.length >= Math.ceil(shorter.length * 0.5)
-    }
 
     const nextGame = useMemo(() => {
         if (games.length === 0) return null
@@ -66,13 +51,6 @@ function ClubHome() {
         const date = new Date(dateStr)
         const formatted = date.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'long' })
         return formatted.charAt(0).toUpperCase() + formatted.slice(1)
-    }
-
-    const isClubWin = (match: Match) => {
-        if (match.resultado_casa === null || match.resultado_fora === null) return null
-        if (matchName(match.equipa_casa)) return match.resultado_casa > match.resultado_fora
-        if (matchName(match.equipa_fora)) return match.resultado_fora > match.resultado_casa
-        return null
     }
 
     const isFavorited = favoriteClub?.id === club.id
@@ -238,16 +216,15 @@ function ClubHome() {
                     </div>
                     <div className="space-y-2">
                         {recentResults.map(match => {
-                            const won = isClubWin(match)
                             const slug = match.slug || ''
                             return (
                                 <Link to={`/game/${slug}?clube=${club.slug}`} key={slug} className="flex items-center gap-3 p-3 glass-card hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group">
-                                    <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${won === true ? 'bg-dribly-green' : won === false ? 'bg-dribly-red' : 'bg-zinc-300'}`} />
+                                    <div className="w-1.5 h-1.5 rounded-full shrink-0 bg-zinc-300 dark:bg-zinc-600" />
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs text-zinc-900 dark:text-white truncate">
-                                            <span className={won === true ? 'font-bold' : ''}>{match.equipa_casa}</span>
+                                            <span>{match.equipa_casa}</span>
                                             <span className="text-zinc-400 mx-1">vs</span>
-                                            <span className={won === false ? 'font-bold' : ''}>{match.equipa_fora}</span>
+                                            <span>{match.equipa_fora}</span>
                                         </p>
                                     </div>
                                     <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300 tabular-nums">

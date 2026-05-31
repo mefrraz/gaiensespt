@@ -4,6 +4,16 @@
 
 ---
 
+## [v5.3] — 2026-05-31
+
+### Fix
+- **Indicador neutro em resultados recentes:** removido o bolinha verde/vermelho e o bold condicional nos cards de "Últimos Resultados" da página de cada clube — o ícone é agora neutro (cinza) em vez de indicar vitória/derrota/empate
+
+### Chore
+- Removida função `isClubWin` e `matchName` não utilizadas após a remoção do indicador
+
+---
+
 ## [v5.2] — 2026-05-31
 
 ### Feat
