@@ -4,6 +4,14 @@
 
 ---
 
+## [v5.8] — 2026-05-31
+
+### Feat
+- **Logos de competições nas classificações:** na página de classificações de cada competição, o logo oficial (da `competitions_meta`) é agora exibido ao lado do nome — se não houver logo, mostra o gradiente com a abreviatura
+- **Logos de competições na search:** os resultados de competições na barra de pesquisa e na página de pesquisa agora mostram o logo oficial da competição em vez do logo genérico da associação
+
+---
+
 ## [v5.7] — 2026-05-31
 
 ### Fix

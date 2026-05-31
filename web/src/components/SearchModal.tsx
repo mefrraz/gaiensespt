@@ -31,6 +31,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     const { favoriteClub, setFavoriteClub, clubs, loadClubs } = useClub()
     const { isFollowing, toggleFollow } = useFollows()
     const [allComps, setAllComps] = useState<CompetitionResult[]>([])
+    const [compLogoMap, setCompLogoMap] = useState<Map<number, string>>(new Map())
 
     const normalizedClubs = useMemo(() =>
         clubs.map(c => ({
@@ -41,6 +42,14 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
     useEffect(() => {
         supabase.from('competitions').select('competition_id, competition_name, association_id, association_name').eq('season','2025/2026').then(({data}) => { if (data) { const seen: Record<number, CompetitionResult> = {}; (data as CompetitionResult[]).forEach(c => { if (!seen[c.competition_id]) seen[c.competition_id] = c }); setAllComps(Object.values(seen)) } })
+        // Fetch competition logos
+        supabase.from('competitions_meta').select('id, logo_url').then(({ data }) => {
+            if (data) {
+                const m = new Map<number, string>()
+                ;(data as { id: number; logo_url: string | null }[]).forEach(r => { if (r.logo_url) m.set(r.id, r.logo_url) })
+                setCompLogoMap(m)
+            }
+        }, () => {})
     }, [])
 
     useEffect(() => {
@@ -206,7 +215,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                         >
                                             <div className="flex-1 flex items-center gap-3 min-w-0">
                                                 <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
-                                                    {associationLogoUrl(comp.association_id) ? (
+                                                    {compLogoMap.get(comp.competition_id) ? (
+                                                        <img src={compLogoMap.get(comp.competition_id)} alt="" className="w-5 h-5 object-contain" />
+                                                    ) : associationLogoUrl(comp.association_id) ? (
                                                         <img src={associationLogoUrl(comp.association_id)!} alt="" className="w-5 h-5 object-contain" />
                                                     ) : (
                                                         <Trophy size={14} className="text-zinc-400" />
