@@ -18,7 +18,9 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [username, setUsername] = useState('')
-    const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'sent'>('idle')
+    const [resetCode, setResetCode] = useState('')
+    const [newPassword, setNewPassword] = useState('')
+    const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'sent' | 'verified'>('idle')
     const [errorMsg, setErrorMsg] = useState('')
 
     const isLoaded = siLoaded && suLoaded
@@ -129,9 +131,34 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                 strategy: 'reset_password_email_code',
             })
             setStatus('sent')
-        } catch (err: any) {
+        } catch {
             setStatus('error')
             setErrorMsg('Email não encontrado. Verifica se está correto.')
+        }
+    }
+
+    const handleVerifyResetCode = async () => {
+        if (!resetCode.trim() || !newPassword || !signIn) return
+        setStatus('loading')
+        setErrorMsg('')
+        try {
+            const result = await signIn.attemptFirstFactor({
+                strategy: 'reset_password_email_code',
+                code: resetCode.trim(),
+                password: newPassword,
+            })
+            if (result.status === 'complete') {
+                await setActive!({ session: result.createdSessionId! })
+                reset()
+                onClose()
+                onAuthSuccess?.('signin')
+            } else {
+                setStatus('error')
+                setErrorMsg('Código inválido. Tenta novamente.')
+            }
+        } catch {
+            setStatus('error')
+            setErrorMsg('Código inválido ou expirado.')
         }
     }
 
@@ -190,14 +217,51 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                         {mode === 'forgot' ? (
                             /* Forgot password mode */
                             <div className="space-y-3">
-                                {status === 'sent' ? (
-                                    <div className="text-center py-2">
-                                        <CheckCircle size={28} className="text-green-500 mx-auto mb-2" />
-                                        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                            Email enviado! Verifica a tua caixa de entrada para redefinir a palavra-passe.
-                                        </p>
-                                    </div>
+                                {status === 'sent' || status === 'loading' && resetCode ? (
+                                    /* Step 2: enter code + new password */
+                                    <>
+                                        <div className="relative">
+                                            <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                                            <input
+                                                type="text"
+                                                value={resetCode}
+                                                onChange={e => setResetCode(e.target.value)}
+                                                placeholder="Código de 6 dígitos"
+                                                autoFocus
+                                                required
+                                                maxLength={6}
+                                                className="w-full pl-9 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple"
+                                            />
+                                        </div>
+                                        <div className="relative">
+                                            <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                                            <input
+                                                type="password"
+                                                value={newPassword}
+                                                onChange={e => setNewPassword(e.target.value)}
+                                                placeholder="Nova palavra-passe"
+                                                minLength={6}
+                                                required
+                                                className="w-full pl-9 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-all focus:ring-2 focus:ring-dribly-purple/30 focus:border-dribly-purple"
+                                            />
+                                        </div>
+
+                                        {status === 'error' && errorMsg && (
+                                            <p className="text-xs text-red-500 font-medium text-center">{errorMsg}</p>
+                                        )}
+
+                                        <button
+                                            type="button"
+                                            onClick={handleVerifyResetCode}
+                                            disabled={!isLoaded || status === 'loading'}
+                                            className="w-full py-2.5 rounded-full bg-dribly-purple text-white text-sm font-bold hover:bg-dribly-purple/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+                                        >
+                                            {status === 'loading' ? <Loader2 size={16} className="animate-spin" /> : null}
+                                            Redefinir palavra-passe
+                                        </button>
+                                    </>
                                 ) : (
+                                    /* Step 1: enter email */
                                     <>
                                         <div className="relative">
                                             <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
