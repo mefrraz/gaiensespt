@@ -20,6 +20,11 @@ function detectGender(n: string): 'M' | 'F' | 'O' {
 interface CompetitionMeta {
     competition_id: number; competition_name: string
     club_count: number; gender: 'M' | 'F' | 'O'
+    logo_url: string | null
+    abrev: string | null
+    gradient_from: string
+    gradient_to: string
+    inLigas: boolean
 }
 
 export default function AssociationCompetitions() {
@@ -41,9 +46,16 @@ export default function AssociationCompetitions() {
     }, [id])
 
     async function loadData() {
-        const { data } = await supabase.from('competitions')
-            .select('competition_id, competition_name, association_name, club_names')
-            .eq('season', '2025/2026').eq('association_id', id).order('competition_name')
+        const [compRes, metaRes] = await Promise.all([
+            supabase.from('competitions')
+                .select('competition_id, competition_name, association_name, club_names')
+                .eq('season', '2025/2026').eq('association_id', id).order('competition_name'),
+            supabase.from('competitions_meta').select('id, logo_url, abrev, gradient_from, gradient_to'),
+        ])
+        const data = compRes.data
+        const metaData = metaRes.data as { id: number; logo_url: string | null; abrev: string | null; gradient_from: string; gradient_to: string }[] | null
+        const metaMap = new Map<number, { logo_url: string | null; abrev: string | null; gradient_from: string; gradient_to: string }>()
+        if (metaData) metaData.forEach(m => metaMap.set(m.id, m))
 
         if (data) {
             setName(data[0]?.association_name as string || '')
@@ -51,12 +63,23 @@ export default function AssociationCompetitions() {
             const list: CompetitionMeta[] = data.map(r => {
                 const names = Array.isArray(r.club_names) ? r.club_names as string[] : []
                 names.forEach(n => all.add(n))
+                const meta = metaMap.get(r.competition_id as number)
                 return {
                     competition_id: r.competition_id as number,
                     competition_name: r.competition_name as string,
                     club_count: names.length,
                     gender: detectGender(r.competition_name as string),
+                    logo_url: meta?.logo_url || null,
+                    abrev: meta?.abrev || null,
+                    gradient_from: meta?.gradient_from || 'from-dribly-purple',
+                    gradient_to: meta?.gradient_to || 'to-purple-700',
+                    inLigas: meta !== undefined,
                 }
+            })
+            // Sort: competitions in Ligas first, then by name
+            list.sort((a, b) => {
+                if (a.inLigas !== b.inLigas) return a.inLigas ? -1 : 1
+                return a.competition_name.localeCompare(b.competition_name)
             })
             setComps(list)
             setTotalTeams(all.size)
@@ -152,8 +175,18 @@ export default function AssociationCompetitions() {
                                             onClick={() => navigate(`/standings/${id}/${c.competition_id}`)}
                                             className="w-full text-left bg-white dark:bg-zinc-900/90 hover:bg-zinc-50 dark:hover:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 hover:border-dribly-purple/30 dark:hover:border-dribly-purple/30 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 group flex items-center justify-between gap-4">
                                             <div className="min-w-0 flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-800/50 flex items-center justify-center shrink-0 border border-zinc-100 dark:border-zinc-700/50 shadow-sm">
-                                                    <Trophy size={16} className="text-dribly-purple" />
+                                                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden shadow-sm border border-zinc-100 dark:border-zinc-700/50">
+                                                    {c.logo_url ? (
+                                                        <img src={c.logo_url} alt="" className="w-8 h-8 object-contain" />
+                                                    ) : c.abrev ? (
+                                                        <div className={`w-10 h-10 bg-gradient-to-br ${c.gradient_from} ${c.gradient_to} flex items-center justify-center`}>
+                                                            <span className="text-[8px] font-black text-white">{c.abrev}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-800/50 flex items-center justify-center">
+                                                            <Trophy size={16} className="text-dribly-purple" />
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <h4 className="text-sm sm:text-base font-bold text-zinc-800 dark:text-zinc-200 group-hover:text-dribly-purple dark:group-hover:text-dribly-purple transition-colors leading-snug">{c.competition_name}</h4>

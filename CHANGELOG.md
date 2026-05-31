@@ -4,6 +4,14 @@
 
 ---
 
+## [v5.9] — 2026-05-31
+
+### Feat
+- **Logos na lista de competições da associação:** na página `/standings/:assoc` cada competição mostra agora o seu logo oficial (da `competitions_meta`), gradiente com abreviatura, ou ícone Trophy como fallback
+- **Ordenação por relevância:** as competições que têm página dedicada nas "Ligas" aparecem primeiro; as restantes são ordenadas alfabeticamente depois
+
+---
+
 ## [v5.8] — 2026-05-31
 
 ### Feat
