@@ -22,6 +22,8 @@
   </a>
 </p>
 
+> **v5.1** — semi-final · Auth Clerk completa · [dribly.pt](https://dribly.pt)
+
 ---
 
 ## 🎯 Objetivo
@@ -53,12 +55,13 @@ O Dribly nasceu da frustração de não existir uma plataforma única, rápida e
 | 🎨 **Tema dinâmico** | — | Cada clube com accent color própria |
 | 🎯 **Tour onboarding** | v3.3 | Tour guiado ao criar conta |
 | 💡 **Sugestões pós-registo** | v3.3 | Sugestões de clubes/ligas na 1ª vez |
-| 🔐 **Contas email/password** | v4 | Login + registo com username único (Clerk) |
-| 🔑 **Recuperar palavra-passe** | v4.8 | Email com código de reset |
-| 👤 **Perfil completo** | v4.9 | Editar username, nome, bio, mudar password |
-| 🔒 **Sessões ativas** | v4.9 | Ver e terminar sessões remotas |
-| 🗑️ **Apagar conta** | v4.9 | Auto-remoção com confirmação |
-| 🌍 **Domínio próprio** | v4 | [dribly.pt](https://dribly.pt) |
+| 🔐 **Contas email/password** | v5 | Login + registo com username único (Clerk) |
+| 🔑 **Recuperar palavra-passe** | v5 | Email com código de 6 dígitos |
+| 👤 **Perfil completo** | v5 | Editar username, nome, bio, mudar password |
+| 🔒 **Sessões ativas** | v5 | Ver e terminar sessões remotas |
+| 🗑️ **Apagar conta** | v5 | Auto-remoção com confirmação |
+| 🌍 **Domínio próprio** | v5 | [dribly.pt](https://dribly.pt) |
+| 🎨 **Novo logo** | v5 | Logo Dribly atualizado |
 
 ---
 
