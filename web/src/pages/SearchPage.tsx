@@ -4,10 +4,7 @@ import { Search, Building2, Trophy, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useClub, type Club } from '../lib/ClubContext'
 import { associationLogoUrl } from '../lib/associationLogos'
-
-function normalize(s: string): string {
-    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
-}
+import { normalize, buildSearchText } from '../lib/clubSearch'
 
 interface CompetitionResult {
     competition_id: number
@@ -28,7 +25,7 @@ function SearchPage() {
     const { clubs, loadClubs } = useClub()
 
     const normalizedClubs = useMemo(() =>
-        clubs.map(c => ({ ...c, _n: normalize(c.search_name || c.name) })),
+        clubs.map(c => ({ ...c, _n: buildSearchText(c) })),
     [clubs])
 
     useEffect(() => { loadClubs() }, [loadClubs])

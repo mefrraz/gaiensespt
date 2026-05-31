@@ -4,6 +4,14 @@
 
 ---
 
+## [v5.2] — 2026-05-31
+
+### Fix
+- **Navbar no iPhone:** adicionado `pt-safe` (safe-area-inset-top) à navbar superior para não ficar atrás do relógio/bateria nos iPhones com notch; adicionadas utilities CSS `pt-safe` / `pb-safe` no index.css
+- **Pesquisa com abreviaturas:** pesquisar "FC", "GD", "SC", "AD" etc. agora encontra clubes cujo nome completo contém "Futebol Clube", "Grupo Desportivo", etc. — a pesquisa gera acrónimos a partir do nome e pesquisa contra nome + search_name + acrónimo combinados
+
+---
+
 ## [v5.1] — 2026-05-31
 
 ### Docs

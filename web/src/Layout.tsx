@@ -57,7 +57,7 @@ function Layout() {
     return (
         <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 transition-colors duration-300 flex flex-col font-sans">
 
-            <nav className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-white/10 shadow-sm">
+            <nav className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-white/10 shadow-sm pt-safe">
                 <div className="max-w-5xl mx-auto px-4 h-14 sm:h-16">
                     <div className="flex items-center h-full gap-2 sm:gap-3">
                         <div className="relative flex items-center h-full w-full">

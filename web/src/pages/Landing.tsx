@@ -9,8 +9,7 @@ import { GameCard } from '../components/GameCard'
 import { useClub, type Club } from '../lib/ClubContext'
 import { useAuth } from '../lib/AuthContext'
 import { type Match } from '../components/types'
-
-function normalize(s: string): string { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim() }
+import { normalize, buildSearchText } from '../lib/clubSearch'
 
 const FEATURED_CLUBS = [
     { name: 'FC Porto', slug: 'fc-porto' },
@@ -58,7 +57,7 @@ function Landing() {
     const { clubs, loadClubs, favoriteClub } = useClub()
     const { user } = useAuth()
 
-    const normalizedClubs = useMemo(() => clubs.map(c => ({ ...c, _n: normalize(c.search_name || c.name) })), [clubs])
+    const normalizedClubs = useMemo(() => clubs.map(c => ({ ...c, _n: buildSearchText(c) })), [clubs])
 
     useEffect(() => { loadClubs() }, [loadClubs])
 

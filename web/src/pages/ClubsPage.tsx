@@ -4,10 +4,7 @@ import { Search, Loader2, Star, Heart } from 'lucide-react'
 import { useClub } from '../lib/ClubContext'
 import { useAuth } from '../lib/AuthContext'
 import { useFollows } from '../hooks/useFollows'
-
-function normalize(s: string): string {
-    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
-}
+import { normalize, buildSearchText } from '../lib/clubSearch'
 
 export default function ClubsPage() {
     const { clubs, loadClubs } = useClub()
@@ -23,7 +20,7 @@ export default function ClubsPage() {
 
     const q = normalize(search)
     const filtered = q
-        ? clubs.filter(c => normalize(c.search_name || c.name).includes(q))
+        ? clubs.filter(c => buildSearchText(c).includes(q))
         : clubs
 
     return (

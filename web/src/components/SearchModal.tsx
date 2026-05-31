@@ -6,10 +6,7 @@ import { useAuth } from '../lib/AuthContext'
 import { useFollows } from '../hooks/useFollows'
 import { supabase } from '../lib/supabase'
 import { associationLogoUrl } from '../lib/associationLogos'
-
-function normalize(s: string): string {
-    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
-}
+import { normalize, buildSearchText } from '../lib/clubSearch'
 
 interface CompetitionResult {
     competition_id: number
@@ -38,7 +35,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     const normalizedClubs = useMemo(() =>
         clubs.map(c => ({
             ...c,
-            _n: normalize(c.search_name || c.name),
+            _n: buildSearchText(c),
         })),
     [clubs])
 
