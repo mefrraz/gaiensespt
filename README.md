@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="web/public/logo.svg" alt="Dribly" width="100" height="100" />
+  <img src="web/public/logo.svg" alt="Dribly" width="120" height="120" />
 </p>
 
 <h1 align="center">Dribly<span style="color:#7C3AED">.</span></h1>
@@ -11,8 +11,8 @@
 </p>
 
 <p align="center">
-  <a href="https://dribly.vercel.app">
-    <img src="https://img.shields.io/badge/dribly.vercel.app-7C3AED?style=for-the-badge&logo=vercel&logoColor=white" alt="Website" />
+  <a href="https://dribly.pt">
+    <img src="https://img.shields.io/badge/dribly.pt-7C3AED?style=for-the-badge&logo=vercel&logoColor=white" alt="Website" />
   </a>
   <a href="https://github.com/mefrraz/dribly">
     <img src="https://img.shields.io/badge/AGPLv3-7C3AED?style=for-the-badge&label=license" alt="AGPLv3" />
@@ -44,9 +44,9 @@ O Dribly nasceu da frustração de não existir uma plataforma única, rápida e
 | 📅 **Jogos e agenda** | ✅ Completo | Calendário, resultados, fichas de jogo detalhadas |
 | 🏆 **Classificações** | ✅ Completo | Tabelas Fase Regular com J, V, D, PM, PS, DIF, PTS |
 | 📊 **Estatísticas individuais** | ✅ Ligas topo | 22 campos — PTS, REB, AST, VAL, %L2, %L3, %LL |
-| 👤 **Contas e login** | ✅ Completo | Email/password via Supabase Auth |
+| 🔐 **Contas (Clerk)** | ✅ v4 | Email/password + Google OAuth, username único |
 | ⭐ **Favoritos** | ✅ Completo | Favoritar clube + segui-lo automaticamente |
-| ❤️ **Seguir clubes/liga** | ✅ Completo | Página dedicada "Seguidos" |
+| ❤️ **Seguir clubes/liga** | ✅ Completo | Página dedicada "Seguidos" com RLS |
 | 🗺️ **Mapas e localização** | ✅ Completo | Pavilhões no mapa |
 | 🌓 **Modo claro/escuro** | ✅ Completo | Com transição suave |
 | 📱 **PWA instalável** | ✅ Completo | Instala como app nativa |
@@ -54,6 +54,8 @@ O Dribly nasceu da frustração de não existir uma plataforma única, rápida e
 | 🎨 **Tema dinâmico** | ✅ Completo | Cada clube com accent color própria |
 | 🎯 **Tour onboarding** | ✅ v3.3 | Tour guiado ao criar conta |
 | 💡 **Sugestões pós-registo** | ✅ v3.3 | Favoritar e seguir clubes/ligas na 1ª vez |
+| 🔑 **Google OAuth** | ✅ v4 | Login com conta Google (1 clique) |
+| 🌍 **Domínio próprio** | ✅ v4 | [dribly.pt](https://dribly.pt) |
 
 ---
 
@@ -140,6 +142,13 @@ O Dribly nasceu da frustração de não existir uma plataforma única, rápida e
       <td align="center">✅</td>
       <td align="center">❌</td>
     </tr>
+    <tr>
+      <td>Login Google</td>
+      <td align="center">✅</td>
+      <td align="center">❌</td>
+      <td align="center">❌</td>
+      <td align="center">❌</td>
+    </tr>
   </tbody>
 </table>
 
@@ -152,6 +161,7 @@ O Dribly nasceu da frustração de não existir uma plataforma única, rápida e
 | Frontend | React 18 + TypeScript |
 | Build | Vite 5 |
 | Estilos | Tailwind CSS 3 |
+| Auth | Clerk (email/password + Google OAuth) |
 | Base de dados | Supabase (PostgreSQL) |
 | Deploy | Vercel (Edge Functions) |
 | Cache local | localStorage + Service Worker |
@@ -170,14 +180,14 @@ web/
 │   │   ├── fpbCompetitionsApi.ts    # Parser HTML + WordPress AJAX (competições)
 │   │   ├── tugabasketApi.ts         # Parser TugaBasket
 │   │   ├── ClubContext.tsx          # Estado global clubes
-│   │   ├── AuthContext.tsx          # Autenticação Supabase
-│   │   └── supabase.ts             # Cliente Supabase
+│   │   ├── AuthContext.tsx          # Autenticação Clerk (hooks)
+│   │   └── supabase.ts             # Cliente Supabase (DB + RLS via Clerk JWT)
 │   ├── hooks/
 │   │   ├── useGames.ts              # Jogos com cache
 │   │   ├── useStandings.ts          # Classificações com cache
-│   │   └── useFollows.ts            # Seguir clubes/liga (DB)
+│   │   └── useFollows.ts            # Seguir clubes/liga (DB + RLS)
 │   ├── components/
-│   │   ├── AuthModal.tsx            # Login / Criar conta
+│   │   ├── AuthModal.tsx            # Login / Criar conta (Clerk hooks)
 │   │   ├── OnboardingTour.tsx       # Tour guiado pós-registo
 │   │   ├── PostOnboardingSuggestions.tsx  # Sugestões iniciais
 │   │   ├── GameCard.tsx             # Cartão de jogo reutilizável
@@ -194,12 +204,13 @@ web/
 │   ├── fpb.ts                      # Edge Function (proxy FPB + WordPress AJAX)
 │   └── tugabasket.ts               # Edge Function (proxy TugaBasket)
 └── public/
-    ├── logo.svg / logo.png         # Assets PWA
+    ├── logo.svg                    # Logo Dribly
+    └── logo.png                    # Logo PWA
 ```
 
 ---
 
-## ⚙️ Como funciona (Arquitetura Técnica)
+## ⚙️ Arquitetura Técnica
 
 O Dribly é uma **SPA (Single Page Application)** sem backend próprio. Toda a lógica vive no browser ou em Edge Functions serverless na Vercel.
 
@@ -208,77 +219,36 @@ O Dribly é uma **SPA (Single Page Application)** sem backend próprio. Toda a l
 ```
 Browser (React SPA)
     │
-    ├── Supabase SDK ──────────► Supabase (Auth + DB + cache)
+    ├── Clerk SDK ────────────► Clerk (Auth + sessões + Google OAuth)
     │
-    ├── /api/* (Edge Functions) ──► FPB / TugaBasket (scraping)
+    ├── Supabase SDK ─────────► Supabase (DB + RLS via Clerk JWT)
     │
-    └── Service Worker ──────────► Cache local (PWA offline)
+    ├── /api/* (Edge Funcs) ──► FPB / TugaBasket (scraping)
+    │
+    └── Service Worker ───────► Cache local (PWA offline)
 ```
+
+### Autenticação (Clerk)
+
+A partir da v4, o Dribly usa **Clerk** para gestão de contas:
+
+- **Email/password** — registo clássico com username único validado pelo Clerk
+- **Google OAuth** — login com 1 clique via conta Google
+- **JWT bridge** — o token Clerk é injetado no Supabase via `accessToken` callback, permitindo RLS (`auth.uid() = user_id`) nas tabelas de seguidores
 
 ### Fontes de dados
 
-O Dribly **não tem API própria** — os dados são obtidos em tempo real dos sites oficiais:
-
-- **FPB (Federação Portuguesa de Basquetebol)** — scraping HTML das páginas públicas (`www.fpb.pt`) para calendários, resultados, fichas de jogo e lista de clubes. As competições usam o endpoint WordPress AJAX interno (`/wp-admin/admin-ajax.php`) com um `action` específico para obter classificações da fase regular.
-- **TugaBasket** — scraping HTML para dados complementares (estatísticas individuais, histórico).
-- **Logos e cores** — mapeamento manual de 281 clubes, servidos como assets estáticos.
-
-Todo o scraping é feito do lado do servidor (Vercel Edge Functions), nunca no browser — o cliente pede dados já tratados, não HTML bruto.
-
-### Proxy serverless (Edge Functions)
-
-As rotas `/api/fpb` e `/api/tugabasket` são Edge Functions na Vercel (Node.js runtime nas regiões europeias). Funcionam como **proxy + parser**: recebem um pedido do browser, fazem fetch ao site externo, extraem os dados com `DOMParser` (HTML) ou `RegExp` (WordPress AJAX), e devolvem JSON limpo ao React.
-
-```
-Browser ──GET /api/fpb?clube=169&page=calendario──► Edge Function
-                                                       │
-                                                    fetch()
-                                                       │
-                                                       ▼
-                                                  www.fpb.pt (HTML)
-                                                       │
-                                                   DOMParser
-                                                       │
-                                                       ▼
-                                                  JSON { games: [...] }
-                                                       │
-                                                       ▼
-                                                  Browser ←── JSON
-```
+- **FPB (www.fpb.pt)** — scraping HTML + WordPress AJAX (`/wp-admin/admin-ajax.php`)
+- **TugaBasket** — scraping HTML para estatísticas individuais e histórico
+- **Logos e cores** — mapeamento manual de 281 clubes
 
 ### Cache em três camadas
 
 | Camada | Onde | TTL | O que guarda |
 |---|---|---|---|
-| **localStorage** | Browser | ~15 min | Jogos e classificações (evita pedidos repetidos) |
-| **Supabase (PostgreSQL)** | Cloud | Médio prazo | Clubes (dados base), resultados upsert após refresh |
-| **Browser cache HTTP** | Browser | Longo prazo | Logos, assets estáticos, SW bundle |
-
-Estratégia: servir sempre do localStorage se < 15 min. Se expirou, faz refresh à fonte (Edge Function) e actualiza Supabase em background.
-
-### Autenticação e dados de utilizador
-
-Geridos exclusivamente pelo **Supabase Auth** (email/password) + **Supabase DB** (tabelas de favoritos e seguidos). Não há sessão própria, tokens JWT, ou backend de auth — o Supabase SDK no browser trata de tudo:
-
-```
-Browser → supabase.auth.signInWithPassword(email, password)
-         → Supabase Auth (JWT gerido pelo SDK)
-         → supabase.from("follows").select("*") (dados do utilizador)
-```
-
-### PWA e offline parcial
-
-O `vite-plugin-pwa` (Workbox) gera um **Service Worker** que faz cache de navegação e assets. Em modo offline:
-- Páginas já visitadas funcionam (cache-first)
-- Dados frescos (jogos, classificações) mostram a última versão em cache
-- Logos e assets estáticos servem sempre do cache
-
-### Porquê esta arquitectura?
-
-- **Zero backend para manter** — sem servidor, sem Docker, sem filas
-- **Dados sempre frescos** — cada pedido vai à fonte oficial (com cache curto para não abusar)
-- **Custo deploy ≈ 0** — Vercel free tier + Supabase free tier
-- **Escala automaticamente** — Edge Functions sobem sob demanda
+| **localStorage** | Browser | ~15 min | Jogos e classificações |
+| **Supabase (PostgreSQL)** | Cloud | Médio prazo | Clubes, resultados, seguidores |
+| **Service Worker** | Browser | Longo prazo | Logos, assets estáticos, PWA offline |
 
 ---
 
@@ -296,6 +266,7 @@ Variáveis de ambiente (`web/.env`):
 ```env
 VITE_SUPABASE_URL=https://[project].supabase.co
 VITE_SUPABASE_ANON_KEY=[anon public key]
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_...  # clerk.com → API Keys
 ```
 
 ---
@@ -306,7 +277,7 @@ VITE_SUPABASE_ANON_KEY=[anon public key]
 git push origin main
 ```
 
-A Vercel faz auto-deploy automaticamente.
+A Vercel faz auto-deploy. Domínio: **[dribly.pt](https://dribly.pt)**.
 
 ---
 
@@ -321,12 +292,12 @@ python discover-competitions.py
 
 ## 📜 Licença
 
-GNU AGPLv3 — código aberto, copyleft para serviços web. Garante que quem modificar e hospedar o Dribly publique as alterações. Vê o ficheiro [LICENSE](LICENSE).
+GNU AGPLv3 — código aberto, copyleft para serviços web. [LICENSE](LICENSE)
 
 ---
 
 <p align="center">
-  <a href="https://dribly.vercel.app">Abrir Dribly →</a>
+  <a href="https://dribly.pt">Abrir Dribly →</a>
   &nbsp;&nbsp;&nbsp;
   <a href="https://github.com/mefrraz/dribly">Código Fonte →</a>
 </p>
