@@ -42,17 +42,17 @@ O Dribly nasceu da frustração de não existir uma plataforma única, rápida e
 
 | Funcionalidade | Versão | Detalhes |
 |---|---|---|
-| 🔍 **Pesquisa de clubes** | — | 281 clubes com cores, logos, pesquisa fuzzy |
-| 📅 **Jogos e agenda** | — | Calendário, resultados, fichas de jogo detalhadas |
-| 🏆 **Classificações** | — | Tabelas Fase Regular com J, V, D, PM, PS, DIF, PTS |
-| 📊 **Estatísticas individuais** | — | 22 campos — PTS, REB, AST, VAL, %L2, %L3, %LL |
-| ⭐ **Favoritar clube** | — | Favoritar clube + segui-lo automaticamente |
-| ❤️ **Seguir clubes/ligas** | — | Página dedicada "Seguidos" |
-| 🗺️ **Mapas / Pavilhões** | — | Pavilhões no mapa |
-| 🌓 **Modo claro/escuro** | — | Transição suave |
-| 📱 **PWA instalável** | — | Instala como app nativa |
-| 🔌 **Offline parcial** | — | Service Worker + cache inteligente |
-| 🎨 **Tema dinâmico** | — | Cada clube com accent color própria |
+| 🔍 **Pesquisa de clubes** | v1 | 281 clubes com cores, logos, pesquisa fuzzy |
+| 📅 **Jogos e agenda** | v1 | Calendário, resultados, fichas de jogo detalhadas |
+| 🏆 **Classificações** | v1 | Tabelas Fase Regular com J, V, D, PM, PS, DIF, PTS |
+| 📊 **Estatísticas individuais** | v2 | 22 campos — PTS, REB, AST, VAL, %L2, %L3, %LL |
+| ⭐ **Favoritar clube** | v1 | Favoritar clube + segui-lo automaticamente |
+| ❤️ **Seguir clubes/ligas** | v3 | Página dedicada "Seguidos" |
+| 🗺️ **Mapas / Pavilhões** | v2 | Pavilhões no mapa |
+| 🌓 **Modo claro/escuro** | v1 | Transição suave |
+| 📱 **PWA instalável** | v1 | Instala como app nativa |
+| 🔌 **Offline parcial** | v1 | Service Worker + cache inteligente |
+| 🎨 **Tema dinâmico** | v3 | Cada clube com accent color própria |
 | 🎯 **Tour onboarding** | v3.3 | Tour guiado ao criar conta |
 | 💡 **Sugestões pós-registo** | v3.3 | Sugestões de clubes/ligas na 1ª vez |
 | 🔐 **Contas email/password** | v5 | Login + registo com username único (Clerk) |
